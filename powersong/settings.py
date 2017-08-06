@@ -147,3 +147,10 @@ LASTFM_API_AUTHBASE = 'http://ws.audioscrobbler.com/2.0/?method={}&api_key={}&to
 LASTFM_API_BASE = 'http://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&format=json'
 LASTFM_API_RECENT = 'http://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&from={}&to={}&limit=200&extended=1&format=json'
 
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_IMPORTS = ['powersong.tasks']

@@ -23,11 +23,9 @@ def index(request):
     result['listener'] = lastfm_get_user_info(request.session['lastfm_username'])
     result['session'] = request.session
 
-    a,b,c = strava_get_activities(request.session['lastfm_username'],request.session['strava_token'])
+    a = strava_get_activities(request.session['lastfm_username'],request.session['strava_token'])
 
     result['a'] = a
-    result['b'] = b
-    result['c'] = c
 
     return render_to_response('top.html', result)
 

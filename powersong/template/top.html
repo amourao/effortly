@@ -3,11 +3,6 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-md-12">
-      {% for key, value in listener.items %}
-      <p>{{ key }}: {{ value }}</p>
-      {% endfor %}
-    </div>
     <div class="col-md-6">
       <h3>Strava</h3>
       <img src="{{ athlete.profile }}" width="128" height="128" class="img-fluid rounded-circle" alt="Strava profile picture">
@@ -21,17 +16,14 @@
     </div>
   </div>
   <div class="col-md-12">
-      {% for key in a %}
-      <p>{{ key }}</p>
+  {% for b in a %}
+      <p>{{ b.start_date }}</p>
+      {% for key, value in b.parsed.items %}
+      <p>{{ key }}: {{ value }}</p>
       {% endfor %}
-
-      {% for key in b %}
-      <p>{{ key }}</p>
-      {% endfor %}
-
-      {% for key in c %}
-      <p>{{ key }}</p>
-      {% endfor %}
+      <p></p>
+      <p></p>
+  {% endfor %}
   </div>
 </div>
 
