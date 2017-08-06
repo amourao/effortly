@@ -1,15 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
-			<div>
-            {% if strava_authorize_url %}
-                <a href="{{ strava_authorize_url }}">{{ strava_authorize_url }}<a>
+    <div class="jumbotron">
+      <div class="container">
+        <h1 class="display-3">Find your Power Songs!</h1>
+        <h4>Want to know what songs make you go faster? The ones that get your heart pumping?</h4>
+      </div>
+    </div>
+			
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-6">
+          <h2>Strava</h2>
+			{% if strava_authorize_url %}
+                <p><a class="btn btn-secondary" href="{{ strava_authorize_url }}" role="button">Authorize Strava &raquo;</a></p>
             {% else %}
             	<p>strava authorized</p>
             {% endif %}
+        </div>
+        <div class="col-md-6">
+          <h2>last.fm</h2>            
             {% if lastfm_authorize_url %}
-                <a href="{{ lastfm_authorize_url }}">{{ lastfm_authorize_url }}<a>
+                <p><a class="btn btn-secondary" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
             {% else %}
             	<p>lastfm authorized</p>
-            {% endif %}
-            </div>
+            {% endif %}        
+       </div>
+      </div>
+    </div>
 {% endblock %}

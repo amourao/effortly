@@ -6,7 +6,7 @@ from django.conf import settings
 import stravalib.client
 
 
-from powersong.view_base import index
+from powersong.view_home import index
 
 def strava_oauth(request):
     if not 'code' in request.GET:
