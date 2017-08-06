@@ -99,3 +99,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+db.sqlite3
+powersong/local.py

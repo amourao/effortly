@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+			<div>
+            {% if strava_authorize_url %}
+                <a href="{{ strava_authorize_url }}">{{ strava_authorize_url }}<a>
+            {% else %}
+            	<p>strava authorized</p>
+            {% endif %}
+            {% if lastfm_authorize_url %}
+                <a href="{{ lastfm_authorize_url }}">{{ lastfm_authorize_url }}<a>
+            {% else %}
+            	<p>lastfm authorized</p>
+            {% endif %}
+            </div>
+{% endblock %}
