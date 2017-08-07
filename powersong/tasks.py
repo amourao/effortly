@@ -24,7 +24,6 @@ def strava_get_activity(username,access_token,act):
         a2 = strava_get_start_timestamp(strava_get_parse_timestamp(act['start_date'])+timedelta(seconds=int(act['elapsed_time'])))
         scrob = lastfm_get_tracks(username,a1,a2)
 
-    
         act["lastfm_tracks"] = scrob
 
         act["parsed"] = strava_activity_to_tracks(act)
@@ -57,7 +56,6 @@ def strava_activity_to_tracks(act):
     lastHr = 0
     
     for idx, song in enumerate(songs):
-        
         #duration=song.track.get_duration()/1000
         start = int(song['date']['uts']) - actStartTimestamp
         

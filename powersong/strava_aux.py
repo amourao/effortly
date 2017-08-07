@@ -13,7 +13,8 @@ from bisect import bisect_left
 import numpy as np
 
 from celery import group
-
+from celery.result import AsyncResult,GroupResult
+from celery import current_app
 
 def strava_get_auth_url():
     client = stravalib.client.Client()
@@ -28,22 +29,28 @@ def strava_get_user_info(access_token):
     info['firstname'] = athlete.firstname
     info['lastname'] = athlete.lastname
     info['profile'] = athlete.profile
+    info['activity_count'] = len(list(client.get_activities()))
     return info
 
 def strava_get_start_timestamp(st):
     return int(time.mktime(st.timetuple()))
 
 
+def strava_get_sync_progress(task_id):
+    res = current_app.GroupResult.restore(task_id)
+    if res.successful() == True:
+        return 'SUCCESS',res.completed_count(),res.join()
+    else:
+        return 'STARTED',res.completed_count(),[]
+
 def strava_get_activities(username,access_token):
     client = stravalib.client.Client()
     client.access_token = access_token
-    
-    tmp = group([strava_get_activity.s(username,access_token,strava_parse_base_activity(act)) for act in client.get_activities(limit=15)])
-
-    promise = tmp()
-    acts = promise.get()
-
-    return acts
+    promise = group([strava_get_activity.s(username,access_token,strava_parse_base_activity(act)) for act in client.get_activities(limit=15)])
+    job_result = promise.delay()
+    print(job_result.backend)
+    job_result.save()
+    return job_result.id
 
 def strava_parse_base_activity(act):
     actFinal = {}

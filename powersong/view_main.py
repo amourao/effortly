@@ -7,8 +7,8 @@ import stravalib.client
 
 from django.conf import settings
 
-from lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
-from strava_aux import strava_get_user_info, strava_get_activities
+from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
+from powersong.strava_aux import strava_get_user_info, strava_get_activities, strava_get_sync_progress
 
 def index(request):
     result = {}
@@ -18,14 +18,30 @@ def index(request):
         username, key = lastfm_get_session_id(request.session['lastfm_token'])
         request.session['lastfm_key'] = key
         request.session['lastfm_username'] = username
-    
+
     result['athlete'] = strava_get_user_info(request.session['strava_token'])
     result['listener'] = lastfm_get_user_info(request.session['lastfm_username'])
-    result['session'] = request.session
+    
 
-    a = strava_get_activities(request.session['lastfm_username'],request.session['strava_token'])
-
-    result['a'] = a
+    if not 'sync_status' in request.session:
+        request.session['sync_id'] = strava_get_activities(request.session['lastfm_username'],request.session['strava_token'])
+        status,count,output = strava_get_sync_progress(request.session['sync_id'])
+        request.session['sync_status'] = status
+        request.session['sync_completed'] = count
+        result['sync_results'] = output
+    else:
+        status,count,output = strava_get_sync_progress(request.session['sync_id'])
+        result['sync_results'] = output
+        if request.session['sync_status'] != "SUCCESS":
+            request.session['sync_status'] = status
+            request.session['sync_completed'] = count
+        else:
+            request.session['sync_status'] = status
+            request.session['sync_completed'] = count
+    
+    result['sessionss'] = {}
+    for key in request.session.keys():
+        result['sessionss'][key] = request.session[key]
 
     return render_to_response('top.html', result)
 
