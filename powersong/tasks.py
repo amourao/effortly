@@ -29,7 +29,7 @@ def strava_get_activity(username,access_token,act):
         act["parsed"] = strava_activity_to_tracks(act)
 
     except:
-        raise
+        pass
     return act
 
 #2017-07-22T09:34:27Z

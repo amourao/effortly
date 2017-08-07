@@ -15,19 +15,20 @@
       <a href="{{ listener.url }}">{{ listener.name }}</a>
       <p>{{ listener.playcount }} scrobbles</p>
     </div>
+    <p><a class="btn btn-secondary" href="/?resync" role="button">Resync</a> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ athlete.activity_count }}</p>
   </div>
+  <div class="row">
   <div class="col-md-12">
-  {% for key, value in sessionss.items %}
-    <p>{{ key }}: {{ value }}</p>
-  {% endfor %}
-  </br>
-  {% for b in sync_results %}
-      <p>{{ b.start_date }}</p>
-      {% for key, value in b.parsed.items %}
-      <p>{{ key }}: {{ value }}</p>
-      {% endfor %}
-      </br>
-  {% endfor %}
+    <ul>
+    {% for song in sync_results %}
+      <li class="list-group-item justify-content-between flex-column align-items-start">
+        <h5 class="mb-1"><span class="badge badge-default badge-pill">{{song.rank}}</span>{{song.main_key|floatformat:"2"}} km/h {{song.songTitle}} - {{song.songArtist}}</h5>
+        <a href="https://www.strava.com/activities/{{ song.id}}">{{ song.name}}</a>
+        <p class="mb-1">{{ song.diffLastSpeed|floatformat:"2"}} {{song.diffAvgSpeed|floatformat:"2"}} {{song.avgHr|floatformat:"2"}} {{song.diffLastHr|floatformat:"2"}} {{song.diffAvgHr|floatformat:"2"}} {{song.startDist|floatformat:"2"}} {{song.endDist|floatformat:"2"}}</p> 
+      </li>
+    {% endfor %}
+    </ul>
+  </div>    
   </div>
 </div>
 

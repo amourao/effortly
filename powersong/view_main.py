@@ -12,18 +12,26 @@ from powersong.strava_aux import strava_get_user_info, strava_get_activities, st
 
 def index(request):
     result = {}
-    if not 'lastfm_token' in request.session or not 'strava_token' in request.session:
+    if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or not 'strava_token' in request.session:
         return render_to_response('home.html', result)
     if not 'lastfm_key' in request.session:
         username, key = lastfm_get_session_id(request.session['lastfm_token'])
         request.session['lastfm_key'] = key
         request.session['lastfm_username'] = username
+        del request.session['lastfm_token']
+        request.session.modified = True
 
-    result['athlete'] = strava_get_user_info(request.session['strava_token'])
-    result['listener'] = lastfm_get_user_info(request.session['lastfm_username'])
-    
+    if not 'athlete' in request.session:
+        request.session['athlete'] = strava_get_user_info(request.session['strava_token'])
+        
+    if not 'listener' in request.session:
+        request.session['listener'] = lastfm_get_user_info(request.session['lastfm_username'])
+        
 
-    if not 'sync_status' in request.session:
+    result['listener'] = request.session['listener']
+    result['athlete'] = request.session['athlete']
+
+    if not 'sync_status' in request.session or 'resync' in request.GET:
         request.session['sync_id'] = strava_get_activities(request.session['lastfm_username'],request.session['strava_token'])
         status,count,output = strava_get_sync_progress(request.session['sync_id'])
         request.session['sync_status'] = status

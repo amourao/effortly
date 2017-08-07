@@ -17,7 +17,7 @@ def lastfm_get_session_id(token):
 	#return settings.LASTFM_API_AUTHBASE.format(method,settings.LASTFM_API_KEY,token,api_sig)
 	url = settings.LASTFM_API_AUTHBASE.format(method,settings.LASTFM_API_KEY,token,api_sig)
 	response = requests.get(url).json()
-
+	
 	return (response['session']['name'], response['session']['key'])
 
 
