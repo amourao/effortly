@@ -1,31 +1,76 @@
-{% extends "base.html" %}
-{% block content %}
-    <div class="jumbotron">
-      <div class="container">
-        <h1 class="display-3">Find your Power Songs!</h1>
-        <h4>Want to know what songs make you go faster? The ones that get your heart pumping?</h4>
-      </div>
-    </div>
-			
-    <div class="container">
-      <!-- Example row of columns -->
-      <div class="row">
+{% with "Strava Power Song" as APPTITLE %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0 minimal-ui"/>
+        <meta name="description" content=""/>
+        <meta name="author" content=""/>
+
+        {% load staticfiles %}
+        <link rel="shortcut icon" href="{% static "favicon.ico" %}" />
+
+        <title>{{ APPTITLE }}</title>
+        
+        {% block head %}{% endblock %}
+    </head>
+    <body class="background_image">
+
+    <div class="site-wrapper">
+
+      <div class="site-wrapper-inner">
+
+        <div class="cover-container">
+
+          <div class="inner cover">
+            <h1 class="cover-heading">Find your Power Songs!</h1>
+            <h2 class="lead">Want to know what songs make your heart beat faster? The ones that give that extra push?</h2>
+            <p>Get started!</p>
+              <div class="row">
         <div class="col-md-6">
-          <h2>Strava</h2>
-			{% if strava_authorize_url %}
-                <p><a class="btn btn-secondary" href="{{ strava_authorize_url }}" role="button">Authorize Strava &raquo;</a></p>
+             {% if strava_authorize_url %}
+                <p><a class="btn btn-secondary color_strava" href="{{ strava_authorize_url }}" role="button">Authorize Strava &raquo;</a></p>
             {% else %}
-            	<p>strava authorized</p>
+                <p><a class="btn btn-secondary disabled" href="#" role="button">Strava authorized</a></p>
             {% endif %}
         </div>
-        <div class="col-md-6">
-          <h2>last.fm</h2>            
+        <div class="col-md-6">        
             {% if lastfm_authorize_url %}
-                <p><a class="btn btn-secondary" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
+                <p><a class="btn btn-secondary color_lastfm" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
             {% else %}
-            	<p>lastfm authorized</p>
+                <p><a class="btn btn-secondary disabled" href="#" role="button">last.fm authorized</a></p>
             {% endif %}        
        </div>
       </div>
+              
+            </p>
+          </div>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p><a href="https://andremourao.com">&copy;  André Mourão 2017</a> </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
-{% endblock %}
+
+
+
+     <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <link href="/static/app.css" rel="stylesheet">
+    <link href="/static/cover.css" rel="stylesheet">
+    </body>
+</html>
+{% endwith %}

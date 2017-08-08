@@ -16,7 +16,7 @@ def index(request):
     
     if not 'strava_token' in request.session:
         result['strava_authorize_url'] = strava_get_auth_url()
-    if not 'lastfm_token' in request.session:
+    if not 'lastfm_token' in request.session or request.session['lastfm_token'] == None:
         result['lastfm_authorize_url'] = lastfm_get_auth_url()
 
     #if "lastfm_token" in request.session and "strava_token" in request.session:
@@ -25,6 +25,10 @@ def index(request):
         return render_to_response('home.html', result)
     else:
         return main_index(request)
+
+def home(request):
+    return render_to_response('home.html', {})
+
 
 def about(request):
     return render_to_response('about.html', {})    

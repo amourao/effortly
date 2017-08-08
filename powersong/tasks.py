@@ -15,9 +15,10 @@ def strava_get_activity(username,access_token,act):
     client = stravalib.client.Client()
     client.access_token = access_token
     try:
-        actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
-        
-        for k in ['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth']:
+        stream_keys = ['time','distance','heartrate','watts','altitude']
+        #actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
+        actStream = client.get_activity_streams(act['id'],types=stream_keys)
+        for k in stream_keys:
             if k in actStream:
                 act[k] = actStream[k].data
         a1 = strava_get_start_timestamp(strava_get_parse_timestamp(act['start_date'])-timedelta(seconds=600))
@@ -27,9 +28,8 @@ def strava_get_activity(username,access_token,act):
         act["lastfm_tracks"] = scrob
 
         act["parsed"] = strava_activity_to_tracks(act)
-
-    except:
-        pass
+    except Exception as e:
+        print(e)
     return act
 
 #2017-07-22T09:34:27Z
@@ -43,7 +43,12 @@ def strava_get_start_timestamp(st):
 
 def strava_activity_to_tracks(act):
     grouped = {}
-    songs = act['lastfm_tracks']['recenttracks']['track'][::-1]
+
+    if 'lastfm_tracks' in act:
+        songs = act['lastfm_tracks']['recenttracks']['track'][::-1]
+    else:
+        print("no songs in " + str(act['id']))
+        songs = []
     actAvgSpeed = getActAvgSpeed(act)
     actAvgHr = getActAvgHR(act)
 
@@ -55,6 +60,7 @@ def strava_activity_to_tracks(act):
     lastSpeed = 0
     lastHr = 0
     
+    internalIdx = 0
     for idx, song in enumerate(songs):
         #duration=song.track.get_duration()/1000
         start = int(song['date']['uts']) - actStartTimestamp
@@ -86,10 +92,12 @@ def strava_activity_to_tracks(act):
                 (songAvgHr,startDist,endDist) = getAvgHR(act,start,end)
                 diffHr = 0
                 diffSpeed = 0
+                diffSpeedSec = 0
                 if (endDist-startDist)>100: #only use songs that play for more than 100 meters
-                    if idx != 0:
+                    if internalIdx > 0: # ignore diff to last in the first activity of the session
                         diffHr = songAvgHr-lastHr
                         diffSpeed = songAvgSpeed-lastSpeed
+                        diffSpeedSec = kmHToMinPerKmDec(lastSpeed)-kmHToMinPerKmDec(songAvgSpeed)
 
                     lastHr=songAvgHr
                     lastSpeed=songAvgSpeed
@@ -98,7 +106,10 @@ def strava_activity_to_tracks(act):
                     songData['end'] = end
                     songData['duration'] = end-start
                     songData['avgSpeed'] = songAvgSpeed
+                    
+                    songData['diffAvgSpeedMin'] = kmHToMinPerKmDec(actAvgSpeed)-kmHToMinPerKmDec(songAvgSpeed)
                     songData['diffAvgSpeed'] = (songAvgSpeed-actAvgSpeed)
+
                     songData['songTitle'] = song['name']
                     songData['songArtist'] = song['artist']['name']
                     songData['name'] = act['name']
@@ -107,10 +118,14 @@ def strava_activity_to_tracks(act):
                     songData['endDist'] = endDist
                     songData['avgHr'] = songAvgHr
                     songData['diffAvgHr'] = (songAvgHr-actAvgHr)
+                    
+                    songData['diffLastSpeedMin'] = diffSpeedSec
                     songData['diffLastSpeed'] = diffSpeed
                     songData['diffLastHr'] = diffHr
+                    songData['songIdx'] = internalIdx
 
                     grouped[k].append(songData)
+                    internalIdx+=1
     return grouped
 
 
@@ -118,7 +133,20 @@ def metersPerSecondToKmH(mps):
     return mps*3.6
 
 def kmHToMinPerKm(kph):
+    if kph == 0:
+        return "0:00"
     return "{}:{:02.0f}".format(int((60.0/(kph))), int(((60.0/(kph))-(int(60.0/(kph))))*60)%60)    
+
+def kmHToMinPerKmDec(kph):
+    if kph == 0:
+        return 0
+    return 60.0/(kph)
+
+def minPerKmDecToMinPerKm(mpk):
+    if mpk == 0:
+        return "0:00"
+    return "{}:{:02.0f}".format(int(mpk), int((mpk-(int(mpk)))*60)%60)    
+
 
 def takeClosest(myList, myNumber):
     pos = bisect_left(myList, myNumber)

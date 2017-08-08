@@ -27,7 +27,6 @@ SECRET_KEY = "#fyrd@(hr0g6^w_o!iz7x3gj4ot5epf@i24m@a2*haf0+g$dgl"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 SITE_ID = 1
 # Application definition
 
@@ -43,6 +42,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -154,4 +154,3 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_IMPORTS = ['powersong.tasks']
-

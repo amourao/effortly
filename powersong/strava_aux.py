@@ -6,6 +6,7 @@ from datetime import datetime,timedelta
 from powersong.lastfm_aux import lastfm_get_tracks
 from powersong.tasks import strava_get_activity
 
+import copy
 import time
 import math
 from bisect import bisect_left
@@ -15,6 +16,8 @@ import numpy as np
 from celery import group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
+
+cache = {}
 
 def strava_get_auth_url():
     client = stravalib.client.Client()
@@ -39,54 +42,151 @@ def metersPerSecondToKmH(mps):
     return mps*3.6
 
 def kmHToMinPerKm(kph):
+    if kph == 0:
+        return "0:00"
     return "{}:{:02.0f}".format(int((60.0/(kph))), int(((60.0/(kph))-(int(60.0/(kph))))*60)%60)    
+
+def minPerKmDecToMinPerKm(mpk):
+    if mpk == 0:
+        return "0:00"
+    return "{}:{:02.0f}".format(int(mpk), int((mpk-(int(mpk)))*60)%60)    
 
 
 def strava_do_final_group(acts):
-    grouped = {}
+    act_grouped = {}
     for act in acts:
         if 'parsed' in act:
             for key in act['parsed']:
-                print(key)
-                if not key in grouped:
-                    grouped[key] = []
-                grouped[key]+=(act['parsed'][key])
+                if not key in act_grouped:
+                    act_grouped[key] = []
+                act_grouped[key]+=(act['parsed'][key])
+    return act_grouped
 
-    ff = 'avgSpeed'
-    ff = 'count'
-    ff = 'duration'
-    ff = 'diffAvgHr'
-    ff = 'diffAvgSpeed'
-    ff = 'avgSpeed'
-    #ff = 'diffLastHr'
-    for k in grouped:
-        print(grouped[k])
-    l = sortFastestSongEver(grouped,ff,aggregateDups=False,minCount=1)[:100]
 
-    i=1
+def sortFastestSongEver(ranks,sort_key,rev=True,aggregateDups=True,minCount=1):
+    agg = []
+    for song, plays in ranks.items():
+        if aggregateDups and len(plays) >= minCount:
+            for play in plays:
+                v1['count'] = len(plays)
+                agg.append(v1)                
+        elif len(plays) >= minCount:
+            index=np.argmax([float(play[sort_key]) for play in plays])
+            plays[index]['count'] = len(plays)
+            agg.append(plays[index])
+    return sorted(agg, key=lambda x: float(x[sort_key]), reverse=rev)
 
+def sortFastestSongAvg(ranks,sort_key,rev=True,minCount=1):
+    doNothing=['name','songTitle','songArtist','id','duration','count']
+    agg = []
+    for song, plays in ranks.items():
+        if len(plays) >= minCount:
+            play_result = copy.deepcopy(plays[0])
+            play_result['count'] = len(plays)
+            for key in plays[0]:
+                if not key in doNothing:
+                    play_result[key] = np.average([float(play[key]) for play in plays])
+                play_result[key+"Agg"] = [(play[key]) for play in plays if key in play ]
+            agg.append(play_result)
+    return sorted(agg, key=lambda x: float(x[sort_key]), reverse=rev)
+
+def sortFastestSongSum(ranks,sort_key,rev=True,minCount=1):
+    doNothing=['name','songTitle','songArtist','id','duration','count']
+    special = 'diffLast'
+    agg = []
+    for song, plays in ranks.items():
+        if len(plays) >= minCount:
+            play_result = copy.deepcopy(plays[0])
+            play_result[sort_key] = index
+            play_result['count'] = len(plays)
+            for key in plays[0]:
+                if key != sort_key and not key in doNothing:
+                    play_result[key] = np.average([float(play[key]) for play in plays])
+                play_result[key+"Agg"] = [(play[key]) for play in plays if key in play ]
+            agg.append(play_result)
+    return sorted(agg, key=lambda x: float(x[sort_key]), reverse=rev)
+
+def strava_prettify_list_for_template(l,sort_key):
+    dokmHToMinPerKm=['avgSpeed','diffAvgSpeed','diffLastSpeed']
+    doMinPerKmDecToMinPerKm=['diffAvgSpeedMin','diffLastSpeedMin']
+    qualifiers = {  'avgSpeed': 'km/h',
+                    'diffAvgSpeed': 'km/h',
+                    'diffLastSpeed': 'km/h',
+                    'avgHr': 'bpm',
+                    'diffAvgHr': 'bpm',
+                    'diffLastHr': 'bpm',
+
+                    'sort_valueP': '/km',
+    }
+    decPlaces = {   'avgSpeed': 2,
+                    'diffAvgSpeed': 2,
+                    'diffLastSpeed': 2,
+                    'diffAvgSpeedMin': 2,
+                    'diffLastSpeedMin': 2,
+                    'avgHr': 1,
+                    'count': 0,
+                    'diffAvgHr': 2,
+                    'diffLastHr': 2
+    }
+    i = 1
     parsed = []
-    for song in l:
-        song["main_key"] = song[ff]
+    for old_song in l:
+        song = copy.deepcopy(old_song)
+        song["sort_key"] = sort_key
+        song["sort_value"] = str(song[sort_key])
+        if sort_key in decPlaces:            
+            song["sort_value"] = str(round(song[sort_key], decPlaces[sort_key]))
+        if sort_key in qualifiers:
+            song["sort_value"] += " " + qualifiers[sort_key]
+
+        if sort_key in dokmHToMinPerKm:
+            song["sort_valueP"] = kmHToMinPerKm(song[sort_key]) + " " +qualifiers["sort_valueP"]
+        if sort_key in doMinPerKmDecToMinPerKm:
+            song["sort_valueP"] = minPerKmDecToMinPerKm(song[sort_key]) + " " +qualifiers["sort_valueP"]
+
         song["rank"] = i
-        song['avgSpeedMinKm'] = kmHToMinPerKm(song['avgSpeed'])
+        for k in dokmHToMinPerKm:
+            song[k+'P'] = kmHToMinPerKm(song[k])+" "+qualifiers["sort_valueP"]
+        for k in doMinPerKmDecToMinPerKm:
+            song[k+'P'] = minPerKmDecToMinPerKm(song[k])+" "+qualifiers["sort_valueP"]
+            
         parsed.append(song)
         i+=1
     return parsed
 
+def strava_get_fastest_ever_single(act_grouped,sort_key,n=10,minCount=1,aggregateDups=False):
+    l = sortFastestSongEver(act_grouped,sort_key,aggregateDups=aggregateDups,minCount=minCount)[:n]
+    return strava_prettify_list_for_template(l,sort_key)
+
+def strava_get_fastest_ever_groupA(act_grouped,sort_key,n=10,minCount=1):
+    l = sortFastestSongAvg(act_grouped,sort_key,minCount=minCount)[:n]
+    return strava_prettify_list_for_template(l,sort_key)
+
 def strava_get_sync_progress(task_id):
     res = current_app.GroupResult.restore(task_id)
-    if res.ready() == True:
-        return 'SUCCESS',res.completed_count(),strava_do_final_group(res.join())
+    if res is None:
+        return 'FAILED',0
+    elif res.ready() == True:
+        return 'SUCCESS',res.completed_count()
     else:
-        return 'STARTED',res.completed_count(),[]
+        return 'STARTED',res.completed_count()
 
-def strava_get_activities(username,access_token):
+
+def strava_get_sync_result(task_id):
+    res = current_app.GroupResult.restore(task_id)
+    if res.ready() == True:
+        if not task_id in cache:
+            cache[task_id] = strava_do_final_group(res.join())
+        return cache[task_id]
+    else:
+        return None
+
+def strava_get_activities(username,access_token,limit=None):
     client = stravalib.client.Client()
     client.access_token = access_token
-    promise = group([strava_get_activity.s(username,access_token,strava_parse_base_activity(act)) for act in client.get_activities()])
+    promise = group([strava_get_activity.s(username,access_token,strava_parse_base_activity(act)) for act in client.get_activities(limit=limit)])
     job_result = promise.delay()
-    print(job_result.backend)
+    
     job_result.save()
     return job_result.id
 
@@ -155,43 +255,3 @@ def strava_parse_base_activity(act):
     
     return actFinal
    
-
-
-doNothing=['name','songTitle','songArtist','id','duration','count']
-
-def sortFastestSongEver(ranks,f,rev=True,aggregateDups=True,minCount=1):
-    agg = []
-    for k,v in ranks.items():
-        if aggregateDups and len(v) >= minCount:
-            for v1 in v:
-                v1['count'] = len(v)
-                agg.append(v1)                
-        elif len(v) >= minCount:
-            index=np.argmax([float(vv[f]) for vv in v])
-            v[index]['count'] = len(v)
-            agg.append(v[index])
-    return sorted(agg, key=lambda x: float(x[f]), reverse=rev)
-
-def sortFastestSongAvg(ranks,f,rev=True,minCount=1):
-    agg = []
-    for k,v in ranks.items():
-        if len(v) >= minCount:
-            v[0]['count'] = len(v)
-            for k in v[0]:
-                if not k in doNothing:
-                    v[0][k]=np.average([float(vv[k]) for vv in v])
-            agg.append(v[0])
-    return sorted(agg, key=lambda x: float(x[f]), reverse=rev)
-
-def sortFastestSongSum(ranks,f,rev=True,minCount=1):
-    agg = []
-    for k,v in ranks.items():
-        if len(v) >= minCount:
-            index=np.sum([vv[f] for vv in v])
-            v[0][f] = index
-            v[0]['count'] = len(v)
-            for k in v[0]:
-                if k != f and not k in doNothing:
-                    v[0][k]=np.average([float(vv[k]) for vv in v])
-            agg.append(v[0])
-    return sorted(agg, key=lambda x: float(x[f]), reverse=rev)

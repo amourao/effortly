@@ -1,35 +1,55 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container">
   <div class="row">
-    <div class="col-md-6">
-      <h3>Strava</h3>
-      <img src="{{ athlete.profile }}" width="128" height="128" class="img-fluid rounded-circle" alt="Strava profile picture">
-      <a href="https://www.strava.com/athletes/{{ athlete.id }}">{{ athlete.firstname }} {{ athlete.lastname }}</a>
-      <p>{{ athlete.activity_count }} activities</p>
-    </div>
-    <div class="col-md-6">
-      <h3>last.fm</h3>
-      <img src="{{ listener.image_url }}" width="128" height="128" class="img-fluid rounded-circle" alt="last.fm profile picture">
-      <a href="{{ listener.url }}">{{ listener.name }}</a>
-      <p>{{ listener.playcount }} scrobbles</p>
-    </div>
-    <p><a class="btn btn-secondary" href="/?resync" role="button">Resync</a> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ athlete.activity_count }}</p>
+  <p><a class="btn btn-secondary" href="/?resync" role="button">Resync</a> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ athlete.activity_count }}</p>
+  <p>Sync id: {{ sessionss.sync_id}}</p>
   </div>
-  <div class="row">
-  <div class="col-md-12">
-    <ul>
-    {% for song in sync_results %}
-      <li class="list-group-item justify-content-between flex-column align-items-start">
-        <h5 class="mb-1"><span class="badge badge-default badge-pill">{{song.rank}}</span>{{song.main_key|floatformat:"2"}} km/h {{song.songTitle}} - {{song.songArtist}}</h5>
+  <div class="container">
+    {% for top_name,top in tops.items %}
+    {{top_name}}
+    <ul class="list-group">    
+    {% for song in top %}
+      <li class="list-group-item">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-1">
+        <span class="badge badge-default badge-pill">{{song.rank}}</span>
+        </div>
+        <div class="col-md-9">
+        {{song.songArtist}} - {{song.songTitle}}
+        </div>
+        <div class="col-md-2">
+        {% if song.sort_valueP %}{{song.sort_valueP}}{% else %}{{song.sort_value}}{% endif %}
+        </div>
+        </div>
+        <div class="row">
         <a href="https://www.strava.com/activities/{{ song.id}}">{{ song.name}}</a>
         <p class="mb-1">{{ song.diffLastSpeed|floatformat:"2"}} {{song.diffAvgSpeed|floatformat:"2"}} {{song.avgHr|floatformat:"2"}} {{song.diffLastHr|floatformat:"2"}} {{song.diffAvgHr|floatformat:"2"}} {{song.startDist|floatformat:"2"}} {{song.endDist|floatformat:"2"}}</p> 
+        </div>
+        </div>
       </li>
     {% endfor %}
+
     </ul>
-  </div>    
+    {% endfor %}
   </div>
-</div>
+    <div class="row">
+    Wow, those are some impressive performances... but these could have been flukes.
+    Maybe you're being chased by a dog, rolling down a hill, or just caught a ride on a nearby scooter.
+
+    As a runner, you know that consistency is key.
+    So, let's start by checking your most popular tracks and artists
+
+    Heart beat faster
+    diffAvgHr * 0.5 + diffLastHr * 0.5
+
+
+
+    Go faster
+    diffAvgPace * 0.5 + diffLastPace * 0.5
+
+    Generate playlist
+    </div>   
 
 {% endblock %}
