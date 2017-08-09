@@ -1,30 +1,3 @@
 body {
 	padding-top: 80px;
 }
-
-html {
-    height: 100%
-}
-
-.background_image {
-	background:url('/static/running1.jpg');
-	background-repeat: no-repeat;
-    background-size: 100% auto;
-	color: white;
-}
-
-.color_strava {
-	background-color: #fc4d03;
-	color: white;
-	border-color: white;
-}
-
-.color_lastfm {
-	background-color: #e31b23;
-	color: white;
-	border-color: white;
-}
-
-.text_shadow {
-	text-shadow: black 0.1em 0.1em 0.2em;
-}

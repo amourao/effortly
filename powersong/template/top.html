@@ -20,7 +20,7 @@
         {{song.songArtist}} - {{song.songTitle}}
         </div>
         <div class="col-md-2">
-        {% if song.sort_valueP %}{{song.sort_valueP}}{% else %}{{song.sort_value}}{% endif %}
+        {% if song.sort_valueP %}{{song.sort_valueP}} {{song.sort_value}}{% else %}{{song.sort_value}}{% endif %}
         </div>
         </div>
         <div class="row">

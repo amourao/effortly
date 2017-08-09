@@ -27,7 +27,7 @@ def index(request):
         return main_index(request)
 
 def home(request):
-    return render_to_response('home.html', {})
+    return render_to_response('home.html', {'strava_authorize_url': "#", 'lastfm_authorize_url': "#"})
 
 
 def about(request):
