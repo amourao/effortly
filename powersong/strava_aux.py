@@ -44,12 +44,20 @@ def metersPerSecondToKmH(mps):
 def kmHToMinPerKm(kph):
     if kph == 0:
         return "0:00"
-    return "{}:{:02.0f}".format(int((60.0/(kph))), int(((60.0/(kph))-(int(60.0/(kph))))*60)%60)    
+    elif kph > 0:
+        return "{}:{:02.0f}".format(int((60.0/(kph))), int(((60.0/(kph))-(int(60.0/(kph))))*60)%60)    
+    else:
+        kph=-kph
+        return "-{}:{:02.0f}".format(int((60.0/(kph))), int(((60.0/(kph))-(int(60.0/(kph))))*60)%60)    
 
 def minPerKmDecToMinPerKm(mpk):
     if mpk == 0:
         return "0:00"
-    return "{}:{:02.0f}".format(int(mpk), int((mpk-(int(mpk)))*60)%60)    
+    elif mpk > 0:
+        return "{}:{:02.0f}".format(int(mpk), int((mpk-(int(mpk)))*60)%60)    
+    else:
+        mpk=-mpk
+        return "-{}:{:02.0f}".format(int(mpk), int((mpk-(int(mpk)))*60)%60)    
 
 
 def strava_do_final_group(acts):
@@ -154,11 +162,11 @@ def strava_prettify_list_for_template(l,sort_key):
         i+=1
     return parsed
 
-def strava_get_fastest_ever_single(act_grouped,sort_key,n=10,minCount=1,aggregateDups=False):
+def strava_get_fastest_ever_single(act_grouped,sort_key,n=10,minCount=3,aggregateDups=False):
     l = sortFastestSongEver(act_grouped,sort_key,aggregateDups=aggregateDups,minCount=minCount)[:n]
     return strava_prettify_list_for_template(l,sort_key)
 
-def strava_get_fastest_ever_groupA(act_grouped,sort_key,n=10,minCount=1):
+def strava_get_fastest_ever_groupA(act_grouped,sort_key,n=10,minCount=3):
     l = sortFastestSongAvg(act_grouped,sort_key,minCount=minCount)[:n]
     return strava_prettify_list_for_template(l,sort_key)
 

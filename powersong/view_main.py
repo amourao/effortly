@@ -70,13 +70,13 @@ def index(request):
         request.session['sync_completed'] = count
         request.session['sync_results'] = output
         result['tops'] = {}
-        result['tops']['top_pace'] = strava_get_fastest_ever_single(output,'avgSpeed')
-        result['tops']['top_hr'] = strava_get_fastest_ever_single(output,'avgHr')
-        result['tops']['popular_tracks'] = strava_get_fastest_ever_groupA(output,'count')
-        result['tops']['diff_apace'] = strava_get_fastest_ever_groupA(output,'diffAvgSpeedMin')
-        result['tops']['diff_ahr'] = strava_get_fastest_ever_groupA(output,'diffAvgHr')
-        result['tops']['diff_lpace'] = strava_get_fastest_ever_groupA(output,'diffLastSpeedMin')
-        result['tops']['diff_lhr'] = strava_get_fastest_ever_groupA(output,'diffLastHr')
+        result['tops']['top_pace'] = strava_get_fastest_ever_single(output,'avgSpeed',minCount=1)
+        result['tops']['top_hr'] = strava_get_fastest_ever_single(output,'avgHr',minCount=1)
+        result['tops']['popular_tracks'] = strava_get_fastest_ever_groupA(output,'count',minCount=1)
+        result['tops']['diff_apace'] = strava_get_fastest_ever_groupA(output,'diffAvgSpeedMin',minCount=1)
+        result['tops']['diff_ahr'] = strava_get_fastest_ever_groupA(output,'diffAvgHr',minCount=1)
+        result['tops']['diff_lpace'] = strava_get_fastest_ever_groupA(output,'diffLastSpeedMin',minCount=1)
+        result['tops']['diff_lhr'] = strava_get_fastest_ever_groupA(output,'diffLastHr',minCount=1)
         request.session['top_pace'] = result['tops']['top_pace'] 
         request.session['top_hr'] = result['tops']['top_hr'] 
         request.session['popular_tracks'] = result['tops']['popular_tracks'] 
