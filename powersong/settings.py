@@ -31,6 +31,7 @@ SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
+    'powersong.apps.powersongConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
