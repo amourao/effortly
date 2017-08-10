@@ -2,7 +2,6 @@ import stravalib.client
 
 from celery import shared_task
 from datetime import datetime,timedelta
-from powersong.lastfm_aux import lastfm_get_tracks
 
 import time
 import math
@@ -10,8 +9,11 @@ from bisect import bisect_left
 
 import numpy as np
 
+from django.conf import settings
+import requests
+
 @shared_task
-def strava_get_activity(username,access_token,act):
+def strava_download_activity(access_token,act):
     client = stravalib.client.Client()
     client.access_token = access_token
     try:
@@ -21,27 +23,23 @@ def strava_get_activity(username,access_token,act):
         for k in stream_keys:
             if k in actStream:
                 act[k] = actStream[k].data
-        a1 = strava_get_start_timestamp(strava_get_parse_timestamp(act['start_date'])-timedelta(seconds=600))
-        a2 = strava_get_start_timestamp(strava_get_parse_timestamp(act['start_date'])+timedelta(seconds=int(act['elapsed_time'])))
-        scrob = lastfm_get_tracks(username,a1,a2)
-
-        act["lastfm_tracks"] = scrob
-
-        act["parsed"] = strava_activity_to_tracks(act)
     except Exception as e:
         print(e)
+    return (act)
+
+@shared_task
+def lastfm_download_activity_tracks(act,username):
+    start = strava_get_start_timestamp(strava_get_parse_timestamp(act['start_date'])-timedelta(seconds=600))
+    end = strava_get_start_timestamp(strava_get_parse_timestamp(act['start_date'])+timedelta(seconds=int(act['elapsed_time'])))
+
+    method = 'user.getrecenttracks'
+    url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,username,start,end)
+    response = requests.get(url).json()
+    act["lastfm_tracks"] = response
     return act
 
-#2017-07-22T09:34:27Z
-def strava_get_parse_timestamp(st):
-    return datetime.strptime(st,'%Y-%m-%dT%H:%M:%SZ')
-
-
-def strava_get_start_timestamp(st):
-    return int(time.mktime(st.timetuple()))
-
-
-def strava_activity_to_tracks(act):
+@shared_task
+def strava_activity_to_efforts(act):
     grouped = {}
 
     if 'lastfm_tracks' in act:
@@ -49,6 +47,7 @@ def strava_activity_to_tracks(act):
     else:
         print("no songs in " + str(act['id']))
         songs = []
+
     actAvgSpeed = getActAvgSpeed(act)
     actAvgHr = getActAvgHR(act)
 
@@ -83,7 +82,7 @@ def strava_activity_to_tracks(act):
         k = (song['name']+";"+song['artist']['name'])
 
 
-        if(end-start)>20: #only use songs that play for more than 20 seconds
+        if(end-start)>20 or True: #only use songs that play for more than 20 seconds
             if not k in grouped:
                 grouped[k] = []
             songData = {}
@@ -93,7 +92,7 @@ def strava_activity_to_tracks(act):
                 diffHr = 0
                 diffSpeed = 0
                 diffSpeedSec = 0
-                if (endDist-startDist)>100: #only use songs that play for more than 100 meters
+                if (endDist-startDist)>100 or True: #only use songs that play for more than 100 meters
                     if internalIdx > 0: # ignore diff to last in the first activity of the session
                         diffHr = songAvgHr-lastHr
                         diffSpeed = songAvgSpeed-lastSpeed
@@ -128,6 +127,22 @@ def strava_activity_to_tracks(act):
                     internalIdx+=1
     return grouped
 
+@shared_task
+def lastfm_download_track_info(track_id):
+    return None
+
+@shared_task
+def lastfm_download_artist_info(track_id):
+    return None
+
+
+#2017-07-22T09:34:27Z
+def strava_get_parse_timestamp(st):
+    return datetime.strptime(st,'%Y-%m-%dT%H:%M:%SZ')
+
+
+def strava_get_start_timestamp(st):
+    return int(time.mktime(st.timetuple()))
 
 def metersPerSecondToKmH(mps):
     return mps*3.6

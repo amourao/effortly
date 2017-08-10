@@ -3,8 +3,7 @@ import stravalib.client
 from django.conf import settings
 
 from datetime import datetime,timedelta
-from powersong.lastfm_aux import lastfm_get_tracks
-from powersong.tasks import strava_get_activity
+from powersong.tasks import strava_download_activity,lastfm_download_activity_tracks,strava_activity_to_efforts
 
 
 
@@ -15,11 +14,11 @@ from bisect import bisect_left
 
 import numpy as np
 
-from celery import group
+from celery import chain, group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
 
-from powersong.models import Athlete, create_athlete_from_dict
+from powersong.models import *
 
 import logging
 
@@ -27,8 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 cache = {}
-
-
 
 def strava_get_auth_url():
     client = stravalib.client.Client()
@@ -42,7 +39,7 @@ def strava_get_user_info(access_token):
     if athletes:
         athlete = athletes[0]
         logger.debug("Athlete {} found with current token".format(athlete.athlete_id))
-        return athletes[0]
+        return athlete
 
     client = stravalib.client.Client()
     client.access_token = access_token
@@ -55,7 +52,7 @@ def strava_get_user_info(access_token):
         athlete = athletes[0]
         athlete.strava_token = access_token
         athlete.save()
-        return athletes[0]
+        return athlete
 
     logger.debug("Athlete {} not in database, creating new.".format(athlete_api.id))
     athlete = create_athlete_from_dict(athlete_api)
@@ -65,18 +62,21 @@ def strava_get_user_info(access_token):
 
     return athlete
 
-def strava_get_user_info_by_id(access_token):
-    athletes = Athlete.objects.filter(athlete_id=athlete_api.id)
+def strava_get_user_info_by_id(athlete_id):
+    athletes = Athlete.objects.filter(athlete_id=athlete_id)
 
     if athletes:
         return athletes[0]
 
     return None
 
+def strava_get_activity_by_id(act_id):
+    activities = Activity.objects.filter(activity_id=act_id)
 
+    if activities:
+        return activities[0]
 
-def strava_get_start_timestamp(st):
-    return int(time.mktime(st.timetuple()))
+    return None
 
 def metersPerSecondToKmH(mps):
     return mps*3.6
@@ -103,11 +103,10 @@ def minPerKmDecToMinPerKm(mpk):
 def strava_do_final_group(acts):
     act_grouped = {}
     for act in acts:
-        if 'parsed' in act:
-            for key in act['parsed']:
-                if not key in act_grouped:
-                    act_grouped[key] = []
-                act_grouped[key]+=(act['parsed'][key])
+        for key in act:
+            if not key in act_grouped:
+                act_grouped[key] = []
+            act_grouped[key]+=(act[key])
     return act_grouped
 
 
@@ -213,11 +212,11 @@ def strava_get_fastest_ever_groupA(act_grouped,sort_key,n=10,minCount=3):
 def strava_get_sync_progress(task_id):
     res = current_app.GroupResult.restore(task_id)
     if res is None:
-        return 'FAILED',0
+        return 'FAILED', 0
     elif res.ready() == True:
-        return 'SUCCESS',res.completed_count()
+        return 'SUCCESS', res.completed_count()
     else:
-        return 'STARTED',res.completed_count()
+        return 'STARTED', res.completed_count()
 
 
 def strava_get_sync_result(task_id):
@@ -225,20 +224,34 @@ def strava_get_sync_result(task_id):
     if res is None:
         return None
     if res.ready() == True:
-        if not task_id in cache:
-            cache[task_id] = strava_do_final_group(res.join())
-        return cache[task_id]
+        return strava_do_final_group(res.get())
     else:
         return None
 
-def strava_get_activities(username,access_token,limit=None):
+def sync_efforts(username,access_token,limit=None):
     client = stravalib.client.Client()
     client.access_token = access_token
-    promise = group([strava_get_activity.s(username,access_token,strava_parse_base_activity(act)) for act in client.get_activities(limit=limit)])
+
+    all_activities = client.get_activities(limit=limit)
+    new_activities = []
+    for act in all_activities:
+        if not strava_get_activity_by_id(act.id):
+            act_p = strava_parse_base_activity(act)
+            download_chain = chain(strava_download_activity.s(access_token,act_p),
+                                    lastfm_download_activity_tracks.s(username),
+                                    strava_activity_to_efforts.s()
+                            )
+            new_activities.append(download_chain)
+
+    if len(new_activities) == 0:
+        return None, 0
+
+    promise = group(*new_activities)
     job_result = promise.delay()
     
     job_result.save()
-    return job_result.id
+    
+    return job_result.id, len(new_activities)
 
 def strava_parse_base_activity(act):
     actFinal = {}

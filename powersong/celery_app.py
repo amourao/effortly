@@ -10,7 +10,10 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.autodiscover_tasks()
 
-app.control.rate_limit('powersong.tasks.strava_get_activity', '40/m')
+app.control.rate_limit('powersong.tasks.strava_download_activity', '40/m')
+app.control.rate_limit('powersong.tasks.lastfm_download_activity_tracks', '40/m')
+app.control.rate_limit('powersong.tasks.lastfm_download_track_info', '250/m')
+
 
 @app.task(bind=True)
 def debug_task(self):

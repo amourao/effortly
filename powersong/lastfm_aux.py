@@ -30,7 +30,7 @@ def lastfm_get_user_info(username,key):
     if listeners:
         listener = listeners[0]
         logger.debug("Listener {} found in DB".format(username))
-        return listeners[0]
+        return listener
 
     logger.debug("Listener {} not in DB, creating new.".format(username))
     
@@ -53,8 +53,3 @@ def lastfm_get_user_info(username,key):
 def lastfm_get_sig(api_key,method,token,secret):
     return md5('api_key{}method{}token{}{}'.format(api_key,method,token,secret).encode()).hexdigest()
 
-def lastfm_get_tracks(username,start,end):
-    method = 'user.getrecenttracks'
-    url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,username,start,end)
-    response = requests.get(url).json()
-    return response

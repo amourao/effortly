@@ -6,9 +6,10 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.conf import settings
 
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info, lastfm_get_auth_url
-from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strava_get_activities, strava_get_sync_progress, strava_get_sync_result,strava_get_fastest_ever_single,strava_get_fastest_ever_groupA
+from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strava_get_user_info_by_id, sync_efforts, strava_get_sync_progress, strava_get_sync_result,strava_get_fastest_ever_single,strava_get_fastest_ever_groupA
 
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,8 @@ def index(request):
         athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
     # get athlete from db (if exists) or from lastfm API
     result['athlete'] = athlete_model
+    request.session['athlete_id'] = athlete_model.athlete_id
+    
 
     resync = 'resync' in request.GET
     limit = 5
@@ -58,7 +61,7 @@ def index(request):
         request.session['sync_id'] = request.GET['sync_id']
 
     if not 'sync_status' in request.session or resync:
-        request.session['sync_id'] = strava_get_activities(request.session['lastfm_username'],request.session['strava_token'],limit=limit)
+        request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=limit)
         status,count = strava_get_sync_progress(request.session['sync_id'])
         request.session['sync_status'] = status
         request.session['sync_completed'] = count
@@ -74,10 +77,7 @@ def index(request):
         request.session['sync_id'] = None
 
     if request.session['sync_status'] == "SUCCESS":
-        status,count = strava_get_sync_progress(request.session['sync_id'])
         output = strava_get_sync_result(request.session['sync_id'])
-        request.session['sync_status'] = status
-        request.session['sync_completed'] = count
         request.session['sync_results'] = output
         result['tops'] = {}
         result['tops']['top_pace'] = strava_get_fastest_ever_single(output,'avgSpeed',minCount=1)
