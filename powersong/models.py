@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django.db.models import Q
 
 class Athlete(models.Model):
     first_name = models.CharField(max_length=30)
@@ -41,7 +42,7 @@ class Activity(models.Model):
     start_date = models.DateTimeField()
     start_date_local = models.DateTimeField()
 
-    upload_id = models.CharField(max_length=100)
+    upload_id = models.CharField(max_length=100,blank=True,null=True)
 
     embed_token = models.CharField(max_length=100,blank=True,null=True)
     workout_type = models.PositiveSmallIntegerField() # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
@@ -204,52 +205,44 @@ def create_listener_from_dict(listener_api):
     listener.profile_image_url = listener_api['image'][-1]['#text']
     listener.country = listener_api['country']
     listener.age = int(listener_api['age'])
+    listener.scrobble_count = int(listener_api['playcount'])
 
     return listener
-
-
-title = models.CharField(max_length=100)    
-artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
-duration = models.IntegerField(blank=True,null=True)
-listeners_count = models.IntegerField(blank=True,null=True)
-plays_count = models.IntegerField(blank=True,null=True)
-
-last_sync_date = models.DateTimeField(blank=True,null=True)
-
-image_url = models.URLField(blank=True,null=True)
-url = models.URLField(blank=True,null=True)
-
-mb_id = models.UUIDField(blank=True,null=True)
-tags = models.ManyToManyField(Tags)
 
 def create_song_from_dict(song_api):
 
     songs = Song.objects.filter(artist__name=song_api['artist']['name'],title=song_api['name'])
 
     if songs:
-        return song[0]
+        return songs[0]
 
     song = Song()
     
     song.title = song_api['name']
     song.url = song_api['url']
 
-    if ('mbid' in song_api and song_api['mbid'] != ""):
+    if ('mbid' in song_api and song_api['mbid'].strip() != ""):
         song.mb_id = song_api['mbid']
 
     if len(song_api['image']) > 0:
-        song.image_url = song_api['image'][-1]["#text"]
+        if "#text" in song_api['image'][-1] and song_api['image'][-1]["#text"].strip() != "":
+            song.image_url = song_api['image'][-1]["#text"]
 
-    artists = Artist.objects.filter(name=song_api['artist']['name'])
+    if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
+        artist_mb_id = song_api['artist']['mbid']
+        artists = Artist.objects.filter(Q(name=song_api['artist']['name']) | Q(mb_id=artist_mb_id))
+    else:
+        artists = Artist.objects.filter(name=song_api['artist']['name'])
 
     if artists:
         artist = artists[0]
     else:
         artist = Artist()
         artist.name = song_api['artist']['name']
-        if ('mbid' in song_api['artist'] and song_api['artist']['mbid'] != ""):
+        if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
             artist.mb_id = song_api['artist']['mbid']
-        artist.image_url = song.image_url
+        if "#text" in song_api['image'][-1] and song_api['image'][-1]["#text"].strip() != "":
+            artist.image_url = song.image_url
         artist.save()
 
     song.artist = artist
@@ -258,6 +251,11 @@ def create_song_from_dict(song_api):
     return song
 
 def create_activity_from_dict(activity_api):
+    activities = Activity.objects.filter(activity_id=activity_api['id'])
+
+    if activities:
+        return activities[0]
+    
     if activity_api['type'] == 'Ride':
         activity = ActivityRide()
     elif activity_api['type'] == 'Run':
@@ -266,6 +264,7 @@ def create_activity_from_dict(activity_api):
         return None
     
     activity.activity_id = activity_api['id']
+
     activity.date = activity_api['start_date']
     activity.name = activity_api['name']
     activity.description = activity_api['description']
@@ -319,6 +318,7 @@ def create_activity_from_dict(activity_api):
         if activity_api['max_watts']:
             activity.max_watts = int(activity_api['max_watts'])
 
+    activity.save()
     return activity
 
 def strava_get_activity_by_id(act_id):

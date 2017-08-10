@@ -25,7 +25,10 @@ def strava_download_activity(access_token,act):
     try:
         logger.debug(act)
         stored_act = create_activity_from_dict(act)
-        stored_act.save()
+
+        if stored_act == None:
+            return None
+        
         stream_keys = ['time','distance','heartrate','watts','altitude']
         #actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
         act_stream_api = client.get_activity_streams(act['id'],types=stream_keys)
@@ -36,12 +39,14 @@ def strava_download_activity(access_token,act):
     except Exception as e:
         logger.error("Exception downloading activity {} from Strava".format(act['id']))
         logger.error(e)
-        logger.error(act_stream_api)
-        raise
+        return None
     return (act_stream, stored_act.activity_id)
 
 @shared_task
 def lastfm_download_activity_tracks(act_stream_stored_act,username):
+    if act_stream_stored_act == None:
+        return None
+
     (act_stream,stored_act_id) = act_stream_stored_act
 
     stored_act = strava_get_activity_by_id(stored_act_id)
@@ -58,6 +63,8 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
 
 @shared_task
 def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
+    if act_stream_stored_act_id_lastfm_tracks == None:
+        return False
     act_stream, stored_act_id, lastfm_tracks = act_stream_stored_act_id_lastfm_tracks
     stored_act = strava_get_activity_by_id(stored_act_id)
     
@@ -162,9 +169,9 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                     effort.song = song
                     effort.activity = stored_act
 
-                    if type(stored_act) is ActivityRide:
+                    if type(effort) is EffortRide:
 
-                        if (stored_act.average_watts):
+                        if (stored_act.average_watts) != None:
                             effort.avg_watts = effort_avg_watts
                             effort.diff_avg_watts = (effort_avg_watts - stored_act.average_watts)
                             effort.diff_last_watts = effort_diff_watts
@@ -328,10 +335,11 @@ def get_ascent_in_interval(stream, start, end, key):
         sum_time += time_diff
         last_time = stream['time'][start_pos+idx]
         key_val_diff = key_value-last_key_val
-        if key_value > 0:
+        if key_val_diff > 0:
             sum_pos_key_value += key_val_diff
         else:
             sum_neg_key_value += key_val_diff
+        last_key_val = key_value
     
     
     return sum_pos_key_value,sum_neg_key_value,begin_dist,end_dist

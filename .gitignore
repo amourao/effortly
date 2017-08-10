@@ -105,3 +105,5 @@ powersong/local.py
 powersong/static/
 powersong/staticfiles/
 powersong/migrations/
+
+db.sqlite3*

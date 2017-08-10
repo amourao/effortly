@@ -8,6 +8,10 @@ app = Celery('powersong')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
+app.add_defaults({
+    'CELERYD_HIJACK_ROOT_LOGGER': False,
+})
+
 app.autodiscover_tasks()
 
 app.control.rate_limit('powersong.tasks.strava_download_activity', '40/m')

@@ -48,6 +48,8 @@ def index(request):
         athlete_model = strava_get_user_info(request.session['strava_token'])
     else:
         athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
+        if athlete_model == None:
+            athlete_model = strava_get_user_info(request.session['strava_token'])
     # get athlete from db (if exists) or from lastfm API
     result['athlete'] = athlete_model
     request.session['athlete_id'] = athlete_model.athlete_id
@@ -62,12 +64,13 @@ def index(request):
 
     if not 'sync_status' in request.session or resync:
         request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=limit)        
-        status,count = strava_get_sync_progress(request.session['sync_id'])
-        request.session['sync_status'] = status
-        request.session['sync_completed'] = count
-        request.session['sync_results'] = None
+        if request.session['sync_id'] != None:
+            status,count = strava_get_sync_progress(request.session['sync_id'])
+            request.session['sync_status'] = status
+            request.session['sync_completed'] = count
+            request.session['sync_results'] = None
 
-    if request.session['sync_status'] != "SUCCESS" and request.session['sync_status'] != "FAILED":   
+    if request.session['sync_status'] != "SUCCESS" and request.session['sync_status'] != "FAILED" and request.session['sync_id'] != None:   
         status,count = strava_get_sync_progress(request.session['sync_id'])
         request.session['sync_status'] = status
         request.session['sync_completed'] = count
@@ -80,20 +83,20 @@ def index(request):
         output = None
         request.session['sync_results'] = None
         result['tops'] = {}
-        result['tops']['top_pace'] = strava_get_fastest_ever_single(output,'avgSpeed',minCount=1)
-        result['tops']['top_hr'] = strava_get_fastest_ever_single(output,'avgHr',minCount=1)
-        result['tops']['popular_tracks'] = strava_get_fastest_ever_groupA(output,'count',minCount=1)
-        result['tops']['diff_apace'] = strava_get_fastest_ever_groupA(output,'diffAvgSpeedMin',minCount=1)
-        result['tops']['diff_ahr'] = strava_get_fastest_ever_groupA(output,'diffAvgHr',minCount=1)
-        result['tops']['diff_lpace'] = strava_get_fastest_ever_groupA(output,'diffLastSpeedMin',minCount=1)
-        result['tops']['diff_lhr'] = strava_get_fastest_ever_groupA(output,'diffLastHr',minCount=1)
-        request.session['top_pace'] = result['tops']['top_pace'] 
-        request.session['top_hr'] = result['tops']['top_hr'] 
-        request.session['popular_tracks'] = result['tops']['popular_tracks'] 
-        request.session['diff_ahr'] = result['tops']['diff_ahr'] 
-        request.session['diff_apace'] = result['tops']['diff_apace'] 
-        request.session['diff_lhr'] = result['tops']['diff_lhr'] 
-        request.session['diff_lpace'] = result['tops']['diff_lpace']   
+        #result['tops']['top_pace'] = strava_get_fastest_ever_single(output,'avgSpeed',minCount=1)
+        #result['tops']['top_hr'] = strava_get_fastest_ever_single(output,'avgHr',minCount=1)
+        #result['tops']['popular_tracks'] = strava_get_fastest_ever_groupA(output,'count',minCount=1)
+        #result['tops']['diff_apace'] = strava_get_fastest_ever_groupA(output,'diffAvgSpeedMin',minCount=1)
+        #result['tops']['diff_ahr'] = strava_get_fastest_ever_groupA(output,'diffAvgHr',minCount=1)
+        #result['tops']['diff_lpace'] = strava_get_fastest_ever_groupA(output,'diffLastSpeedMin',minCount=1)
+        #result['tops']['diff_lhr'] = strava_get_fastest_ever_groupA(output,'diffLastHr',minCount=1)
+        #request.session['top_pace'] = result['tops']['top_pace'] 
+        #request.session['top_hr'] = result['tops']['top_hr'] 
+        #request.session['popular_tracks'] = result['tops']['popular_tracks'] 
+        #request.session['diff_ahr'] = result['tops']['diff_ahr'] 
+        #request.session['diff_apace'] = result['tops']['diff_apace'] 
+        #request.session['diff_lhr'] = result['tops']['diff_lhr'] 
+        #request.session['diff_lpace'] = result['tops']['diff_lpace']   
 
     result['sessionss'] = {}
     for key in request.session.keys():
