@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 class Athlete(models.Model):
     first_name = models.CharField(max_length=30)
@@ -28,39 +29,38 @@ class Athlete(models.Model):
 
 class Activity(models.Model):
     activity_id = models.CharField(max_length=16,unique=True)
-    date = models.DateTimeField()
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=200,blank=True,null=True)
     distance = models.FloatField()
     moving_time = models.IntegerField()
     elapsed_time = models.IntegerField()
 
-    calories = models.IntegerField()
-    suffer_score = models.IntegerField()
+    calories = models.IntegerField(blank=True,null=True)
+    suffer_score = models.IntegerField(blank=True,null=True)
 
     start_date = models.DateTimeField()
     start_date_local = models.DateTimeField()
 
     upload_id = models.CharField(max_length=100)
 
-    embed_token = models.CharField(max_length=100)
+    embed_token = models.CharField(max_length=100,blank=True,null=True)
     workout_type = models.PositiveSmallIntegerField() # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
 
     average_speed = models.FloatField() #:  float meters per second
     max_speed = models.FloatField() #:  float meters per second
     average_cadence = models.FloatField(blank=True,null=True) #:    float RPM
-    average_temp = models.FloatField(blank=True,null=True) #:   float celsius
 
+    average_temp = models.FloatField(blank=True,null=True) #:   float celsius
+    
     average_heartrate  = models.FloatField(blank=True,null=True)
+    max_heartrate  = models.IntegerField(blank=True,null=True)
 
     last_sync_date = models.DateTimeField(null=True)
     
 
 class ActivityRide(Activity):   
-    average_watts = models.FloatField()
-    max_watts = models.IntegerField()
-    kilojoules =  models.FloatField(blank=True,null=True)
-    device_watts = models.BooleanField() #:true if the watts are from a power meter, false if estimated
+    average_watts = models.FloatField(blank=True,null=True)
+    max_watts = models.IntegerField(blank=True,null=True)
 
 class Listener(models.Model):
     nickname = models.CharField(max_length=30,unique=True)
@@ -87,28 +87,28 @@ class Tags(models.Model):
 
 class Artist(models.Model):
     name = models.CharField(max_length=100)
-    image_url = models.URLField()
-    url = models.URLField()
+    image_url = models.URLField(blank=True,null=True)
+    url = models.URLField(blank=True,null=True)
     mb_id = models.UUIDField(blank=True,null=True,unique=True)
 
-    listeners_count = models.IntegerField()
-    plays_count = models.IntegerField()
+    listeners_count = models.IntegerField(blank=True,null=True)
+    plays_count = models.IntegerField(blank=True,null=True)
 
-    last_sync_date = models.DateTimeField()
+    last_sync_date = models.DateTimeField(blank=True,null=True)
 
     tags = models.ManyToManyField(Tags)
 
 class Song(models.Model):
     title = models.CharField(max_length=100)    
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
-    duration = models.IntegerField()
-    listeners_count = models.IntegerField()
-    plays_count = models.IntegerField()
+    duration = models.IntegerField(blank=True,null=True)
+    listeners_count = models.IntegerField(blank=True,null=True)
+    plays_count = models.IntegerField(blank=True,null=True)
 
-    last_sync_date = models.DateTimeField()
+    last_sync_date = models.DateTimeField(blank=True,null=True)
 
-    image_url = models.URLField()
-    url = models.URLField()
+    image_url = models.URLField(blank=True,null=True)
+    url = models.URLField(blank=True,null=True)
 
     mb_id = models.UUIDField(blank=True,null=True)
     tags = models.ManyToManyField(Tags)
@@ -206,3 +206,125 @@ def create_listener_from_dict(listener_api):
     listener.age = int(listener_api['age'])
 
     return listener
+
+
+title = models.CharField(max_length=100)    
+artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
+duration = models.IntegerField(blank=True,null=True)
+listeners_count = models.IntegerField(blank=True,null=True)
+plays_count = models.IntegerField(blank=True,null=True)
+
+last_sync_date = models.DateTimeField(blank=True,null=True)
+
+image_url = models.URLField(blank=True,null=True)
+url = models.URLField(blank=True,null=True)
+
+mb_id = models.UUIDField(blank=True,null=True)
+tags = models.ManyToManyField(Tags)
+
+def create_song_from_dict(song_api):
+
+    songs = Song.objects.filter(artist__name=song_api['artist']['name'],title=song_api['name'])
+
+    if songs:
+        return song[0]
+
+    song = Song()
+    
+    song.title = song_api['name']
+    song.url = song_api['url']
+
+    if ('mbid' in song_api and song_api['mbid'] != ""):
+        song.mb_id = song_api['mbid']
+
+    if len(song_api['image']) > 0:
+        song.image_url = song_api['image'][-1]["#text"]
+
+    artists = Artist.objects.filter(name=song_api['artist']['name'])
+
+    if artists:
+        artist = artists[0]
+    else:
+        artist = Artist()
+        artist.name = song_api['artist']['name']
+        if ('mbid' in song_api['artist'] and song_api['artist']['mbid'] != ""):
+            artist.mb_id = song_api['artist']['mbid']
+        artist.image_url = song.image_url
+        artist.save()
+
+    song.artist = artist
+
+    song.save()
+    return song
+
+def create_activity_from_dict(activity_api):
+    if activity_api['type'] == 'Ride':
+        activity = ActivityRide()
+    elif activity_api['type'] == 'Run':
+        activity = Activity()
+    else:
+        return None
+    
+    activity.activity_id = activity_api['id']
+    activity.date = activity_api['start_date']
+    activity.name = activity_api['name']
+    activity.description = activity_api['description']
+    activity.distance = float(activity_api['total_distance'])
+    activity.moving_time = int(activity_api['moving_time'])
+    activity.elapsed_time = int(activity_api['elapsed_time'])
+
+    
+
+    activity.start_date = activity_api['start_date']
+    activity.start_date_local = activity_api['start_date_local']
+
+    activity.upload_id = activity_api['upload_id']
+
+    activity.embed_token = activity_api['embed_token']
+
+    # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
+    activity.workout_type = 0
+    if activity_api['workout_type'] == "race":
+        activity.workout_type = 1
+    elif activity_api['workout_type'] == "long run":
+        activity.workout_type = 2
+    elif activity_api['workout_type'] == "workout":
+        activity.workout_type = 3
+
+    activity.average_speed = float(activity_api['average_speed'])
+    activity.max_speed = float(activity_api['max_speed'])
+
+    if activity_api['calories']:
+        activity.calories = int(activity_api['calories'])
+    if activity_api['suffer_score']:
+        activity.suffer_score = int(activity_api['suffer_score'])
+    
+    if activity_api['average_cadence']:
+        activity.average_cadence = float(activity_api['average_cadence'])
+
+    if activity_api['average_temp']:
+        activity.average_temp = float(activity_api['average_temp'])
+
+
+    if activity_api['average_heartrate']:
+        activity.average_heartrate = float(activity_api['average_heartrate'])
+    if activity_api['max_heartrate']:
+        activity.max_heartrate = int(activity_api['max_heartrate'])
+
+    activity.last_sync_date = datetime.now()
+
+    if activity_api['type'] == 'Ride':
+        if activity_api['average_watts']:
+            activity.average_watts = float(activity_api['average_watts'])
+        if activity_api['max_watts']:
+            activity.max_watts = int(activity_api['max_watts'])
+
+    return activity
+
+def strava_get_activity_by_id(act_id):
+    activities = Activity.objects.filter(activity_id=act_id)
+
+    if activities:
+        return activities[0]
+
+    return None

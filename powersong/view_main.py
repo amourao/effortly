@@ -61,7 +61,7 @@ def index(request):
         request.session['sync_id'] = request.GET['sync_id']
 
     if not 'sync_status' in request.session or resync:
-        request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=limit)
+        request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=limit)        
         status,count = strava_get_sync_progress(request.session['sync_id'])
         request.session['sync_status'] = status
         request.session['sync_completed'] = count
@@ -77,8 +77,8 @@ def index(request):
         request.session['sync_id'] = None
 
     if request.session['sync_status'] == "SUCCESS":
-        output = strava_get_sync_result(request.session['sync_id'])
-        request.session['sync_results'] = output
+        output = None
+        request.session['sync_results'] = None
         result['tops'] = {}
         result['tops']['top_pace'] = strava_get_fastest_ever_single(output,'avgSpeed',minCount=1)
         result['tops']['top_hr'] = strava_get_fastest_ever_single(output,'avgHr',minCount=1)

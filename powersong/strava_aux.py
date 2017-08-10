@@ -70,13 +70,6 @@ def strava_get_user_info_by_id(athlete_id):
 
     return None
 
-def strava_get_activity_by_id(act_id):
-    activities = Activity.objects.filter(activity_id=act_id)
-
-    if activities:
-        return activities[0]
-
-    return None
 
 def metersPerSecondToKmH(mps):
     return mps*3.6
@@ -104,9 +97,9 @@ def strava_do_final_group(acts):
     act_grouped = {}
     for act in acts:
         for key in act:
-            if not key in act_grouped:
-                act_grouped[key] = []
-            act_grouped[key]+=(act[key])
+                if not key in act_grouped:
+                    act_grouped[key] = []
+                act_grouped[key]+=(act['parsed'][key])
     return act_grouped
 
 
