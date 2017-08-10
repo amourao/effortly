@@ -2,7 +2,7 @@
 {% block content %}
 
   <div class="row">
-  <p><a class="btn btn-secondary" href="/?resync" role="button">Resync</a> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ athlete.activity_count }}</p>
+  <p> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ athlete.activity_count }}</p>
   <p>Sync id: {{ sessionss.sync_id}}</p>
   </div>
   <div class="container">

@@ -17,16 +17,26 @@
     </head>
     <body>
 
-    <nav class="navbar fixed-top navbar-inverse bg-inverse ">
-        <disv class="form-inline  navbar-right">    
-      <a class="navbar-brand" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="48" height="48" class="rounded-circle" alt="Strava profile picture"></a>
-      <a>{{ athlete.activity_count }} activities</a>
-      <a class="navbar-brand" href="{{ listener.url }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="48" height="48"  alt="last.fm profile picture"></a>
-      <a>{{ listener.scrobble_count }} scrobbles</a>
-      </div>
+    <nav class="navbar fixed-top navbar-inverse navbar-toggleable-sm bg-inverse justify-content-center">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a href="/" class="navbar-brand d-flex w-10 mr-auto">Power Song</a>
+        <div class="navbar-collapse collapse" id="collapsingNavbar3">
+            <ul class="navbar-nav mx-auto w-100 justify-content-center">
+
+            </ul>
+            <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
+                <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
+                <li class="nav-item"> <a class="nav-link">{{ athlete.runs_count }} runs</a> </li>
+                <li class="nav-item"> <a class="nav-link">{{ athlete.rides_count }} rides</a> </li>
+                <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
+                <li class="nav-item"> <a class="nav-link">{{ listener.scrobble_count }} scrobbles</a> </li>
+                <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="/?resync" role="button">Resync</a> </li>
+                <li class="nav-item"> <a class="btn btn-margin-left btn-outline-danger" href="/logout" role="button">Logout</a> </li>
+            </ul>
+        </div>
     </nav>
-
-
 
     <div class="container">
         {% if messages %}
