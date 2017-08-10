@@ -4,6 +4,9 @@ from django.contrib import admin
 from powersong.view_oauth import strava_oauth, lastfm_oauth
 from powersong.view_home import index, about, home, logout
 
+from django.conf import settings
+from django.conf.urls import include
+
 urlpatterns = [
 	url(r'^$', index, name='index'),
     
@@ -16,3 +19,9 @@ urlpatterns = [
     
     url(r'^admin/', admin.site.urls),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

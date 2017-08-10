@@ -2,10 +2,11 @@
 {% block content %}
 
   <div class="row">
-  <p> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ athlete.activity_count }}</p>
+  <p> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ sessionss.sync_todo_total }}</p>
   <p>Sync id: {{ sessionss.sync_id}}</p>
   </div>
   <div class="container">
+    {% if tops %}
     {% for top_name,top in tops.items %}
     {{top_name}}
     <ul class="list-group">    
@@ -33,6 +34,7 @@
 
     </ul>
     {% endfor %}
+    {% endif %}
   </div>
     <div class="row">
     Wow, those are some impressive performances... but these could have been flukes.

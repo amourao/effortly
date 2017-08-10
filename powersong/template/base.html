@@ -39,16 +39,6 @@
     </nav>
 
     <div class="container">
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="alert alert-dismissable {{ message.tags }}">
-                        <button type="button" class="close" data-dismiss="alert">×</button>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
 
         {% block content %}{% endblock %}  
       <hr>
