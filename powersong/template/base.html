@@ -19,7 +19,7 @@
 
     <nav class="navbar fixed-top navbar-inverse bg-inverse ">
         <disv class="form-inline  navbar-right">    
-      <a class="navbar-brand" href="https://www.strava.com/athletes/{{ athlete.id }}"><img src="{{ athlete.profile }}" width="48" height="48" class="rounded-circle" alt="Strava profile picture"></a>
+      <a class="navbar-brand" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="48" height="48" class="rounded-circle" alt="Strava profile picture"></a>
       <a>{{ athlete.activity_count }} activities</a>
       <a class="navbar-brand" href="{{ listener.url }}"><img src="{{ listener.image_url }}" class="rounded-circle" width="48" height="48"  alt="last.fm profile picture"></a>
       <a>{{ listener.playcount }} scrobbles</a>

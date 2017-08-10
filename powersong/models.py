@@ -3,7 +3,7 @@ from django.db import models
 class Athlete(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    athlete_id = models.CharField(max_length=12)
+    athlete_id = models.CharField(max_length=12,unique=True)
     profile_image_url = models.URLField()
 
     email = models.EmailField()
@@ -18,16 +18,16 @@ class Athlete(models.Model):
     activity_count = models.IntegerField()
     runs_count = models.IntegerField()
     rides_count = models.IntegerField()
-    first_activity_date = models.DateTimeField()
-    last_activity_date = models.DateTimeField()
-    updated_strava_at = models.IntegerField()
+    first_activity_date = models.DateTimeField(blank=True,null=True)
+    last_activity_date = models.DateTimeField(blank=True,null=True)
+    updated_strava_at = models.DateTimeField()
 
     last_celery_task_id = models.UUIDField(blank=True,null=True)
 
     strava_token = models.CharField(max_length=100)
 
 class Activity(models.Model):
-    activity_id = models.CharField(max_length=16)
+    activity_id = models.CharField(max_length=16,unique=True)
     date = models.DateTimeField()
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
@@ -63,7 +63,7 @@ class ActivityRide(Activity):
     device_watts = models.BooleanField() #:true if the watts are from a power meter, false if estimated
 
 class Listener(models.Model):
-    nickname = models.CharField(max_length=30)
+    nickname = models.CharField(max_length=30,unique=True)
     real_name = models.CharField(max_length=30) 
     profile_image_url = models.URLField()
     country = models.CharField(max_length=50)
@@ -75,7 +75,7 @@ class Listener(models.Model):
     lastfm_token = models.CharField(max_length=100)
 
 class Tags(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     url = models.URLField()
 
     reach = models.IntegerField()
@@ -87,7 +87,7 @@ class Artist(models.Model):
     name = models.CharField(max_length=100)
     image_url = models.URLField()
     url = models.URLField()
-    mb_id = models.UUIDField(blank=True,null=True)
+    mb_id = models.UUIDField(blank=True,null=True,unique=True)
 
     listeners_count = models.IntegerField()
     plays_count = models.IntegerField()

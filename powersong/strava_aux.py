@@ -6,6 +6,8 @@ from datetime import datetime,timedelta
 from powersong.lastfm_aux import lastfm_get_tracks
 from powersong.tasks import strava_get_activity
 
+
+
 import copy
 import time
 import math
@@ -17,23 +19,106 @@ from celery import group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
 
+from powersong.models import Athlete
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 cache = {}
+
+
+def create_athlete_from_dict(athlete_api):
+    athlete =  Athlete()
+
+    athlete.first_name = athlete_api.firstname
+    athlete.last_name = athlete_api.lastname
+    athlete.athlete_id = athlete_api.id
+    athlete.profile_image_url = athlete_api.profile
+
+    athlete.email = athlete_api.email
+
+    athlete.date_preference = athlete_api.date_preference
+
+    if athlete_api.measurement_preference == 'meters':
+        athlete.measurement_preference = 0
+    else:
+        athlete.measurement_preference = 1
+
+    if athlete_api.sex == None:
+        athlete.sex = 0
+    elif athlete_api.sex == 'M':
+        athlete.sex = 1
+    elif athlete_api.sex == 'F':
+        athlete.sex = 2
+    else:
+        athlete.sex = 3
+
+    if athlete_api.athlete_type == 'runner':
+        athlete.athlete_type = 0
+    elif athlete_api.athlete_type == 'cyclist':
+        athlete.athlete_type = 1
+    else:
+        athlete.athlete_type = 2
+
+    athlete.country = athlete_api.country
+
+    
+    stats = athlete_api.stats
+
+    athlete.activity_count = stats.all_ride_totals.count
+    athlete.runs_count = stats.all_run_totals.count
+    athlete.rides_count = stats.all_ride_totals.count
+    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
+    athlete.updated_strava_at = athlete_api.updated_at
+
+    return athlete
 
 def strava_get_auth_url():
     client = stravalib.client.Client()
+    logger.debug("generating strava auth url")
     return client.authorization_url(settings.STRAVA_CLIENT_ID, redirect_uri = settings.STRAVA_CALLBACK_URL,scope = 'view_private')
 
 def strava_get_user_info(access_token):
+    athletes = Athlete.objects.filter(strava_token=access_token)
+    logger.debug("Getting athlete with token {}".format(access_token))
+
+    if athletes:
+        athlete = athletes[0]
+        logger.debug("Athlete {} found with current token".format(athlete.athlete_id))
+        return athletes[0]
+
     client = stravalib.client.Client()
     client.access_token = access_token
-    athlete = client.get_athlete()
-    info = {}
-    info['id'] = athlete.id
-    info['firstname'] = athlete.firstname
-    info['lastname'] = athlete.lastname
-    info['profile'] = athlete.profile
-    info['activity_count'] = len(list(client.get_activities()))
-    return info
+    athlete_api = client.get_athlete()
+    
+    athletes = Athlete.objects.filter(athlete_id=athlete_api.id)
+
+    if athletes:
+        logger.debug("Athlete {} found with invalid token. Updating token.".format(athlete.athlete_id))
+        athlete = athletes[0]
+        athlete.strava_token = access_token
+        athlete.save()
+        return athletes[0]
+
+    logger.debug("Athlete {} not in database, creating new.".format(athlete_api.id))
+    athlete = create_athlete_from_dict(athlete_api)
+    athlete.strava_token = access_token
+    
+    athlete.save()
+
+    return athlete
+
+def strava_get_user_info_by_id(access_token):
+    athletes = Athlete.objects.filter(athlete_id=athlete_api.id)
+
+    if athletes:
+        return athletes[0]
+
+    return None
+
+
 
 def strava_get_start_timestamp(st):
     return int(time.mktime(st.timetuple()))
@@ -182,6 +267,8 @@ def strava_get_sync_progress(task_id):
 
 def strava_get_sync_result(task_id):
     res = current_app.GroupResult.restore(task_id)
+    if res is None:
+        return None
     if res.ready() == True:
         if not task_id in cache:
             cache[task_id] = strava_do_final_group(res.join())

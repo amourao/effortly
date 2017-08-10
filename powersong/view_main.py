@@ -3,19 +3,23 @@ from django.template import RequestContext
 
 from django.contrib.sites.shortcuts import get_current_site
 
-import stravalib.client
-
 from django.conf import settings
 
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
 from powersong.strava_aux import strava_get_user_info, strava_get_activities, strava_get_sync_progress, strava_get_sync_result,strava_get_fastest_ever_single,strava_get_fastest_ever_groupA
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def index(request):
 
-    result = {}
-
+    #if no authorization, get back to home page
     if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or not 'strava_token' in request.session:
         return render_to_response('home.html', result)
+
+    # exchange lastfm_key per token on first run
+    # if invalid, go back to home for reauthorization
     if not 'lastfm_key' in request.session:
         username, key = lastfm_get_session_id(request.session['lastfm_token'])
         if username == None or key ==None:
@@ -27,21 +31,23 @@ def index(request):
         del request.session['lastfm_token']
 
 
+    result = {}
 
-
+    # get athlete from db (if exists) or from Strava API
     if not 'athlete' in request.session:
-        request.session['athlete'] = strava_get_user_info(request.session['strava_token'])
-        
+        athlete_model = strava_get_user_info(request.session['strava_token'])
+    else:
+        athlete_model = strava_get_user_info_by_id(request.session['athlete'])
+    # get athlete from db (if exists) or from lastfm API
     if not 'listener' in request.session:
         request.session['listener'] = lastfm_get_user_info(request.session['lastfm_username'])
         
 
     result['listener'] = request.session['listener']
-    result['athlete'] = request.session['athlete']
+    result['athlete'] = athlete_model
 
-    
     resync = 'resync' in request.GET
-    limit = None
+    limit = 5
     if 'limit' in request.GET:
         limit = int(request.GET['limit'])
     if 'sync_id' in request.GET:
