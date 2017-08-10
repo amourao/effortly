@@ -19,7 +19,7 @@ from celery import group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
 
-from powersong.models import Athlete
+from powersong.models import Athlete, create_athlete_from_dict
 
 import logging
 
@@ -29,51 +29,6 @@ logger = logging.getLogger(__name__)
 cache = {}
 
 
-def create_athlete_from_dict(athlete_api):
-    athlete =  Athlete()
-
-    athlete.first_name = athlete_api.firstname
-    athlete.last_name = athlete_api.lastname
-    athlete.athlete_id = athlete_api.id
-    athlete.profile_image_url = athlete_api.profile
-
-    athlete.email = athlete_api.email
-
-    athlete.date_preference = athlete_api.date_preference
-
-    if athlete_api.measurement_preference == 'meters':
-        athlete.measurement_preference = 0
-    else:
-        athlete.measurement_preference = 1
-
-    if athlete_api.sex == None:
-        athlete.sex = 0
-    elif athlete_api.sex == 'M':
-        athlete.sex = 1
-    elif athlete_api.sex == 'F':
-        athlete.sex = 2
-    else:
-        athlete.sex = 3
-
-    if athlete_api.athlete_type == 'runner':
-        athlete.athlete_type = 0
-    elif athlete_api.athlete_type == 'cyclist':
-        athlete.athlete_type = 1
-    else:
-        athlete.athlete_type = 2
-
-    athlete.country = athlete_api.country
-
-    
-    stats = athlete_api.stats
-
-    athlete.activity_count = stats.all_ride_totals.count
-    athlete.runs_count = stats.all_run_totals.count
-    athlete.rides_count = stats.all_ride_totals.count
-    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
-    athlete.updated_strava_at = athlete_api.updated_at
-
-    return athlete
 
 def strava_get_auth_url():
     client = stravalib.client.Client()

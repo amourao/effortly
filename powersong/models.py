@@ -147,3 +147,62 @@ class EffortRide(Effort):
     diff_last_watts = models.FloatField()
 
 #https://docs.djangoproject.com/en/1.11/topics/db/queries/#lookups-that-span-relationships
+
+
+def create_athlete_from_dict(athlete_api):
+    athlete = Athlete()
+
+    athlete.first_name = athlete_api.firstname
+    athlete.last_name = athlete_api.lastname
+    athlete.athlete_id = athlete_api.id
+    athlete.profile_image_url = athlete_api.profile
+
+    athlete.email = athlete_api.email
+
+    athlete.date_preference = athlete_api.date_preference
+
+    if athlete_api.measurement_preference == 'meters':
+        athlete.measurement_preference = 0
+    else:
+        athlete.measurement_preference = 1
+
+    if athlete_api.sex == None:
+        athlete.sex = 0
+    elif athlete_api.sex == 'M':
+        athlete.sex = 1
+    elif athlete_api.sex == 'F':
+        athlete.sex = 2
+    else:
+        athlete.sex = 3
+
+    if athlete_api.athlete_type == 'runner':
+        athlete.athlete_type = 0
+    elif athlete_api.athlete_type == 'cyclist':
+        athlete.athlete_type = 1
+    else:
+        athlete.athlete_type = 2
+
+    athlete.country = athlete_api.country
+
+    
+    stats = athlete_api.stats
+
+    athlete.activity_count = stats.all_ride_totals.count
+    athlete.runs_count = stats.all_run_totals.count
+    athlete.rides_count = stats.all_ride_totals.count
+    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
+    athlete.updated_strava_at = athlete_api.updated_at
+
+    return athlete
+
+
+def create_listener_from_dict(listener_api):
+    listener = Listener()
+
+    listener.nickname = listener_api['name']
+    listener.real_name = listener_api['realname']
+    listener.profile_image_url = listener_api['image'][-1]['#text']
+    listener.country = listener_api['country']
+    listener.age = int(listener_api['age'])
+
+    return listener
