@@ -53,7 +53,7 @@ class Activity(models.Model):
 
     average_heartrate  = models.FloatField(blank=True,null=True)
 
-    last_sync_date = models.DateTimeField()
+    last_sync_date = models.DateTimeField(null=True)
     
 
 class ActivityRide(Activity):   
@@ -69,8 +69,10 @@ class Listener(models.Model):
     country = models.CharField(max_length=50)
     age = models.PositiveSmallIntegerField()
 
-    last_sync_date = models.DateTimeField()
-    last_scrobble_date = models.DateTimeField()
+    scrobble_count = models.IntegerField()
+
+    last_sync_date = models.DateTimeField(null=True)
+    last_scrobble_date = models.DateTimeField(blank=True,null=True)
 
     lastfm_token = models.CharField(max_length=100)
 
