@@ -29,9 +29,14 @@ class Athlete(models.Model):
     strava_token = models.CharField(max_length=100)
 
 class Activity(models.Model):
+    athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
+
     activity_id = models.CharField(max_length=16,unique=True)
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=200,blank=True,null=True)
+
+    act_type = models.PositiveSmallIntegerField()
+
     distance = models.FloatField()
     moving_time = models.IntegerField()
     elapsed_time = models.IntegerField()
@@ -47,20 +52,18 @@ class Activity(models.Model):
     embed_token = models.CharField(max_length=100,blank=True,null=True)
     workout_type = models.PositiveSmallIntegerField() # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
 
-    average_speed = models.FloatField() #:  float meters per second
+    avg_speed = models.FloatField() #:  float meters per second
     max_speed = models.FloatField() #:  float meters per second
-    average_cadence = models.FloatField(blank=True,null=True) #:    float RPM
+    avg_cadence = models.FloatField(blank=True,null=True) #:    float RPM
 
-    average_temp = models.FloatField(blank=True,null=True) #:   float celsius
+    avg_temp = models.FloatField(blank=True,null=True) #:   float celsius
     
-    average_heartrate  = models.FloatField(blank=True,null=True)
-    max_heartrate  = models.IntegerField(blank=True,null=True)
+    avg_hr = models.FloatField(blank=True,null=True)
+    max_hr = models.IntegerField(blank=True,null=True)
 
     last_sync_date = models.DateTimeField(null=True)
     
-
-class ActivityRide(Activity):   
-    average_watts = models.FloatField(blank=True,null=True)
+    avg_watts = models.FloatField(blank=True,null=True)
     max_watts = models.IntegerField(blank=True,null=True)
 
 class Listener(models.Model):
@@ -101,6 +104,7 @@ class Artist(models.Model):
 
 class Song(models.Model):
     title = models.CharField(max_length=100)    
+    artist_name = models.CharField(max_length=100)    
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     duration = models.IntegerField(blank=True,null=True)
     listeners_count = models.IntegerField(blank=True,null=True)
@@ -117,6 +121,9 @@ class Song(models.Model):
 class Effort(models.Model):
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+
+    act_type = models.PositiveSmallIntegerField()
+
     idx_in_activity = models.PositiveSmallIntegerField()
 
     start_time = models.IntegerField()
@@ -126,7 +133,6 @@ class Effort(models.Model):
     end_dist = models.FloatField()
 
     avg_speed = models.FloatField()
-
     act_avg_speed = models.FloatField()
     last_speed = models.FloatField()
     
@@ -141,11 +147,14 @@ class Effort(models.Model):
     total_ascent = models.FloatField()
     total_descent = models.FloatField()
 
+    avg_watts = models.FloatField(blank=True,null=True)
+    diff_avg_watts = models.FloatField(blank=True,null=True)
+    diff_last_watts = models.FloatField(blank=True,null=True)
 
-class EffortRide(Effort):
-    avg_watts = models.FloatField()
-    diff_avg_watts = models.FloatField()
-    diff_last_watts = models.FloatField()
+    @property
+    def full_name(self):
+        return '%s %s' % (self.first_name, self.last_name)
+
 
 #https://docs.djangoproject.com/en/1.11/topics/db/queries/#lookups-that-span-relationships
 
@@ -211,7 +220,7 @@ def create_listener_from_dict(listener_api):
 
 def create_song_from_dict(song_api):
 
-    songs = Song.objects.filter(artist__name=song_api['artist']['name'],title=song_api['name'])
+    songs = Song.objects.filter(artist_name=song_api['artist']['name'],title=song_api['name'])
 
     if songs:
         return songs[0]
@@ -220,6 +229,7 @@ def create_song_from_dict(song_api):
     
     song.title = song_api['name']
     song.url = song_api['url']
+    song.artist_name = song_api['artist']['name']
 
     if ('mbid' in song_api and song_api['mbid'].strip() != ""):
         song.mb_id = song_api['mbid']
@@ -256,13 +266,23 @@ def create_activity_from_dict(activity_api):
     if activities:
         return activities[0]
     
+    activity = Activity()
     if activity_api['type'] == 'Ride':
-        activity = ActivityRide()
+        activity.act_type = 1
     elif activity_api['type'] == 'Run':
-        activity = Activity()
+        activity.act_type = 0
     else:
         return None
     
+    athletes = Athlete.objects.filter(athlete_id=activity_api['athlete_id'])
+
+    athlete = None
+    if athletes:
+         athlete = athletes[0]
+    else:
+        return None
+    
+    activity.athlete = athlete
     activity.activity_id = activity_api['id']
 
     activity.date = activity_api['start_date']
@@ -290,7 +310,7 @@ def create_activity_from_dict(activity_api):
     elif activity_api['workout_type'] == "workout":
         activity.workout_type = 3
 
-    activity.average_speed = float(activity_api['average_speed'])
+    activity.avg_speed = float(activity_api['average_speed'])
     activity.max_speed = float(activity_api['max_speed'])
 
     if activity_api['calories']:
@@ -299,22 +319,22 @@ def create_activity_from_dict(activity_api):
         activity.suffer_score = int(activity_api['suffer_score'])
     
     if activity_api['average_cadence']:
-        activity.average_cadence = float(activity_api['average_cadence'])
+        activity.avg_cadence = float(activity_api['average_cadence'])
 
     if activity_api['average_temp']:
-        activity.average_temp = float(activity_api['average_temp'])
+        activity.avg_temp = float(activity_api['average_temp'])
 
 
     if activity_api['average_heartrate']:
-        activity.average_heartrate = float(activity_api['average_heartrate'])
+        activity.avg_hr = float(activity_api['average_heartrate'])
     if activity_api['max_heartrate']:
-        activity.max_heartrate = int(activity_api['max_heartrate'])
+        activity.max_hr = int(activity_api['max_heartrate'])
 
     activity.last_sync_date = datetime.now()
 
     if activity_api['type'] == 'Ride':
         if activity_api['average_watts']:
-            activity.average_watts = float(activity_api['average_watts'])
+            activity.avg_watts = float(activity_api['average_watts'])
         if activity_api['max_watts']:
             activity.max_watts = int(activity_api['max_watts'])
 

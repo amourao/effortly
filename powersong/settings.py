@@ -26,7 +26,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "#fyrd@(hr0g6^w_o!iz7x3gj4ot5epf@i24m@a2*haf0+g$dgl"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False	
 SITE_ID = 1
 # Application definition
 
@@ -81,7 +81,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'powersong.wsgi.application'
 
 def show_toolbar(request):
-    return True
+    return DEBUG
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': 'powersong.settings.show_toolbar',
@@ -183,7 +183,7 @@ STATICFILES_DIRS = [
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#ALLOWED_HOSTSSTATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 

@@ -74,8 +74,8 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         logger.debug("No songs in activity {}".format(stored_act_id))
         return {}
 
-    act_avg_speed = stored_act.average_speed
-    act_avg_hr = stored_act.average_heartrate
+    act_avg_speed = stored_act.avg_speed
+    act_avg_hr = stored_act.avg_hr
 
     start_time = stored_act.start_date
     elapsed_time = timedelta(seconds=int(stored_act.elapsed_time))
@@ -134,11 +134,9 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                     last_cad = effort_avg_cad
                     last_watts = effort_avg_watts
 
-                    if type(stored_act) is ActivityRide:
-                        effort = EffortRide()
-                    else:
-                        effort = Effort()
-
+                    effort = Effort()
+                    
+                    effort.act_type = stored_act.act_type
                     
                     effort.start_time = start
                     effort.duration = end - start
@@ -151,14 +149,14 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                     effort.avg_speed = effort_avg_speed
                     effort.last_speed = last_speed
                     
-                    if (stored_act.average_heartrate):
+                    if (stored_act.avg_hr):
                         effort.avg_hr = effort_avg_hr
-                        effort.diff_avg_hr = (effort_avg_hr - stored_act.average_heartrate)
+                        effort.diff_avg_hr = (effort_avg_hr - stored_act.avg_hr)
                         effort.diff_last_hr = effort_diff_hr
 
-                    if (stored_act.average_cadence):
+                    if (stored_act.avg_cadence):
                         effort.avg_cadence = effort_avg_cad
-                        effort.diff_avg_cadence = (effort_avg_cad - stored_act.average_cadence)
+                        effort.diff_avg_cadence = (effort_avg_cad - stored_act.avg_cadence)
                         effort.diff_last_cadence = effort_diff_cad
                     
                     effort.idx_in_activity = effort_idx_in_act
@@ -169,11 +167,10 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                     effort.song = song
                     effort.activity = stored_act
 
-                    if type(effort) is EffortRide:
-
-                        if (stored_act.average_watts) != None:
+                    if stored_act.act_type == 1:
+                        if (stored_act.avg_watts) != None:
                             effort.avg_watts = effort_avg_watts
-                            effort.diff_avg_watts = (effort_avg_watts - stored_act.average_watts)
+                            effort.diff_avg_watts = (effort_avg_watts - stored_act.avg_watts)
                             effort.diff_last_watts = effort_diff_watts
 
                     effort.save()

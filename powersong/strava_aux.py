@@ -248,8 +248,9 @@ def sync_efforts(username,access_token,limit=None):
 
 def strava_parse_base_activity(act):
     actFinal = {}
+
     actFinal['achievement_count'] = act.achievement_count
-    actFinal['athlete'] = act.athlete.id
+    actFinal['athlete_id'] = act.athlete.id
     actFinal['average_cadence'] = act.average_cadence
     actFinal['average_heartrate'] = act.average_heartrate
     actFinal['average_speed'] = float(act.average_speed)

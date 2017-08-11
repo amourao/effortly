@@ -70,16 +70,16 @@ def index(request):
             request.session['sync_completed'] = count
             request.session['sync_results'] = None
 
-    if request.session['sync_status'] != "SUCCESS" and request.session['sync_status'] != "FAILED" and request.session['sync_id'] != None:   
+    if 'sync_status' in request.session and request.session['sync_status'] != "SUCCESS" and request.session['sync_status'] != "FAILED" and request.session['sync_id'] != None:   
         status,count = strava_get_sync_progress(request.session['sync_id'])
         request.session['sync_status'] = status
         request.session['sync_completed'] = count
         request.session['sync_results'] = None
 
-    if request.session['sync_status'] == "FAILED":
+    if 'sync_status' in request.session and request.session['sync_status'] == "FAILED":
         request.session['sync_id'] = None
 
-    if request.session['sync_status'] == "SUCCESS":
+    if 'sync_status' in request.session and request.session['sync_status'] == "SUCCESS":
         output = None
         request.session['sync_results'] = None
         result['tops'] = {}
