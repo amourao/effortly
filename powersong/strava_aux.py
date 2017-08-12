@@ -205,11 +205,11 @@ def strava_get_fastest_ever_groupA(act_grouped,sort_key,n=10,minCount=3):
 def strava_get_sync_progress(task_id):
     res = current_app.GroupResult.restore(task_id)
     if res is None:
-        return 'FAILED', 0
+        return 'FAILED', 0, 0
     elif res.ready() == True:
-        return 'SUCCESS', res.completed_count()
+        return 'SUCCESS', res.completed_count(), len(res)
     else:
-        return 'STARTED', res.completed_count()
+        return 'IN PROGRESS', res.completed_count(), len(res)
 
 
 def strava_get_sync_result(task_id):

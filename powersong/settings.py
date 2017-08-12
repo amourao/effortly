@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django_celery_results',
     'debug_toolbar',
+    'async_include',
 ]
 
 MIDDLEWARE = [

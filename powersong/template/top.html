@@ -1,41 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
-  <div class="row">
-  <p> {{ sessionss.sync_status }}: {{ sessionss.sync_completed }} of {{ sessionss.sync_todo_total }}</p>
-  <p>Sync id: {{ sessionss.sync_id}}</p>
-  </div>
-  <div class="container">
-    {% if tops %}
-    {% for top_name,top in tops.items %}
-    {{top_name}}
-    <ul class="list-group">    
-    {% for song in top %}
-      <li class="list-group-item">
-        <div class="container">
-        <div class="row">
-        <div class="col-md-1">
-        <span class="badge badge-default badge-pill">{{song.rank}}</span>
-        </div>
-        <div class="col-md-9">
-        {{song.songArtist}} - {{song.songTitle}}
-        </div>
-        <div class="col-md-2">
-        {% if song.sort_valueP %}{{song.sort_valueP}} {{song.sort_value}}{% else %}{{song.sort_value}}{% endif %}
-        </div>
-        </div>
-        <div class="row">
-        <a href="https://www.strava.com/activities/{{ song.id}}">{{ song.name}}</a>
-        <p class="mb-1">{{ song.diffLastSpeed|floatformat:"2"}} {{song.diffAvgSpeed|floatformat:"2"}} {{song.avgHr|floatformat:"2"}} {{song.diffLastHr|floatformat:"2"}} {{song.diffAvgHr|floatformat:"2"}} {{song.startDist|floatformat:"2"}} {{song.endDist|floatformat:"2"}}</p> 
-        </div>
-        </div>
-      </li>
-    {% endfor %}
+  {% block top_table %}{% endblock %} 
+  <div id='recent_table'> </div>
+  
+  <div id='top'> </div>
 
-    </ul>
-    {% endfor %}
-    {% endif %}
-  </div>
+  <div id='top_c'> </div>
+
+  <div id='avg'> </div>
+
+  <div id='sum'> </div>
+
     <div class="row">
     Wow, those are some impressive performances... but these could have been flukes.
     Maybe you're being chased by a dog, rolling down a hill, or just caught a ride on a nearby scooter.

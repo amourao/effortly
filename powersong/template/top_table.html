@@ -1,0 +1,40 @@
+{% block top_table %}
+
+<div class="container">
+    <ul class="list-group">    
+    {% for effort in top %}
+      <li class="list-group-item">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-1">
+        <span class="badge badge-default badge-pill">{{ forloop.counter }}</span>
+        </div>
+        <div class="col-md-9">
+        <a href="{{ effort.song__url}}">{{effort.song__artist_name}} - {{effort.song__title}}</a>
+        
+        </div>
+        <div class="col-md-2">
+        {% if effort.sort_value %} {{ effort.sort_value }}{% endif %}
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-11">
+        <a href="https://www.strava.com/activities/{{ effort.activity__activity_id}}">{{ effort.activity__name}}</a>
+        </div>
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-11">
+        <div class="row">
+        <p class="mb-1">{{effort.avg_speed|floatformat:"2"}} {{effort.avg_hr|floatformat:"2"}} {{effort.diff_last_hr|floatformat:"2"}} {{effort.diff_avg_hr|floatformat:"2"}} {{effort.start_dist|floatformat:"2"}} {{effort.end_dist|floatformat:"2"}} {{effort.duration}}</p> 
+        </div>
+        </div>
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <hr>
+
+{% endblock %}
