@@ -2,32 +2,32 @@
 {% block content %}
 
   {% block top_table %}{% endblock %} 
-  <div id='recent_table'> </div>
+
   
-  <div id='top'> </div>
+    <div id='top'> </div>
 
-  <div id='top_c'> </div>
+    
 
-  <div id='avg'> </div>
+    <div id='avg'> </div>
 
-  <div id='sum'> </div>
+    <div id='sum'> </div>
 
-    <div class="row">
-    Wow, those are some impressive performances... but these could have been flukes.
-    Maybe you're being chased by a dog, rolling down a hill, or just caught a ride on a nearby scooter.
+    <div id='top_c'> </div>
 
-    As a runner, you know that consistency is key.
-    So, let's start by checking your most popular tracks and artists
-
-    Heart beat faster
-    diffAvgHr * 0.5 + diffLastHr * 0.5
+    <div id='recent_table'> </div>
 
 
 
-    Go faster
-    diffAvgPace * 0.5 + diffLastPace * 0.5
-
-    Generate playlist
-    </div>   
 
 {% endblock %}
+
+{% block extra_js %}
+
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+        update_latest();
+    });
+
+    </script>  
+{% endblock %} 

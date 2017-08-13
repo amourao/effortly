@@ -10,24 +10,38 @@
         <span class="badge badge-default badge-pill">{{ forloop.counter }}</span>
         </div>
         <div class="col-md-9">
-        <a href="{{ effort.song__url}}">{{effort.song__artist_name}} - {{effort.song__title}}</a>
+        <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a> - <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a>
+        <a href="{{ effort.song__url}}/">(last.fm link)</a>
         
         </div>
         <div class="col-md-2">
-        {% if effort.sort_value %} {{ effort.sort_value }}{% endif %}
+        {% if effort.sort_value %} {{ effort.sort_value|floatformat:"2" }}{% endif %}
         </div>
         </div>
         <div class="row">
+        {% if effort.activity__activity_id %} 
         <div class="col-md-1">
         </div>
-        <div class="col-md-11">
-        <a href="https://www.strava.com/activities/{{ effort.activity__activity_id}}">{{ effort.activity__name}}</a>
+        <div class="col-md-9">
+        {% if effort.activity__start_date_local %} {{ effort.activity__start_date_local }}{% endif %}
+        <a href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
+        <a href="https://www.strava.com/activities/{{ effort.activity__activity_id}}/">(Strava link)</a>
         </div>
+        <div class="col-md-2">
+        </div>
+        {% endif %}
         <div class="col-md-1">
         </div>
         <div class="col-md-11">
         <div class="row">
-        <p class="mb-1">{{effort.avg_speed|floatformat:"2"}} {{effort.avg_hr|floatformat:"2"}} {{effort.diff_last_hr|floatformat:"2"}} {{effort.diff_avg_hr|floatformat:"2"}} {{effort.start_dist|floatformat:"2"}} {{effort.end_dist|floatformat:"2"}} {{effort.duration}}</p> 
+        <p> avg_speed {{effort.avg_speed|floatformat:"2"}} m/s, avg_hr {{effort.avg_hr|floatformat:"2"}} bpm, diff_last_hr {{effort.diff_last_hr|floatformat:"2"}} bpm, diff_avg_hr {{effort.diff_avg_hr|floatformat:"2"}} bpm</p>
+        </div>
+        <div class="row">
+        <p>Started at {{effort.start_distance|floatformat:"2"}} meters. Effort distance was {{effort.distance|floatformat:"2"}} meters</p> 
+        </div>
+        <div class="row">
+        <p>Started at {{effort.start_time}} seconds. Effort duration was {{effort.duration}} seconds.</p> 
+        </div>
         </div>
         </div>
         </div>
