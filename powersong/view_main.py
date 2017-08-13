@@ -63,7 +63,7 @@ def index(request):
     if 'sync_id' in request.GET:
         request.session['sync_id'] = request.GET['sync_id']
 
-    if not 'sync_status' in request.session or resync:
+    if resync:
         request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=limit)        
 
     result['sessionss'] = {}

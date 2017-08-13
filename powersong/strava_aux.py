@@ -203,23 +203,34 @@ def strava_get_fastest_ever_groupA(act_grouped,sort_key,n=10,minCount=3):
     return strava_prettify_list_for_template(l,sort_key)
 
 def strava_get_sync_progress(task_id):
-    res = current_app.GroupResult.restore(task_id)
-    if res is None:
-        return 'FAILED', 0, 0
-    elif res.ready() == True:
-        return 'SUCCESS', res.completed_count(), len(res)
-    else:
-        return 'IN PROGRESS', res.completed_count(), len(res)
-
+    try:
+        res = current_app.GroupResult.restore(task_id)
+        if res is None:
+            return 'FAILED', 0, 0
+        elif res.ready() == True:
+            return 'SUCCESS', res.completed_count(), len(res)
+        else:
+            return 'IN PROGRESS', res.completed_count(), len(res)
+    except Exception:
+        results = current_app.AsyncResult(task_id) 
+        if res is None:
+            return 'FAILED', 0, 0
+        elif results.ready():
+            return 'SUCCESS', 1, 1
+        else:
+            return 'IN PROGRESS', 0, 1
 
 def strava_get_sync_result(task_id):
-    res = current_app.GroupResult.restore(task_id)
-    if res is None:
-        return None
-    if res.ready() == True:
-        return strava_do_final_group(res.get())
-    else:
-        return None
+    
+        res = current_app.GroupResult.restore(task_id)
+        if res is None:
+            return None
+        if res.ready() == True:
+            return strava_do_final_group(res.get())
+        else:
+            return None
+    
+
 
 def sync_efforts(username,access_token,limit=None):
     client = stravalib.client.Client()
@@ -235,14 +246,17 @@ def sync_efforts(username,access_token,limit=None):
                                     strava_activity_to_efforts.s()
                             )
             new_activities.append(download_chain)
-
+    logger.debug( new_activities)
     if len(new_activities) == 0:
         return None, 0
 
-    promise = group(*new_activities)
-    job_result = promise.delay()
-    
-    job_result.save()
+    if len(new_activities) > 1:
+        promise = group(*new_activities)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = new_activities[0]
+        job_result = promise.delay()
     
     return job_result.id, len(new_activities)
 
