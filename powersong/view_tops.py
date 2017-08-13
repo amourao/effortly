@@ -36,11 +36,16 @@ def top(request):
         data['error'] = 'Invalid type'
         return JsonResponse(data)
 
+    field = None
     if not 'field' in request.GET and g_type != 'latest' and g_type != 'earliest':
         data['error'] = 'Missing field'
         return JsonResponse(data)
     elif 'field' in request.GET:
         field = request.GET['field']
+
+    dispfield = field
+    if 'dispfield' in request.GET:
+        dispfield = request.GET['dispfield']
 
     min_count = 3
     if 'min_count' in request.GET:
@@ -60,12 +65,7 @@ def top(request):
     if not activity_type and g_type != 'latest' and g_type != 'earliest':
         athlete = strava_get_user_info_by_id(request.session['athlete_id'])
         activity_type = athlete.athlete_type
-
-
-    render = 'html'
-    if 'render' in request.GET:
-        render = request.GET['render']
-        
+     
     #data = Effort.objects.only('song__title','song__artist__name','activity__start_date','idx_in_activity','start_time','duration','start_distance','distance','avg_speed','act_avg_speed','avg_hr','total_ascent','total_descent',field).order_by('activity__start_date')[::1]
 
     #results = []
@@ -83,21 +83,33 @@ def top(request):
     time_filter = 20 # bike max speed in meters per second
     
     if g_type == 'top':
-        data['top'] = Effort.objects.filter(uration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').annotate(sort_value=Avg(field)).order_by(field)[::descending][:n]
+        qs = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').annotate(sort_value=Avg(field)).order_by(field)[::descending][:n]
     elif g_type == 'avg':
-        data['top'] = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id').annotate(t_count=Count('song')).filter(t_count__gt=(min_count-1)).annotate(sort_value=Avg(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::descending][:n]
+        qs = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id').annotate(t_count=Count('song')).filter(t_count__gt=(min_count-1)).annotate(sort_value=Avg(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::descending][:n]
     elif g_type == 'sum':
-        data['top'] = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id').annotate(t_count=Count('song')).filter(t_count__gt=(min_count-1)).annotate(sort_value=Sum(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::descending][:n]
+        qs = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id').annotate(t_count=Count('song')).filter(t_count__gt=(min_count-1)).annotate(sort_value=Sum(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::descending][:n]
     elif g_type == 'latest':
         if activity_type:
-            data['top'] = Effort.objects.filter(act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').order_by('activity__start_date')[::descending][:n]
+            qs = Effort.objects.filter(act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').order_by('activity__start_date')[::descending][:n]
         else:
-            data['top'] = Effort.objects.filter(activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').order_by('activity__start_date')[::descending][:n]
-    if render== 'json':
-        qs = data['top']
-        data['top'] = []
-        for q in qs:
-            data['top'].append(q)
+            qs = Effort.objects.filter(activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').order_by('activity__start_date')[::descending][:n]
+    
+
+    render = 'html'
+    if 'render' in request.GET:
+        render = int(request.GET['render'])
+        
+    units = 'metric'
+    if 'units' in request.GET:
+        units = request.GET['units']
+    
+    data['top'] = []
+    for q in qs:
+        if dispfield:
+            q['sort_key'] = dispfield
+        data['top'].append(effort_convert(q,units))
+
+    if render == 'json':
         return JsonResponse(data)
     else:
         return render_to_response('top_table.html', data)

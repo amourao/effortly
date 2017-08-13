@@ -15,7 +15,7 @@
         
         </div>
         <div class="col-md-2">
-        {% if effort.sort_value %} {{ effort.sort_value|floatformat:"2" }}{% endif %}
+        {% if effort.sort_value %} {{ effort.sort_value }} {{ effort.sort_value_unit }} {% endif %}
         </div>
         </div>
         <div class="row">
@@ -34,13 +34,13 @@
         </div>
         <div class="col-md-11">
         <div class="row">
-        <p> avg_speed {{effort.avg_speed|floatformat:"2"}} m/s, avg_hr {{effort.avg_hr|floatformat:"2"}} bpm, diff_last_hr {{effort.diff_last_hr|floatformat:"2"}} bpm, diff_avg_hr {{effort.diff_avg_hr|floatformat:"2"}} bpm</p>
+        <p> avg_speed {{effort.avg_speed_s}} {{effort.units.speed_s}}, avg_hr {{effort.avg_hr|floatformat:"2"}} {{effort.units.heartrate}}, diff_last_hr {{effort.diff_last_hr|floatformat:"2"}} {{effort.units.heartrate}}, diff_avg_hr {{effort.diff_avg_hr|floatformat:"2"}} {{effort.units.heartrate}}</p>
         </div>
         <div class="row">
-        <p>Started at {{effort.start_distance|floatformat:"2"}} meters. Effort distance was {{effort.distance|floatformat:"2"}} meters</p> 
+        <p>Started at {{effort.start_distance|floatformat:"2"}} {{effort.units.distanceBig}}. Effort distance was {{effort.distance|floatformat:"2"}} {{effort.units.distanceSmall}}</p> 
         </div>
         <div class="row">
-        <p>Started at {{effort.start_time}} seconds. Effort duration was {{effort.duration}} seconds.</p> 
+        <p>Started at {{effort.start_time}} {{effort.units.timeBig}}. Effort duration was {{effort.duration}} {{effort.units.timeBig}}.</p> 
         </div>
         </div>
         </div>

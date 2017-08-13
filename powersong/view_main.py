@@ -7,7 +7,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.conf import settings
 
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info, lastfm_get_auth_url
-from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strava_get_user_info_by_id, sync_efforts, strava_get_sync_progress, strava_get_sync_result,strava_get_fastest_ever_single,strava_get_fastest_ever_groupA
+from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strava_get_user_info_by_id, sync_efforts, strava_get_sync_progress
 
 import logging
 
