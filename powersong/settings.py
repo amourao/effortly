@@ -192,10 +192,10 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 STRAVA_CALLBACK_URL = HOME_URL + '/strava_oauth_callback/'
 
 LASTFM_CALLBACK_URL = HOME_URL + '/lastfm_oauth_callback/'
-LASTFM_BASE = 'http://www.last.fm/api/auth/?cb={}&api_key='.format(LASTFM_CALLBACK_URL)
-LASTFM_API_AUTHBASE = 'http://ws.audioscrobbler.com/2.0/?method={}&api_key={}&token={}&api_sig={}&format=json'
-LASTFM_API_BASE = 'http://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&format=json'
-LASTFM_API_RECENT = 'http://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&from={}&to={}&limit=200&extended=1&format=json'
+LASTFM_BASE = 'https://www.last.fm/api/auth/?cb={}&api_key='.format(LASTFM_CALLBACK_URL)
+LASTFM_API_AUTHBASE = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&token={}&api_sig={}&format=json'
+LASTFM_API_BASE = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&format=json'
+LASTFM_API_RECENT = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&from={}&to={}&limit=200&extended=1&format=json'
 
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
