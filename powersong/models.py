@@ -129,12 +129,15 @@ class Effort(models.Model):
     start_time = models.IntegerField()
     duration = models.IntegerField()
 
-    start_dist = models.FloatField()
-    end_dist = models.FloatField()
+    start_distance = models.FloatField()
+    distance = models.FloatField()
 
     avg_speed = models.FloatField()
-    act_avg_speed = models.FloatField()
-    last_speed = models.FloatField()
+    diff_last_speed = models.FloatField() #m/s
+    diff_avg_speed = models.FloatField() #m/s
+
+    diff_last_speed_s = models.FloatField() #s/m
+    diff_avg_speed_s = models.FloatField() #s/m
     
     avg_hr = models.FloatField(blank=True,null=True)
     diff_avg_hr = models.FloatField(blank=True,null=True)

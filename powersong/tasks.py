@@ -86,28 +86,36 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     last_hr = 0
     
     effort_idx_in_act = 0
-    for idx, song_api in enumerate(songs):
-        #duration=song.track.get_duration()/1000
+    idx = 0
+    while idx < len(songs):
+        song_api = songs[idx]
+        
         start = int(song_api['date']['uts']) - act_start_timestamp
-         
-        if idx+1<len(songs):
+
+        # multiple similar scrobbles protection
+        while (idx+1) < len(songs) and song_api['url'] == songs[idx+1]['url']: # if the next song is the same, do not create new song
+            song_api = songs[idx+1]
+            idx+=1
+                     
+        if (idx+1) < len(songs):
             end = int(songs[idx+1]['date']['uts']) - act_start_timestamp
             if end > elapsed_time.seconds:
                 end = elapsed_time.seconds
         else:
             end = elapsed_time.seconds
         
-        if start < 0 and end > 0:
+        idx+=1
+        
+        if start <= 0 and end >= 0:
             start = 0
-        if start < 0 and end < 0:
+        if start < 0 or end <= 0:
             continue
         if start > elapsed_time.seconds:
             continue
 
-        logger.debug(song_api)
-        song = create_song_from_dict(song_api)
+        if (end-start) > 0:
+            song = create_song_from_dict(song_api)
         
-        if (end-start) > 20 or True: #only use songs that play for more than 20 seconds
             #stream_keys = ['time','distance','heartrate','watts','altitude']
             (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
             (effort_avg_hr, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'heartrate')
@@ -126,13 +134,7 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                         effort_diff_hr = effort_avg_hr-last_hr
                         effort_diff_speed = effort_avg_speed-last_speed
                         effort_diff_cad = effort_avg_cad-last_cad
-
                         effort_diff_watts = effort_avg_watts-last_watts
-                    
-                    last_hr = effort_avg_hr
-                    last_speed = effort_avg_speed
-                    last_cad = effort_avg_cad
-                    last_watts = effort_avg_watts
 
                     effort = Effort()
                     
@@ -141,13 +143,28 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                     effort.start_time = start
                     effort.duration = end - start
 
-                    effort.start_dist = effort_start_dist
-                    effort.end_dist = effort_end_dist
-
-                    
-                    effort.act_avg_speed = act_avg_speed
+                    effort.start_distance = effort_start_dist
+                    effort.distance = effort_end_dist-effort_start_dist
+                                      
                     effort.avg_speed = effort_avg_speed
-                    effort.last_speed = last_speed
+
+                    effort.diff_avg_speed = effort_avg_speed-act_avg_speed
+                    effort.diff_last_speed = effort_avg_speed-last_speed
+
+                    effort_avg_speed_s = 0
+                    if effort_avg_speed != 0:
+                        effort_avg_speed_s = 1.0/effort_avg_speed
+
+                    act_avg_speed_s = 0
+                    if act_avg_speed != 0:
+                        act_avg_speed_s = 1.0/act_avg_speed
+
+                    last_speed_s = 0
+                    if last_speed != 0:
+                        last_speed_s = 1.0/last_speed
+
+                    effort.diff_avg_speed_s = act_avg_speed_s-effort_avg_speed_s
+                    effort.diff_last_speed_s = last_speed_s-effort_avg_speed_s
                     
                     if (stored_act.avg_hr):
                         effort.avg_hr = effort_avg_hr
@@ -175,6 +192,11 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
                     effort.save()
                     effort_idx_in_act+=1
+
+                    last_hr = effort_avg_hr
+                    last_speed = effort_avg_speed
+                    last_cad = effort_avg_cad
+                    last_watts = effort_avg_watts
     return True
 
 @shared_task
