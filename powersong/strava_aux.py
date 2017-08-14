@@ -73,16 +73,19 @@ def strava_get_user_info_by_id(athlete_id):
 def strava_get_sync_progress(task_id):
     try:
         res = current_app.GroupResult.restore(task_id)
-        if res is None:
-            return 'FAILED', 0, 0
-        elif res.ready() == True:
+        if res.ready() == True:
             return 'SUCCESS', res.completed_count(), len(res)
-        else:
+        elif res.waiting():
             return 'IN PROGRESS', res.completed_count(), len(res)
-    except Exception:
+        else:
+            return 'FAILED', res.completed_count(), len(res)
+    except Exception as e:
+        logger.debug(e)
         results = current_app.AsyncResult(task_id) 
-        if res is None:
+        if results is None:
             return 'FAILED', 0, 0
+        elif results.state == 'FAILURE':
+            return 'FAILED', 0, 1
         elif results.ready():
             return 'SUCCESS', 1, 1
         else:
@@ -95,14 +98,13 @@ def sync_efforts(username,access_token,limit=None):
     all_activities = client.get_activities(limit=limit)
     new_activities = []
     for act in all_activities:
-        if not strava_get_activity_by_id(act.id):
+        if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
             download_chain = chain(strava_download_activity.s(access_token,act_p),
                                     lastfm_download_activity_tracks.s(username),
                                     strava_activity_to_efforts.s()
                             )
             new_activities.append(download_chain)
-    logger.debug( new_activities)
     if len(new_activities) == 0:
         return None, 0
 

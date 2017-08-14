@@ -13,6 +13,7 @@ from django.conf import settings
 import requests
 
 from powersong.models import *
+from urllib.error import HTTPError
 
 import logging
 
@@ -22,23 +23,31 @@ logger = logging.getLogger(__name__)
 def strava_download_activity(access_token,act):
     client = stravalib.client.Client()
     client.access_token = access_token
-    try:
-        logger.debug(act)
-        stored_act = create_activity_from_dict(act)
+    
+    logger.debug(act)
+    stored_act = create_activity_from_dict(act)
 
-        if stored_act == None:
-            return None
-        
+    if stored_act == None:
+        act_ign = ActivitiesToIgnore()
+        act_ign.activity_id = act['id']
+        act_ign.save()
+        return None
+    try:
         stream_keys = ['time','distance','heartrate','watts','altitude']
         #actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
         act_stream_api = client.get_activity_streams(act['id'],types=stream_keys)
+        logger.error(act_stream_api)
         act_stream = {}
         for k in stream_keys:
             if k in act_stream_api:
                 act_stream[k] = act_stream_api[k].data
     except Exception as e:
-        logger.error("Exception downloading activity {} from Strava".format(act['id']))
+        logger.error("Exception on activity {}".format(act['id']))
         logger.error(e)
+
+        act_ign = ActivitiesToIgnore()
+        act_ign.activity_id = act['id']
+        act_ign.save()
         return None
     return (act_stream, stored_act.activity_id)
 

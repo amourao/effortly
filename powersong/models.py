@@ -31,6 +31,9 @@ class Athlete(models.Model):
 
     strava_token = models.CharField(max_length=100)
 
+class ActivitiesToIgnore(models.Model):
+    activity_id = models.CharField(max_length=16,unique=True)
+    
 class Activity(models.Model):
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
 
@@ -348,12 +351,23 @@ def create_activity_from_dict(activity_api):
     return activity
 
 def strava_get_activity_by_id(act_id):
+    if strava_is_activity_to_ignore(act_id):
+        return None
+        
     activities = Activity.objects.filter(activity_id=act_id)
 
     if activities:
         return activities[0]
 
     return None
+
+def strava_is_activity_to_ignore(act_id):
+    activities = ActivitiesToIgnore.objects.filter(activity_id=act_id)
+
+    if activities:
+        return True
+    return False
+
 
 def effort_convert(effort_dict, units):
     if units == 'metric':

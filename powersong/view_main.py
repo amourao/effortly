@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseForbidden
+
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -51,9 +52,13 @@ def index(request):
         athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
         if athlete_model == None:
             athlete_model = strava_get_user_info(request.session['strava_token'])
+
     # get athlete from db (if exists) or from lastfm API
     result['athlete'] = athlete_model
     request.session['athlete_id'] = athlete_model.athlete_id
+
+    if athlete_model.athlete_id != "9363354":
+        return HttpResponseForbidden()
     
 
     resync = 'resync' in request.GET
@@ -62,20 +67,48 @@ def index(request):
         limit = int(request.GET['limit'])
     if 'sync_id' in request.GET:
         request.session['sync_id'] = request.GET['sync_id']
-
-    if resync:
-        request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=limit)        
-
+    
     result['sessionss'] = {}
     for key in request.session.keys():
         result['sessionss'][key] = request.session[key]
 
     return render_to_response('top.html', result)
 
+
+def sync(request):
+    if not 'athlete_id' in request.session:
+        athlete_model = strava_get_user_info(request.session['strava_token'])
+    else:
+        athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
+        if athlete_model == None:
+            athlete_model = strava_get_user_info(request.session['strava_token'])
+
+    if athlete_model.last_celery_task_id != None and not 'force' in request.GET:
+        logger.debug(str(athlete_model.last_celery_task_id))
+        status,finished,count = strava_get_sync_progress(str(athlete_model.last_celery_task_id))
+        if status == 'IN PROGRESS':
+            logger.debug("Already syncing")
+            request.session['sync_id'] = str(athlete_model.last_celery_task_id)
+            response = "SYNC {}: {} of {}".format(status,finished,count) 
+            return HttpResponse(response)
+
+    if 'lastfm_username' in request.session and 'strava_token' in request.session:
+        request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=999999)        
+        athlete_model.last_celery_task_id = request.session['sync_id']
+        athlete_model.save()
+    return get_sync_progress(request)
+
 def get_sync_progress(request):
-    response = ""
+    response = "SYNC IDLE"
     if 'sync_id' in request.session:
         if request.session['sync_id'] != None:
             status,finished,count = strava_get_sync_progress(request.session['sync_id'])
-            response = "SYNC {}: {} of {}".format(status,finished,count) 
+            logger.error(status,finished,count)
+            if count == 0:
+                response = "NOTHING TO SYNC"
+                request.session['sync_id'] = None
+            else:
+                response = "SYNC {}: {} of {}".format(status,finished,count) 
+        
+    #return render_to_response('blank.html', {'message':response})
     return HttpResponse(response)
