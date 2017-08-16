@@ -32,12 +32,12 @@ def top(request):
 
     g_type  = request.GET['type']
 
-    if not g_type in ['top','avg','sum','latest','earliest']:
+    if not g_type in ['top','avg','sum']:
         data['error'] = 'Invalid type'
         return JsonResponse(data)
 
     field = None
-    if not 'field' in request.GET and g_type != 'latest' and g_type != 'earliest':
+    if not 'field' in request.GET:
         data['error'] = 'Missing field'
         return JsonResponse(data)
     elif 'field' in request.GET:
@@ -62,7 +62,7 @@ def top(request):
     activity_type = None
     if 'activity_type' in request.GET:
         activity_type = int(request.GET['activity_type'])
-    if not activity_type and g_type != 'latest' and g_type != 'earliest':
+    if not activity_type:
         athlete = strava_get_user_info_by_id(request.session['athlete_id'])
         activity_type = athlete.athlete_type
      
@@ -88,12 +88,6 @@ def top(request):
         qs = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id').annotate(t_count=Count('song')).filter(t_count__gt=(min_count-1)).annotate(sort_value=Avg(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::descending][:n]
     elif g_type == 'sum':
         qs = Effort.objects.filter(duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id').annotate(t_count=Count('song')).filter(t_count__gt=(min_count-1)).annotate(sort_value=Sum(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::descending][:n]
-    elif g_type == 'latest':
-        if activity_type:
-            qs = Effort.objects.filter(act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').order_by('activity__start_date')[::descending][:n]
-        else:
-            qs = Effort.objects.filter(activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__artist__id','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').order_by('activity__start_date')[::descending][:n]
-    
 
     render = 'html'
     if 'render' in request.GET:
@@ -113,3 +107,34 @@ def top(request):
         return JsonResponse(data)
     else:
         return render_to_response('top_table.html', data)
+
+
+
+def latest(request):
+    data = {}
+
+    descending = -1
+    if 'ascending' in request.GET:
+        descending = 1
+    
+    n = 10
+    if 'n' in request.GET:
+        n = int(request.GET['n'])
+    
+    qs = Activity.objects.filter(athlete__athlete_id = request.session['athlete_id']).values('name','activity_id','workout_type','start_date_local').order_by('start_date_local')[::descending][:n]
+    render = 'html'
+    if 'render' in request.GET:
+        render = int(request.GET['render'])
+        
+    units = 'metric'
+    if 'units' in request.GET:
+        units = request.GET['units']
+    
+    data['top'] = []
+    for q in qs:
+        data['top'].append(effort_convert(q,units))
+
+    if render == 'json':
+        return JsonResponse(data)
+    else:
+        return render_to_response('top_summary_table.html', data)

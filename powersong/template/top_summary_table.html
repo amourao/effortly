@@ -1,0 +1,22 @@
+{% block top_table %}
+
+<div class="container">
+    <ul class="list-group">    
+    {% for activity in top %}
+      <li class="list-group-item">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-12">
+        <a href="/activity/{{ activity.activity_id}}/">{{ activity.name}}</a>
+        {% if activity.start_date_local %} {{ activity.start_date_local }}{% endif %}
+        
+        </div>
+        </div>
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <hr>
+
+{% endblock %}
