@@ -28,7 +28,7 @@
             </ul>
             <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
 
-                <li class="nav-item"> <a class="nav-link" id="progress"></a> </li>
+                <li class="nav-item"> <div id="progress"></div> </li>
 
                 <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
                 <li class="nav-item"> <a class="nav-link">{{ athlete.runs_count }} runs</a> </li>
@@ -62,8 +62,14 @@
     <script type="text/javascript">
 
     function update_all() {
-        $('#progress').load('/get_sync_progress/')
 
+        $('#progress').html('<img src="/static/spinner.gif" width="40" height="40">');
+        $('#recent_table').html('<img src="/static/spinner.gif" width="40" height="40">');
+        $('#top').html('<img src="/static/spinner.gif" width="40" height="40">');
+        $('#top_c').html('<img src="/static/spinner.gif" width="40" height="40">');
+        $('#avg').html('<img src="/static/spinner.gif" width="40" height="40">');
+        
+        $('#progress').load('/get_sync_progress/')
         $('#recent_table').load('/latest')
         $('#top').load('/top/?type=top&field=avg_speed&dispfield=avg_speed_s&activity_type=0')
         $('#top_c').load('/top/?type=top&field=avg_speed&activity_type=1')
@@ -71,10 +77,12 @@
     }
 
     function sync() {
+        $('#progress').html('<img src="/static/spinner.gif" width="40" height="40">');
         $('#progress').load('/sync/')
     }
 
     function progress() {
+        $('#progress').html('<img src="/static/spinner.gif" width="40" height="40">');
         $('#progress').load('/get_sync_progress/')
     }
     </script>

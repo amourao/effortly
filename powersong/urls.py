@@ -18,11 +18,13 @@ urlpatterns = [
     url(r'^about/', about),
     url(r'^logout/', logout),
     url(r'^top/', top),
-    url(r'^latest/', latest
-        ),
+    url(r'^latest/', latest),
+    
     url(r'^activity/(?P<activity_id>.*)/', activity),
     url(r'^song/(?P<song_id>.*)/', song),
     url(r'^artist/(?P<artist_id>.*)/', artist),
+
+    url(r'^get_sync_progress/', get_sync_progress),
 
     url(r'^resync_last_fm/(?P<activity_id>.*)/', resync_last_fm),
 
