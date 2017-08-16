@@ -3,9 +3,9 @@ from django.contrib import admin
 
 from powersong.view_oauth import strava_oauth, lastfm_oauth
 from powersong.view_home import index, about, home, logout
-from powersong.view_tops import top
+from powersong.view_tops import top,latest
 from powersong.view_detail import activity,song,artist
-from powersong.view_main import get_sync_progress, sync
+from powersong.view_main import get_sync_progress, sync, resync_last_fm
 
 from django.conf import settings
 from django.conf.urls import include
@@ -18,11 +18,14 @@ urlpatterns = [
     url(r'^about/', about),
     url(r'^logout/', logout),
     url(r'^top/', top),
+    url(r'^latest/', latest
+        ),
     url(r'^activity/(?P<activity_id>.*)/', activity),
     url(r'^song/(?P<song_id>.*)/', song),
     url(r'^artist/(?P<artist_id>.*)/', artist),
 
-    url(r'^get_sync_progress/', get_sync_progress),
+    url(r'^resync_last_fm/(?P<activity_id>.*)/', resync_last_fm),
+
 
     url(r'^strava_oauth_callback/', strava_oauth),
     url(r'^lastfm_oauth_callback/', lastfm_oauth),

@@ -8,7 +8,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.conf import settings
 
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info, lastfm_get_auth_url
-from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strava_get_user_info_by_id, sync_efforts, strava_get_sync_progress
+from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strava_get_user_info_by_id, sync_efforts, strava_get_sync_progress, resync_activity
 
 import logging
 
@@ -112,3 +112,10 @@ def get_sync_progress(request):
         
     #return render_to_response('blank.html', {'message':response})
     return HttpResponse(response)
+
+def resync_last_fm(request,activity_id):
+
+    resync_activity(request.session['lastfm_username'],request.session['strava_token'],activity_id,request.session['athlete_id'])
+    
+    #return render_to_response('blank.html', {'message':response})
+    return HttpResponse({})

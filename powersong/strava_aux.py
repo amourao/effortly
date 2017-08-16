@@ -118,6 +118,27 @@ def sync_efforts(username,access_token,limit=None):
     
     return job_result.id, len(new_activities)
 
+def resync_activity(username,access_token,activity_id,athlete_id):
+    client = stravalib.client.Client()
+    client.access_token = access_token
+
+    activity = strava_get_activity_by_id(activity_id)
+
+    if athlete_id != activity.athlete.athlete_id:
+        return None, None
+
+    efforts_to_delete = Effort.objects.filter(activity__activity_id = activity_id)
+    efforts_to_delete.delete()
+    act_p = {}
+    act_p['id'] = activity_id
+    download_chain = chain(strava_download_activity.s(access_token,act_p),
+                            lastfm_download_activity_tracks.s(username),
+                            strava_activity_to_efforts.s()
+                    )
+    job_result = download_chain.delay()
+    
+    return job_result.id, 1
+
 def strava_parse_base_activity(act):
     actFinal = {}
 
