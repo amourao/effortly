@@ -88,6 +88,73 @@ def artist(request,artist_id):
     else:
         return render_to_response('activity.html', data)
 
+def artists(request):
+    data = {}
+
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+    if not activity_type:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        activity_type = athlete.athlete_type
+
+    n = 5
+    if 'n' in request.GET:
+        n = int(request.GET['n'])
+
+    qs = Effort.objects.filter(activity__athlete__athlete_id = request.session['athlete_id'],act_type=activity_type).values('song__artist_name','song__artist__image_url','song__artist__url','song__artist__id').annotate(sort_value=Count('song__artist')).order_by('sort_value')[::-1][:n]
+    
+    render = 'html'
+    if 'render' in request.GET:
+        render = int(request.GET['render'])
+        
+    units = 'metric'
+    if 'units' in request.GET:
+        units = request.GET['units']
+    
+    data['top'] = []
+    for q in qs:
+        data['top'].append(effort_convert(q,units))
+
+    if render == 'json':
+        return JsonResponse(data)
+    else:
+        return render_to_response('top_table_artist.html', data)
+
+def songs(request):
+    data = {}
+
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+    if not activity_type:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        activity_type = athlete.athlete_type
+
+    n = 5
+    if 'n' in request.GET:
+        n = int(request.GET['n'])
+
+    qs = Effort.objects.filter(activity__athlete__athlete_id = request.session['athlete_id'],act_type=activity_type).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id').annotate(sort_value=Count('song')).order_by('sort_value')[::-1][:n]
+    
+    render = 'html'
+    if 'render' in request.GET:
+        render = int(request.GET['render'])
+        
+    units = 'metric'
+    if 'units' in request.GET:
+        units = request.GET['units']
+    
+    data['top'] = []
+    for q in qs:
+        data['top'].append(effort_convert(q,units))
+
+    if render == 'json':
+        return JsonResponse(data)
+    else:
+        return render_to_response('top_table_song.html', data)
+
+
 
 def stats(request):
     data = {}

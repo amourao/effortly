@@ -2,21 +2,88 @@
 {% block content %}
 
   {% block top_table %}{% endblock %} 
-  <div class="row">
-    <div class="col-md-9">
-        <div id='top'> </div>
-       
+  <div class="site-wrapper background_image_top">
 
-        <div id='avg'> </div>
+      <div class="site-wrapper-inner">
 
-        <div id='sum'> </div>
+        <div class="cover-container">
 
-        <div id='top_c'> </div>
+          <div class="inner cover">
+            <h1 class="cover-heading">Welcome {{ athlete.first_name }}!</h1>
+ 			{% if first_login %}
+ 			<h1 class="cover-heading">This is your first time here</h1>
+ 			<h1 class="cover-heading">Strava tells me your main activity is {{ athlete.get_athlete_type_display }}</h1>
+ 			<h1 class="cover-heading">You can change that on the top bar</h1>
+ 			{% endif %}
+ 			{% if syncing %}
+ 			<h1 class="cover-heading">We're getting your activity and listening data from Strava and last.fm</h1>
+ 			<h1 class="cover-heading">The page will refresh automatically when we're done</h1>
+ 			{% else %}
+ 			<h1 class="cover-heading">Are you ready to rock?</h1>
+ 			{% endif %}
+          </div>
+        </div>
+
+      </div>
+
     </div>
-    <div class="col-md-3">
-        <div id='recent_table'> </div>
-    </div>
-</div>
+    {% if not syncing %}
+    <div class="container">
+	  <div class="row">
+	  	<div class="col-md-12 text-center">
+	  		<h2>Let's start by checking the artists and songs you listen while {% if athlete_type == 0 %}running{% else %}cycling{% endif %}</h2>
+	  		<h4>(click on the artist or song names to check the matching activities)</h4>
+	  	</div>
+	  	<div class="col-md-6">
+	  		<div id='artists'> </div>
+	  	</div>
+	  	<div class="col-md-6">
+	  		<div id='songs'> </div>
+	  	</div>
+
+	  	<div class="col-md-12 text-center">
+	  		<h2>Those are some neat tunes! But how fast do they make you go?</h2>
+	  		<h4>(click on the run name to what other songs you've listened to)</h4>
+	  	</div>
+
+	    <div class="col-md-12">
+	        <div id='top'> </div>
+	    </div>
+	    <div class="col-md-12 text-center">
+	  		<h2>What about the ones that made your heart beat faster?</h2>
+	  	</div>
+
+	  	<div class="col-md-12">
+	        <div id='top-hr'> </div>
+	    </div>
+
+	    <div class="col-md-12 text-center">
+	  		<h2>Those are some impressive performances... but they could have been flukes.</h2>
+	  		<h3>Maybe you're being chased by a rabid dog, rolling down Mt. Everest, or just hitched a ride on a nearby scooter.</h3>
+	  		<h2>As a runner, you know that consistency is key.</h2>
+	  		<h2>So, what are the songs that make you go faster every time you listen to them?</h2>
+	  	</div>
+
+	    <div class="col-md-12">
+	        <div id='avg'> </div>
+	    </div>
+
+	    <div class="col-md-12 text-center">
+	    	<h2>Uhhh, it's starting to look just right, don't you think?</h2>
+	  		<h2>But we can do better</h2>
+	  		<h2>By adding some more information about how do they make you go compared to the activity and previous songs, we get your TRUE POWER SONGS!</h2>
+	  	</div>
+	  	<div class="col-md-12">
+	        <div id='power'> </div>
+	    </div>
+
+	    <div class="col-md-12">
+	        <div id='playlist'> </div>
+	    </div>
+
+	     </div>
+	</div>
+	{% endif %}
 
 
 

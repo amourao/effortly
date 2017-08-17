@@ -1,0 +1,27 @@
+{% block top_table %}
+
+<div class="container">
+    <ul class="list-group">    
+    {% for effort in top %}
+      <li class="list-group-item">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-3">
+        <a href="{{ effort.song__url}}/"><img src="{{ effort.song__image_url }}" class="img-rounded" width="100" height="100" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
+        </div>
+        <div class="col-md-8">
+        <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a> - <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a>
+        
+        </div>
+        <div class="col-md-1">
+        {% if effort.sort_value %} {{ effort.sort_value }} {{ effort.sort_value_unit }} {% endif %}
+        </div>
+        </div>
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <hr>
+
+{% endblock %}

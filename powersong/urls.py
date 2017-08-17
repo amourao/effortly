@@ -4,7 +4,7 @@ from django.contrib import admin
 from powersong.view_oauth import strava_oauth, lastfm_oauth
 from powersong.view_home import index, about, home, logout
 from powersong.view_tops import top,latest
-from powersong.view_detail import activity,song,artist
+from powersong.view_detail import activity,song,artist,artists,songs
 from powersong.view_main import get_sync_progress, sync, resync_last_fm
 
 from django.conf import settings
@@ -19,7 +19,10 @@ urlpatterns = [
     url(r'^logout/', logout),
     url(r'^top/', top),
     url(r'^latest/', latest),
+    url(r'^artists/', artists),
+    url(r'^songs/', songs),
     
+
     url(r'^activity/(?P<activity_id>.*)/', activity),
     url(r'^song/(?P<song_id>.*)/', song),
     url(r'^artist/(?P<artist_id>.*)/', artist),

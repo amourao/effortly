@@ -6,10 +6,17 @@ from powersong.unit_conversion import *
 
 
 class Athlete(models.Model):
+    ATHELETE_TYPE = (
+        (0, 'Running'),
+        (1, 'Cycling'),
+        (2, 'Other'),
+    )
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     athlete_id = models.CharField(max_length=12,unique=True)
     profile_image_url = models.URLField()
+
+    first_login = models.BooleanField()
 
     email = models.EmailField()
 
@@ -17,7 +24,7 @@ class Athlete(models.Model):
     measurement_preference = models.PositiveSmallIntegerField()
     sex = models.PositiveSmallIntegerField()
     country = models.CharField(max_length=50)
-    athlete_type = models.PositiveSmallIntegerField()
+    athlete_type = models.PositiveSmallIntegerField(choices=ATHELETE_TYPE)
     last_sync_date = models.DateTimeField(blank=True,null=True)
     
     activity_count = models.IntegerField()
@@ -175,6 +182,8 @@ def create_athlete_from_dict(athlete_api):
     athlete.last_name = athlete_api.lastname
     athlete.athlete_id = athlete_api.id
     athlete.profile_image_url = athlete_api.profile
+
+    athlete.first_login = True
 
     athlete.email = athlete_api.email
 

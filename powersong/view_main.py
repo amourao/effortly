@@ -53,6 +53,21 @@ def index(request):
         if athlete_model == None:
             athlete_model = strava_get_user_info(request.session['strava_token'])
 
+    result['first_login'] = athlete_model.first_login
+    if athlete_model.first_login:
+        request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=999999)
+        athlete_model.first_login = False
+        athlete_model.save()
+
+    result['syncing'] = False
+    if 'sync_id' in request.session:
+        if request.session['sync_id'] != None:
+            status,finished,count = strava_get_sync_progress(request.session['sync_id'])
+            if count > 0 and status != 'SUCCESS':
+                result['syncing'] = True
+
+
+    
     # get athlete from db (if exists) or from lastfm API
     result['athlete'] = athlete_model
     request.session['athlete_id'] = athlete_model.athlete_id
@@ -60,18 +75,10 @@ def index(request):
     if athlete_model.athlete_id != "9363354":
         return HttpResponseForbidden()
     
-
-    resync = 'resync' in request.GET
-    limit = 5
-    if 'limit' in request.GET:
-        limit = int(request.GET['limit'])
-    if 'sync_id' in request.GET:
-        request.session['sync_id'] = request.GET['sync_id']
+    result['athlete_type'] = athlete_model.athlete_type
+    if 'athlete_type' in request.GET:
+        result['athlete_type'] = int(request.GET['athlete_type'])
     
-    result['sessionss'] = {}
-    for key in request.session.keys():
-        result['sessionss'][key] = request.session[key]
-
     return render_to_response('top.html', result)
 
 
@@ -99,6 +106,7 @@ def sync(request):
     return get_sync_progress(request)
 
 def get_sync_progress(request):
+    spinner = ''
     response = "SYNC IDLE"
     if 'sync_id' in request.session:
         if request.session['sync_id'] != None:
@@ -108,12 +116,13 @@ def get_sync_progress(request):
                 request.session['sync_id'] = None
             else:
                 response = "SYNC {}: {} of {}".format(status,finished,count)
+                spinner = '<img src="/static/spinner.gif" width="40" height="40">'
                 if status == 'SUCCESS':
                     request.session['sync_id'] = None
                 
         
     #return render_to_response('blank.html', {'message':response})
-    return HttpResponse('<a class="nav-link">{}</a>'.format(response))  
+    return HttpResponse('{}<a class="nav-link">{}</a>'.format(spinner,response))  
 
 def resync_last_fm(request,activity_id):
 

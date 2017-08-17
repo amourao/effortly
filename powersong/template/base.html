@@ -43,11 +43,11 @@
         </div>
     </nav>
 
-    <div class="container">
+    
 
         {% block content %}{% endblock %}  
       <hr>
-
+    <div class="container">
       <footer>
         <p>&copy; André Mourão 2017</p>
       </footer>
@@ -61,30 +61,38 @@
 
     <script type="text/javascript">
 
+    function img_error(image) {
+        image.onerror = "";
+        image.src = '/static/nopicture.png';
+     return true;
+    }
+
+    function load_async(div,url) {
+        $(div).html('<img src="/static/spinner.gif" width="40" height="40">');
+        $(div).load(url)
+    }
+
     function update_all() {
 
-        $('#progress').html('<img src="/static/spinner.gif" width="40" height="40">');
-        $('#recent_table').html('<img src="/static/spinner.gif" width="40" height="40">');
-        $('#top').html('<img src="/static/spinner.gif" width="40" height="40">');
-        $('#top_c').html('<img src="/static/spinner.gif" width="40" height="40">');
-        $('#avg').html('<img src="/static/spinner.gif" width="40" height="40">');
-        
-        $('#progress').load('/get_sync_progress/')
-        $('#recent_table').load('/latest')
-        $('#top').load('/top/?type=top&field=avg_speed&dispfield=avg_speed_s&activity_type=0')
-        $('#top_c').load('/top/?type=top&field=avg_speed&activity_type=1')
-        $('#avg').load('/top/?type=avg&field=avg_speed&dispfield=avg_speed_s&activity_type=0&min_count=10')
+        load_async('#progress','/get_sync_progress/')
+        load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed_s&activity_type={{ athlete_type }}')
+        load_async('#top-hr','/top/?type=top&field=avg_hr&dispfield=avg_hr&activity_type={{ athlete_type }}')
+        load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed_s&activity_type={{ athlete_type }}&min_count=5')
+        load_async('#artists','/artists?activity_type={{ athlete_type }}')
+        load_async('#songs','/songs?activity_type={{ athlete_type }}')
+
     }
 
     function sync() {
-        $('#progress').html('<img src="/static/spinner.gif" width="40" height="40">');
-        $('#progress').load('/sync/')
+        load_async('#progress','/sync/')
     }
 
     function progress() {
-        $('#progress').html('<img src="/static/spinner.gif" width="40" height="40">');
-        $('#progress').load('/get_sync_progress/')
+        load_async('#progress','/get_sync_progress/')
     }
+
+
+
     </script>
 
 
