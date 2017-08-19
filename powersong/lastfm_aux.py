@@ -1,7 +1,12 @@
 from django.conf import settings
 from hashlib import md5
 
-from powersong.models import Listener, create_listener_from_dict
+from powersong.models import *
+from powersong.tasks import lastfm_download_artist_info
+
+from celery import chain, group
+from celery.result import AsyncResult,GroupResult
+from celery import current_app
 
 import requests
 
@@ -53,3 +58,22 @@ def lastfm_get_user_info(username,key):
 def lastfm_get_sig(api_key,method,token,secret):
     return md5('api_key{}method{}token{}{}'.format(api_key,method,token,secret).encode()).hexdigest()
 
+
+def lastfm_sync_artists():
+
+    artists = Artist.objects.all()
+
+    artists_to_sync = []
+    for artist in artists:
+        if artist.last_sync_date == None or artist.last_sync_date == "":
+            artists_to_sync.append(lastfm_download_artist_info.s(artist.name,artist.mb_id))
+
+    if len(artists_to_sync) > 1:
+        promise = group(*artists_to_sync)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = artists_to_sync[0]
+        job_result = promise.delay()
+    
+    return job_result.id, len(artists_to_sync)

@@ -15,6 +15,8 @@ import requests
 from powersong.models import *
 from urllib.error import HTTPError
 
+from urllib.parse import quote_plus
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,6 +52,7 @@ def strava_download_activity(access_token,act):
         act_ign.save()
         return None
     return (act_stream, stored_act.activity_id)
+
 
 @shared_task
 def lastfm_download_activity_tracks(act_stream_stored_act,username):
@@ -213,8 +216,39 @@ def lastfm_download_track_info(track_id):
     return None
 
 @shared_task
-def lastfm_download_artist_info(track_id):
-    return None
+def lastfm_download_artist_info(artist_name,mb_id=None):
+    method = 'artist.getInfo'
+    if mb_id:
+        url = settings.LASTFM_API_ARTIST_MB.format(method,settings.LASTFM_API_KEY,mb_id)
+    else:
+        url = settings.LASTFM_API_ARTIST.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name))
+
+    logger.debug(url)
+    response = requests.get(url).json()
+
+    if 'lfm' in response:
+        response = response['lfm']
+    artist_json = response['artist']
+
+    artist = lastfm_get_artist(artist_name,mb_id)
+
+    if artist == None:
+        artist = Artist()
+
+    image_url = lastfm_get_largest_image(artist_json['image'])
+    if image_url != None:
+        artist.image_url = image_url
+
+
+    if 'mbid' in artist_json and artist_json['mbid'].strip() != "":
+        artist.mbid = artist_json['mbid']
+
+    artist.listeners_count = int(artist_json['stats']['listeners'])
+    artist.plays_count = int(artist_json['stats']['playcount'])
+    artist.url =  artist_json['url']
+    artist.last_sync_date =  datetime.now()
+
+    artist.save()
 
 def strava_get_start_timestamp(st):
     return int(time.mktime(st.timetuple()))

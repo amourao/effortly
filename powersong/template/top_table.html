@@ -37,6 +37,12 @@
         <p> avg_speed {{effort.avg_speed_s}} {{effort.units.speed_s}}, avg_hr {{effort.avg_hr|floatformat:"2"}} {{effort.units.heartrate}}, diff_last_hr {{effort.diff_last_hr|floatformat:"2"}} {{effort.units.heartrate}}, diff_avg_hr {{effort.diff_avg_hr|floatformat:"2"}} {{effort.units.heartrate}}</p>
         </div>
         <div class="row">
+        <p>diff_last_speed {{effort.diff_last_speed }} {{effort.units.speed}}, diff_avg_speed {{effort.diff_avg_speed }} {{effort.units.speed}}</p>
+        </div>
+        <div class="row">
+        <p>diff_last_speed_s {{effort.diff_last_speed_s }} {{effort.units.speed_s}}, diff_avg_speed_s {{effort.diff_avg_speed_s }} {{effort.units.speed_s}}</p>
+        </div>
+        <div class="row">
         <p>Started at {{effort.start_distance|floatformat:"2"}} {{effort.units.distanceBig}}. Effort distance was {{effort.distance|floatformat:"2"}} {{effort.units.distanceSmall}}</p> 
         </div>
         <div class="row">

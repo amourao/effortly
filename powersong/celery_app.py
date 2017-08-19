@@ -17,6 +17,7 @@ app.autodiscover_tasks()
 app.control.rate_limit('powersong.tasks.strava_download_activity', '40/m')
 app.control.rate_limit('powersong.tasks.lastfm_download_activity_tracks', '40/m')
 app.control.rate_limit('powersong.tasks.lastfm_download_track_info', '250/m')
+app.control.rate_limit('powersong.tasks.lastfm_download_artist_info', '250/m')
 
 
 @app.task(bind=True)

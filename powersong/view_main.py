@@ -116,13 +116,14 @@ def get_sync_progress(request):
                 request.session['sync_id'] = None
             else:
                 response = "SYNC {}: {} of {}".format(status,finished,count)
-                spinner = '<img src="/static/spinner.gif" width="40" height="40">'
                 if status == 'SUCCESS':
                     request.session['sync_id'] = None
+                else:
+                    spinner = '<li class="nav-item"><img src="/static/spinner_dark.gif" width="40" height="40"></li>'
                 
         
     #return render_to_response('blank.html', {'message':response})
-    return HttpResponse('{}<a class="nav-link">{}</a>'.format(spinner,response))  
+    return HttpResponse('{}<li class="nav-item"><a class="nav-link">{}</a></li>'.format(spinner,response))  
 
 def resync_last_fm(request,activity_id):
 

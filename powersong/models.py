@@ -3,7 +3,10 @@ from datetime import datetime
 from django.db.models import Q
 
 from powersong.unit_conversion import *
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 class Athlete(models.Model):
     ATHELETE_TYPE = (
@@ -236,6 +239,16 @@ def create_listener_from_dict(listener_api):
 
     return listener
 
+def lastfm_get_largest_image(image_list):
+    order = ['extralarge','large','medium','small','','mega']
+    if not "#text" in image_list[-1] or not image_list[-1]["#text"].strip() != "":
+        return None
+    for size in order:
+        for image in image_list[::-1]:
+            if image["size"] == size and image["#text"].strip() != "":
+                return image["#text"]
+    return image_list[-1]["#text"]
+
 def create_song_from_dict(song_api):
 
     songs = Song.objects.filter(artist_name=song_api['artist']['name'],title=song_api['name'])
@@ -253,8 +266,8 @@ def create_song_from_dict(song_api):
         song.mb_id = song_api['mbid']
 
     if len(song_api['image']) > 0:
-        if "#text" in song_api['image'][-1] and song_api['image'][-1]["#text"].strip() != "":
-            song.image_url = song_api['image'][-1]["#text"]
+        lastfm_get_lastest_image
+        song.image_url = lastfm_get_largest_image(song_api['image'])
 
     if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
         artist_mb_id = song_api['artist']['mbid']
@@ -269,7 +282,7 @@ def create_song_from_dict(song_api):
         artist.name = song_api['artist']['name']
         if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
             artist.mb_id = song_api['artist']['mbid']
-        if "#text" in song_api['image'][-1] and song_api['image'][-1]["#text"].strip() != "":
+        if song.image_url != None:
             artist.image_url = song.image_url
         artist.save()
 
@@ -359,6 +372,18 @@ def create_activity_from_dict(activity_api):
     activity.save()
     return activity
 
+
+def lastfm_get_artist(name,mbid=None):
+    if mbid == None or mbid == "":
+        artists = Artist.objects.filter(name=name)
+    else:
+        artists = Artist.objects.filter(mb_id=mbid)
+
+    if artists:
+        return artists[0]
+
+
+
 def strava_get_activity_by_id(act_id):
     if strava_is_activity_to_ignore(act_id):
         return None
@@ -377,14 +402,6 @@ def strava_is_activity_to_ignore(act_id):
         return True
     return False
 
-
-def effort_convert(effort_dict, units):
-    if units == 'metric':
-        return effort_to_metric(effort_dict)
-    elif units == 'imperial':
-        return effort_to_imperial(effort_dict)
-    else:
-        return effort_to_metric(effort_dict)
 
 
 speed    = ['activity__avg_speed','activity__max_speed','avg_speed','diff_avg_speed','diff_last_speed']
@@ -407,7 +424,30 @@ common = {'timeBig':'minutes','timeSmall':'seconds','heartrate':'bpm','cadence':
 metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
 imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
 
-    
+
+def effort_convert(effort_dict, units):
+    if units == 'metric':
+        effort_dict = effort_to_metric(effort_dict)
+    elif units == 'imperial':
+        effort_dict = effort_to_imperial(effort_dict)
+    else:
+        effort_dict = effort_to_metric(effort_dict)
+    logger.debug(effort_dict)
+    return effort_commom(effort_dict)
+
+
+def effort_commom(effort_dict):
+    if 'sort_key' in effort_dict and effort_dict['sort_key'] in heartrate:
+        effort_dict['sort_value'] = "{:.2f}".format(effort_dict['sort_value'])
+        effort_dict['sort_value_unit'] = common['heartrate']
+    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in cadence:
+        effort_dict['sort_value'] = "{}".format(int(effort_dict['sort_value']))
+        effort_dict['sort_value_unit'] = common['cadence']
+    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in watts:
+        effort_dict['sort_value'] = "{}".format(int(effort_dict['sort_value']))
+        effort_dict['sort_value_unit'] = common['watts']
+    return effort_dict
+
 def effort_to_metric(effort_dict):
     new_effort_dict = effort_dict
 

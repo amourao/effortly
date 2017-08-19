@@ -196,6 +196,8 @@ LASTFM_BASE = 'https://www.last.fm/api/auth/?cb={}&api_key='.format(LASTFM_CALLB
 LASTFM_API_AUTHBASE = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&token={}&api_sig={}&format=json'
 LASTFM_API_BASE = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&format=json'
 LASTFM_API_RECENT = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&user={}&from={}&to={}&limit=200&extended=1&format=json'
+LASTFM_API_ARTIST = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&artist={}&format=json'
+LASTFM_API_ARTIST_MB = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&mbid={}&format=json'
 
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'

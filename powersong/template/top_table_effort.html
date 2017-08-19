@@ -7,7 +7,7 @@
         <div class="container">
         <div class="row">
         <div class="col-md-2">
-        <a href="{{ effort.song__url}}/"><img src="{{ effort.song__image_url }}" class="img-rounded" width="125" height="125" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
+        <a href="{{ effort.song__url}}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="img-rounded" width="125" height="125" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
         </div>
         <div class="col-md-10">
         <div class="row">

@@ -1,4 +1,4 @@
-{% with "Strava Power Song" as APPTITLE %}
+{% with "Power Song" as APPTITLE %}
 <!doctype html>
 <html>
     <head>
@@ -17,7 +17,7 @@
     </head>
     <body>
 
-    <nav class="navbar fixed-top navbar-inverse navbar-toggleable-sm bg-inverse justify-content-center">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -28,7 +28,7 @@
             </ul>
             <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
 
-                <li class="nav-item"> <div id="progress"></div> </li>
+                <li class="nav-item" id="progress" style="display:flex"></li>
 
                 <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
                 <li class="nav-item"> <a class="nav-link">{{ athlete.runs_count }} runs</a> </li>
@@ -56,53 +56,54 @@
      <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>    
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+    <link href="/static/app.css" rel="stylesheet">
 
     <script type="text/javascript">
 
     function img_error(image) {
         image.onerror = "";
         image.src = '/static/nopicture.png';
-     return true;
+        return true;
     }
 
-    function load_async(div,url) {
-        $(div).html('<img src="/static/spinner.gif" width="40" height="40">');
+    function load_async(div,url,dark) {
+        if (typeof(dark)==='undefined') dark = false;
+        if (dark)
+            $(div).html('<img src="/static/spinner_dark.gif" width="40" height="40">');
+        else
+            $(div).html('<img src="/static/spinner_white.gif" width="40" height="40">');
         $(div).load(url)
     }
 
     function update_all() {
 
-        load_async('#progress','/get_sync_progress/')
-        load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed_s&activity_type={{ athlete_type }}')
+        load_async('#progress','/get_sync_progress/',true)
+        load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ athlete_type }}')
         load_async('#top-hr','/top/?type=top&field=avg_hr&dispfield=avg_hr&activity_type={{ athlete_type }}')
-        load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed_s&activity_type={{ athlete_type }}&min_count=5')
+        load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed&activity_type={{ athlete_type }}&min_count=5')
         load_async('#artists','/artists?activity_type={{ athlete_type }}')
         load_async('#songs','/songs?activity_type={{ athlete_type }}')
-
+        load_async('#avg_diff_last_hr','/top/?type=avg&field=diff_last_hr&dispfield=diff_last_hr&activity_type={{ athlete_type }}&min_count=5')
+        load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed_s&dispfield=diff_last_speed&activity_type={{ athlete_type }}&min_count=5')
     }
 
     function sync() {
-        load_async('#progress','/sync/')
+        load_async('#progress','/sync/',true)
     }
 
     function progress() {
-        load_async('#progress','/get_sync_progress/')
+        load_async('#progress','/get_sync_progress/',true)
     }
 
 
 
     </script>
 
-
-
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-    <link href="/static/app.css" rel="stylesheet">
     </body>
 
     {% block extra_js %}{% endblock %}
