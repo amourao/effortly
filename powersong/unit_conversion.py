@@ -6,13 +6,13 @@ def metersPerSecondToMiH(mps):
     return "{:.2f}".format(mps*2.237)
 
 def metersToMeters(m):
-    return "{}".format(int(m))
+    return "{}".format((m))
 
 def metersToMiles(m):
-    return "{}".format(int(m/1609.34))
+    return "{}".format((m/1609.34))
 
 def metersToFeet(m):
-    return "{}".format(int(m*3.28))
+    return "{}".format((m*3.28))
 
 def metersToKm(m):
     return "{:.2f}".format(m/1000.0)

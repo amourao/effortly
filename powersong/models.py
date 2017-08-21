@@ -227,7 +227,7 @@ def create_athlete_from_dict(athlete_api):
     return athlete
 
 
-def create_listener_from_dict(listener_api):
+def create_listener_from_dict(listener_api,key):
     listener = Listener()
 
     listener.nickname = listener_api['name']
@@ -236,6 +236,7 @@ def create_listener_from_dict(listener_api):
     listener.country = listener_api['country']
     listener.age = int(listener_api['age'])
     listener.scrobble_count = int(listener_api['playcount'])
+    listener.lastfm_token = key
 
     return listener
 
@@ -266,7 +267,6 @@ def create_song_from_dict(song_api):
         song.mb_id = song_api['mbid']
 
     if len(song_api['image']) > 0:
-        lastfm_get_lastest_image
         song.image_url = lastfm_get_largest_image(song_api['image'])
 
     if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
@@ -420,19 +420,18 @@ cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_c
 
 watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
 
-common = {'timeBig':'minutes','timeSmall':'seconds','heartrate':'bpm','cadence':'spm','watts':'W'}
+common = {'timeBig':'min','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W'}
 metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
 imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
 
 
 def effort_convert(effort_dict, units):
-    if units == 'metric':
+    if units == 0:
         effort_dict = effort_to_metric(effort_dict)
-    elif units == 'imperial':
+    elif units == 1:
         effort_dict = effort_to_imperial(effort_dict)
     else:
         effort_dict = effort_to_metric(effort_dict)
-    logger.debug(effort_dict)
     return effort_commom(effort_dict)
 
 

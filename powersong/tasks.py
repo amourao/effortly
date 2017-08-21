@@ -38,7 +38,6 @@ def strava_download_activity(access_token,act):
         stream_keys = ['time','distance','heartrate','watts','altitude']
         #actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
         act_stream_api = client.get_activity_streams(act['id'],types=stream_keys)
-        logger.error(act_stream_api)
         act_stream = {}
         for k in stream_keys:
             if k in act_stream_api:
@@ -70,6 +69,7 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
     method = 'user.getrecenttracks'
     url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,username,start,end)
     response = requests.get(url).json()
+    logger.debug(response)
     lastfm_tracks = response
     return act_stream, stored_act_id, lastfm_tracks
 
@@ -85,6 +85,10 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     else:
         logger.debug("No songs in activity {}".format(stored_act_id))
         return {}
+    if not 'recenttracks' in lastfm_tracks:
+        logger.error("Bad response in activity {}".format(stored_act_id))
+        logger.error(lastfm_tracks)
+        return {}
 
     act_avg_speed = stored_act.avg_speed
     act_avg_hr = stored_act.avg_hr
@@ -96,6 +100,7 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
     last_speed = 0
     last_hr = 0
+    last_watts = 0
     
     effort_idx_in_act = 0
     idx = 0
@@ -118,97 +123,97 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         
         idx+=1
         
-        if start <= 0 and end >= 0:
+        if start <= 0:
             start = 0
         if start < 0 or end <= 0:
             continue
         if start > elapsed_time.seconds:
             continue
+        if (end-start) <= 0:
+            continue
 
-        if (end-start) > 0:
-            song = create_song_from_dict(song_api)
+        song = create_song_from_dict(song_api)
+    
+        #stream_keys = ['time','distance','heartrate','watts','altitude']
+        (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
+        (effort_avg_hr, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'heartrate')
+        (effort_avg_watts, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'watts')
+        (effort_total_ascent,effort_total_descent, effort_start_dist, effort_end_dist) = get_ascent_in_interval(act_stream,start,end,'altitude')
+
+        effort_diff_hr = 0
+        effort_diff_speed = 0
+        effort_diff_watts = 0
         
-            #stream_keys = ['time','distance','heartrate','watts','altitude']
-            (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
-            (effort_avg_hr, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'heartrate')
-            (effort_avg_cad, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'cadence')
-            (effort_avg_watts, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'watts')
-            (effort_total_ascent,effort_total_descent, effort_start_dist, effort_end_dist) = get_ascent_in_interval(act_stream,start,end,'altitude')
+        if effort_idx_in_act > 0: # ignore diff to last in the first activity of the session
+            effort_diff_hr = effort_avg_hr-last_hr
+            effort_diff_speed = effort_avg_speed-last_speed
+            effort_diff_watts = effort_avg_watts-last_watts
 
-            if effort_avg_speed > 0 and (effort_end_dist - effort_start_dist) > 100 or True:
-                effort_diff_hr = 0
-                effort_diff_speed = 0
-                effort_diff_cad = 0
-                effort_diff_watts = 0
-                if (effort_end_dist-effort_start_dist) > 100 or True: #only use songs that play for more than 100 meters
-                    
-                    if effort_idx_in_act > 0: # ignore diff to last in the first activity of the session
-                        effort_diff_hr = effort_avg_hr-last_hr
-                        effort_diff_speed = effort_avg_speed-last_speed
-                        effort_diff_cad = effort_avg_cad-last_cad
-                        effort_diff_watts = effort_avg_watts-last_watts
+        effort = Effort()
+        
+        effort.act_type = stored_act.act_type
+        
+        effort.start_time = start
+        effort.duration = end - start
 
-                    effort = Effort()
-                    
-                    effort.act_type = stored_act.act_type
-                    
-                    effort.start_time = start
-                    effort.duration = end - start
+        effort.start_distance = effort_start_dist
+        effort.distance = effort_end_dist-effort_start_dist
+                          
+        effort.avg_speed = effort_avg_speed
 
-                    effort.start_distance = effort_start_dist
-                    effort.distance = effort_end_dist-effort_start_dist
-                                      
-                    effort.avg_speed = effort_avg_speed
+        effort.diff_avg_speed = effort_avg_speed-act_avg_speed
 
-                    effort.diff_avg_speed = effort_avg_speed-act_avg_speed
-                    effort.diff_last_speed = effort_avg_speed-last_speed
+        if effort_idx_in_act > 0:
+            effort.diff_last_speed = effort_avg_speed-last_speed
+        else:
+            effort.diff_last_speed = 0
 
-                    effort_avg_speed_s = 0
-                    if effort_avg_speed != 0:
-                        effort_avg_speed_s = 1.0/effort_avg_speed
+        effort_avg_speed_s = 0
+        if effort_avg_speed != 0:
+            effort_avg_speed_s = 1.0/effort_avg_speed
 
-                    act_avg_speed_s = 0
-                    if act_avg_speed != 0:
-                        act_avg_speed_s = 1.0/act_avg_speed
+        act_avg_speed_s = 0
+        if act_avg_speed != 0:
+            act_avg_speed_s = 1.0/act_avg_speed
 
-                    last_speed_s = 0
-                    if last_speed != 0:
-                        last_speed_s = 1.0/last_speed
+        last_speed_s = 0
+        if last_speed != 0:
+            last_speed_s = 1.0/last_speed
 
-                    effort.diff_avg_speed_s = act_avg_speed_s-effort_avg_speed_s
-                    effort.diff_last_speed_s = last_speed_s-effort_avg_speed_s
-                    
-                    if (stored_act.avg_hr):
-                        effort.avg_hr = effort_avg_hr
-                        effort.diff_avg_hr = (effort_avg_hr - stored_act.avg_hr)
-                        effort.diff_last_hr = effort_diff_hr
+        effort.diff_avg_speed_s = act_avg_speed_s-effort_avg_speed_s
 
-                    if (stored_act.avg_cadence):
-                        effort.avg_cadence = effort_avg_cad
-                        effort.diff_avg_cadence = (effort_avg_cad - stored_act.avg_cadence)
-                        effort.diff_last_cadence = effort_diff_cad
-                    
-                    effort.idx_in_activity = effort_idx_in_act
+        if effort_idx_in_act > 0:
+            effort.diff_last_speed_s = last_speed_s-effort_avg_speed_s
+        else:
+            effort.diff_last_speed_s = 0
+        
+        
+        if (stored_act.avg_hr):
+            effort.avg_hr = effort_avg_hr
+            effort.diff_avg_hr = (effort_avg_hr - stored_act.avg_hr)
+            effort.diff_last_hr = effort_diff_hr
+        
+        effort.idx_in_activity = effort_idx_in_act
 
-                    effort.total_ascent = effort_total_ascent
-                    effort.total_descent = effort_total_descent
+        effort.total_ascent = effort_total_ascent
+        effort.total_descent = effort_total_descent
 
-                    effort.song = song
-                    effort.activity = stored_act
+        effort.song = song
+        effort.activity = stored_act
 
-                    if stored_act.act_type == 1:
-                        if (stored_act.avg_watts) != None:
-                            effort.avg_watts = effort_avg_watts
-                            effort.diff_avg_watts = (effort_avg_watts - stored_act.avg_watts)
-                            effort.diff_last_watts = effort_diff_watts
+        if stored_act.act_type == 1:
+            if (stored_act.avg_watts) != None:
+                effort.avg_watts = effort_avg_watts
+                effort.diff_avg_watts = (effort_avg_watts - stored_act.avg_watts)
+                effort.diff_last_watts = effort_diff_watts
 
-                    effort.save()
-                    effort_idx_in_act+=1
+        effort.save()
+        effort_idx_in_act+=1
 
-                    last_hr = effort_avg_hr
-                    last_speed = effort_avg_speed
-                    last_cad = effort_avg_cad
-                    last_watts = effort_avg_watts
+        last_hr = effort_avg_hr
+        last_speed = effort_avg_speed
+        last_watts = effort_avg_watts
+
     return True
 
 @shared_task

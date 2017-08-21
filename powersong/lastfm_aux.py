@@ -34,6 +34,8 @@ def lastfm_get_user_info(username,key):
 
     if listeners:
         listener = listeners[0]
+        listener.lastfm_token = key
+        listener.save()
         logger.debug("Listener {} found in DB".format(username))
         return listener
 
@@ -49,7 +51,7 @@ def lastfm_get_user_info(username,key):
 
     response = response['user']
 
-    listener = create_listener_from_dict(response)
+    listener = create_listener_from_dict(response,key)
     
     listener.save()
 

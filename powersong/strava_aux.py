@@ -71,6 +71,8 @@ def strava_get_user_info_by_id(athlete_id):
     return None
 
 def strava_get_sync_progress(task_id):
+    if task_id == "":
+        return 'SUCCESS', 0, 0
     try:
         res = current_app.GroupResult.restore(task_id)
         if res.ready() == True:
@@ -95,6 +97,18 @@ def sync_efforts(username,access_token,limit=None):
     client = stravalib.client.Client()
     client.access_token = access_token
 
+    athlete = strava_get_user_info(access_token)
+
+    athlete_api = client.get_athlete()
+    stats = athlete_api.stats
+
+    athlete.activity_count = stats.all_ride_totals.count
+    athlete.runs_count = stats.all_run_totals.count
+    athlete.rides_count = stats.all_ride_totals.count
+    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
+    athlete.updated_strava_at = athlete_api.updated_at
+    athlete.save()
+
     all_activities = client.get_activities(limit=limit)
     new_activities = []
     for act in all_activities:
@@ -106,7 +120,7 @@ def sync_efforts(username,access_token,limit=None):
                             )
             new_activities.append(download_chain)
     if len(new_activities) == 0:
-        return None, 0
+        return "", 0
 
     if len(new_activities) > 1:
         promise = group(*new_activities)
@@ -118,7 +132,7 @@ def sync_efforts(username,access_token,limit=None):
     
     return job_result.id, len(new_activities)
 
-def resync_activity(username,access_token,activity_id,athlete_id):
+def resync_activity(username,access_token,activity_id,):
     client = stravalib.client.Client()
     client.access_token = access_token
 

@@ -6,10 +6,10 @@
       <li class="list-group-item">
         <div class="container">
         <div class="row">
-        <div class="col-md-2">
-        <a href="{{ effort.song__url}}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="img-rounded" width="125" height="125" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
+        <div class="col-lg-2 col-md-3">
+        <a href="{{ effort.song__url}}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="rounded" width="125" height="125" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
         </div>
-        <div class="col-md-10">
+        <div class="col-lg-10 col-md-9">
         <div class="row">
         <div class="col-md-10">
         <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a> - <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a>
@@ -22,17 +22,20 @@
         <div class="row">
         {% if effort.activity__activity_id %} 
         <div class="col-md-12">
-        {% if effort.activity__start_date_local %} 
-        <a href="https://www.strava.com/activities/{{ effort.activity__activity_id}}/">{{ effort.activity__start_date_local }}</a>{% endif %}
+        <a href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
         </div>
         <div class="col-md-12">
-        <a href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
+        {% if effort.activity__start_date_local %} 
+        <a href="https://www.strava.com/activities/{{ effort.activity__activity_id}}/">{{ effort.activity__start_date_local }}</a>{% endif %}
         </div>
         {% endif %}
         </div>
         <div class="row">
         <div class="col-md-12">
-        <p>Started at minute {{effort.start_time}} ({{effort.start_distance|floatformat:"2"}} {{effort.units.distanceBig}}) and lasted {{effort.duration}} {{effort.units.timeBig}} ({{effort.distance|floatformat:"2"}} {{effort.units.distanceSmall}})</p> 
+        Started at min {{effort.start_time}} ({{effort.start_distance|floatformat:"2"}} {{effort.units.distanceBig}})
+        </div>
+        <div class="col-md-12">
+        Lasted {{effort.duration}} {{effort.units.timeBig}} ({{effort.distance|floatformat:"2"}} {{effort.units.distanceSmall}}) 
         </div>
         </div>        
         </div>

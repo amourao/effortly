@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 
 from django.db.models.fields.related import ManyToManyField
 
+
+def get_scrobble_details(athlete_id,activity_type):
+    qs = Effort.objects.filter(activity__athlete__athlete_id = athlete_id, act_type = activity_type)
+    count_s = len(qs)
+    count_a = len(qs.values('activity_id').annotate(t_count=Count('activity_id')))
+    return count_s,count_a
+
 def activity(request,activity_id):
     data = {}
 
@@ -30,10 +37,15 @@ def activity(request,activity_id):
     render = 'html'
     if 'render' in request.GET:
         render = int(request.GET['render'])
-        
-    units = 'metric'
+    
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:
@@ -53,9 +65,14 @@ def song(request,song_id):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:
@@ -75,9 +92,14 @@ def artist(request,artist_id):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:
@@ -108,9 +130,14 @@ def artists(request):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:
@@ -141,9 +168,14 @@ def songs(request):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:
@@ -165,9 +197,14 @@ def stats(request):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:

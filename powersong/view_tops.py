@@ -59,6 +59,15 @@ def top(request):
     if 'n' in request.GET:
         n = int(request.GET['n'])
 
+    units = None
+    if 'units' in request.GET:
+        units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
+
     activity_type = None
     if 'activity_type' in request.GET:
         activity_type = int(request.GET['activity_type'])
@@ -98,9 +107,7 @@ def top(request):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
-    if 'units' in request.GET:
-        units = request.GET['units']
+
     
     data['top'] = []
     for q in qs:
@@ -131,9 +138,14 @@ def latest(request):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-    units = 'metric'
+    units = None
     if 'units' in request.GET:
         units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
     
     data['top'] = []
     for q in qs:
