@@ -96,6 +96,10 @@ class Listener(models.Model):
 
     lastfm_token = models.CharField(max_length=100)
 
+class PowerUser(models.Model):
+    athlete = models.ForeignKey(Athlete)
+    listener = models.ForeignKey(Listener)
+
 class Tags(models.Model):
     name = models.CharField(max_length=100,unique=True)
     url = models.URLField()
@@ -176,6 +180,13 @@ class Effort(models.Model):
 
 
 #https://docs.djangoproject.com/en/1.11/topics/db/queries/#lookups-that-span-relationships
+
+
+def get_poweruser(strava_token):
+    powerusers = PowerUser.objects.filter(athlete__strava_token=strava_token)
+
+    if powerusers:
+        return powerusers[0]
 
 
 def create_athlete_from_dict(athlete_api):
@@ -436,13 +447,14 @@ def effort_convert(effort_dict, units):
 
 
 def effort_commom(effort_dict):
-    if 'sort_key' in effort_dict and effort_dict['sort_key'] in heartrate:
+    logger.error(effort_dict)
+    if 'sort_key' in effort_dict and effort_dict['sort_key'] in heartrate and 'sort_value' in effort_dict:
         effort_dict['sort_value'] = "{:.2f}".format(effort_dict['sort_value'])
         effort_dict['sort_value_unit'] = common['heartrate']
-    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in cadence:
+    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in cadence and 'sort_value' in effort_dict:
         effort_dict['sort_value'] = "{}".format(int(effort_dict['sort_value']))
         effort_dict['sort_value_unit'] = common['cadence']
-    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in watts:
+    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in watts and 'sort_value' in effort_dict:
         effort_dict['sort_value'] = "{}".format(int(effort_dict['sort_value']))
         effort_dict['sort_value_unit'] = common['watts']
     return effort_dict

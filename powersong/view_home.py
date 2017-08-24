@@ -10,12 +10,17 @@ from powersong.lastfm_aux import lastfm_get_auth_url
 
 from powersong.view_main import index as main_index
 
+from powersong.models import get_poweruser, PowerUser
+
 def index(request):
     
     result = {}
     
     if not 'strava_token' in request.session:
         result['strava_authorize_url'] = strava_get_auth_url()
+    elif get_poweruser(request.session['strava_token']) != None:
+        return main_index(request)
+
     if not 'lastfm_token' in request.session or request.session['lastfm_token'] == None:
         result['lastfm_authorize_url'] = lastfm_get_auth_url()
 

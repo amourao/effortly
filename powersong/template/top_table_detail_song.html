@@ -7,17 +7,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-2 col-md-3">
-                <a href="{{ effort.song__url}}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="rounded" width="100%" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
                 </div>
                 <div class="col-lg-8 col-md-7">
                     <div class="row">
                         <div class="col-md-12 h4 mylead-overflow">
-                            <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a> - <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
-                            {% if effort.activity__activity_id %}
-                            </br>
-                            </br>
-                            <a class="h5 mylead-link mylead-overflow" href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
-                            {% endif %}
+                            <a href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
                             {% if effort.activity__start_date_local %} 
                             </br>
                             <span class="h5">{{ effort.activity__start_date_local }}</span>

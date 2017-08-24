@@ -95,6 +95,9 @@ def top(request):
     time_filter = 60
 
     distance_filter = 100
+
+    diff_filter_min = 0.5
+    diff_filter_max = 1.5
     
     if g_type == 'top':
         qs = Effort.objects.filter(distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,act_type=activity_type,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr').annotate(sort_value=Avg(field)).order_by(field)[::descending][:n]
@@ -107,12 +110,34 @@ def top(request):
     if 'render' in request.GET:
         render = int(request.GET['render'])
         
-
-    
     data['top'] = []
     for q in qs:
         if dispfield:
-            q['sort_key'] = dispfield
+            q['sort_key'] = dispfield    
+            if dispfield.startswith("diff"):
+                q["diff"] = True
+                q["signal"] = ""
+                if 'sort_value' in q:
+                    if q['sort_value'] < 0:
+                        if 'speed' in q['sort_key']:
+                            q["diff"] = "slower"
+                        else:
+                            q["diff"] = "fewer"
+                    else:
+                        if 'speed' in q['sort_key']:
+                            q["diff"] = "faster"
+                        else:
+                            q["diff"] = "more"
+
+
+                        q["signal"] = "+"
+                
+                if "last" in dispfield:
+                    q["last"] = True
+                elif "avg" in dispfield:
+                    q["average"] = True        
+        if g_type == 'avg':
+            q["average"] = True    
         data['top'].append(effort_convert(q,units))
 
     if render == 'json':

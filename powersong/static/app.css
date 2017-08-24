@@ -10,6 +10,10 @@ body {
 }
 
 .list-group-item {
-  background-color: #333e;
-  border: 1px solid #17a2b899;
+  background-color: #333c;
+  border: 1px solid #17a2b8;
+}
+
+.gray-background {
+	background-color: #333c;
 }

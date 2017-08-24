@@ -132,7 +132,7 @@ def sync_efforts(username,access_token,limit=None):
     
     return job_result.id, len(new_activities)
 
-def resync_activity(username,access_token,activity_id,):
+def resync_activity(username,access_token,activity_id,athlete_id):
     client = stravalib.client.Client()
     client.access_token = access_token
 
