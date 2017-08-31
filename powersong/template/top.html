@@ -12,17 +12,17 @@
             <h1 class="cover-heading">Welcome {{ athlete.first_name }}!</h1>
  			{% if first_login %}
  			<p class="h2">This is your first time here.</p>
- 			<p class="h2">Strava tells me your main activity type is {{ athlete.get_athlete_type_display }}.</p>
+ 			<p class="h2">Strava tells me your main activity type is {{ athlete.get_activity_type_display }}.</p>
  			<p class="h2">You can change that on the top bar.</p>
  			{% endif %}
  			{% if syncing %}
- 			<p class="h2">We're getting your activity and listening data from Strava and last.fm.</p>
+ 			<p class="h2">Getting your activity and listening data from Strava and last.fm.</p>
  			<p class="h2">The page will refresh when we're ready.</p>
  			{% elif count_s%}
- 			<p class="h2">We found <span class="text_color_lastfm">{{ count_s }} scrobbles</span> over <span class="text_color_strava">{{ count_a }} {% if athlete_type == 0 %}runs{% else %}rides{% endif %}.</span></p>
+ 			<p class="h2">Found <span class="text_color_lastfm">{{ count_s }} scrobbles</span> over <span class="text_color_strava">{{ count_a }} {% if activity_type == 0 %}runs{% elif activity_type == 1 %}rides{% elif activity_type == -1 %}activities{% endif %}.</span></p>
 			<p class="h2">Are you ready to <span class="text_color_lastfm">rock?</span></p>
  			{% else%}
- 			<p class="h2">Unfortunately, it looks like you don't have any scrobbles while {% if athlete_type == 0 %}running{% else %}cycling{% endif %}.</p>
+ 			<p class="h2">Unfortunately, it looks like you don't have any scrobbles while {% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% elif activity_type == -1 %}on activity{% endif %}.</p>
  			{% endif %}
           </div>
           </div>
@@ -40,7 +40,7 @@
         
 	  <div class="row">
 	  	<div class="col-md-12 text-center">
-	  		<p class="h2">Let's start by checking the <span class="text_color_lastfm">artists and songs</span> you listen to while <span class="text_color_strava">{% if athlete_type == 0 %}running{% else %}cycling{% endif %}</span></p>
+	  		<p class="h2">Let's start by checking the <span class="text_color_lastfm">artists and songs</span> you listen to while <span class="text_color_strava">{% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% else %}on activity{% endif %}</span></p>
 	  		<p class="mylead">(click on the artist or song names to check the matching activities)</p>
 	  	</div>
 	  	</div>
@@ -62,7 +62,7 @@
 	  <div class="row">
 	  	<div class="col-md-12 text-center">
 	  		<p class="h2">Those are some wicked <span class="text_color_lastfm">tunes!</span> But how <span class="text_color_strava">fast</span> do they make you go?</p>
-	  		<p class="mylead">(click on the run name to what other songs you've listened to)</p>
+	  		<p class="mylead">(click on the activity name to what other songs you've listened to)</p>
 	  	</div>
 	    </div>
 	    </div>
@@ -96,7 +96,7 @@
 	    <div class="col-md-12 text-center">
 	  		<p class="h2">Those are some impressive <span class="text_color_strava">performances</span>... but they could have been <span class="text_color_lastfm">flukes.</span></p>
 	  		<p class="mylead">Maybe you're being chased by a pack of <span class="text_color_strava">rabid dogs</span>, running away from <span class="text_color_strava">fast zombies</span>, rolling down <span class="text_color_strava">Mt. Everest</span>, or just hitched a ride on a nearby <span class="text_color_strava">scooter</span>.</p>
-	  		<p class="h2">As a runner, you know that <span class="text_color_lastfm">consistency is key</span>.</p>
+	  		<p class="h2">{% if activity_type == 0 %}As a runner, y{% elif activity_type == 1 %}As a cyclist, y{% else %}Y{% endif %}ou know that <span class="text_color_lastfm">consistency is key</span>.</p>
 	  		<p class="mylead">So, what are the <span class="text_color_lastfm">songs</span> where, averaging over all runs, you...are <span class="text_color_strava">faster</span></p>
 	  	</div>
 	    </div>

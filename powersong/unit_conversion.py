@@ -6,16 +6,19 @@ def metersPerSecondToMiH(mps):
     return "{:.2f}".format(mps*2.237)
 
 def metersToMeters(m):
-    return "{}".format((m))
+    return "{:.2f}".format((m))
 
 def metersToMiles(m):
-    return "{}".format((m/1609.34))
+    return "{:.2f}".format((m/1609.34))
 
 def metersToFeet(m):
-    return "{}".format((m*3.28))
+    return "{:.2f}".format((m*3.28))
 
 def metersToKm(m):
     return "{:.2f}".format(m/1000.0)
+
+def bpmToBpm(bpm):
+    return "{:.2f}".format(bpm)
 
 def secondsToMinutesSecs(s):
     return decMinutesToMinutesSecs(s/60.0)
@@ -31,9 +34,13 @@ def decMinutesToMinutesSecs(mpkm):
 
 
 def metersPerSecondToMinPerMi(mps):
+    if mps == 0:
+        return secondsPerMeterToMinPerMi(0)
     return secondsPerMeterToMinPerMi(1.0/mps)
 
 def metersPerSecondToMinPerKm(mps):
+    if mps == 0:
+        return secondsPerMeterToMinPerMi(0)
     return secondsPerMeterToMinPerKm(1.0/mps)
 
 def secondsPerMeterToMinPerKm(spm):
@@ -45,4 +52,6 @@ def secondsPerMeterToMinPerMi(spm):
     return decMinutesToMinutesSecs(mpmi)
 
 def invertTimeDistance(mps):
+    if mps == 0:
+        return 0
     return (1.0/mps)

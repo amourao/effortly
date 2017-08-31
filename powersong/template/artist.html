@@ -1,7 +1,152 @@
 {% extends "base.html" %}
 {% block content %}
   
-  	<div id='top'>Artist information</div>
+  <div class="container top-box-padding">
+    <ul class="list-group">    
+      <li class="list-group-item">
+        <div class="container">
+            <div class="row">
+                 <div class="col-lg-2 col-md-3">
+                <a href="{{ artist.url}}/"><img src="{{ artist.image_url }}" class="rounded" width="100%" onerror="img_error(this);" alt="{{ artist.name }}"></a>
+                </div>
+                <div class="col-lg-10 col-md-9">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="h4">{{artist.name}}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                    
+                    <div class="col-md-3 text-right">
+                        {% if activity_type == 0 %}
+                        <span class="h4">{{ effort_averages.avg_avg_speed_s }} {{ effort_averages.units.speed_s }} </span>
+                        {% else %}
+                        <span class="h4">{{ effort_averages.avg_avg_speed }} {{ effort_averages.units.speed }} </span>
+                        {% endif %}
+                        <p>avg. speed</p>
+                    </div>
+                    <div class="col-md-3 text-right">
+                        <span class="h4"> {{ effort_averages.avg_distance }} {{ effort_averages.units.distanceSmall }} </span>
+                        <p>avg. distance</p>
+                    </div>
+                    <div class="col-md-3 text-right">
+                        <span class="h4"> {{ effort_averages.avg_duration }} {{ effort_averages.units.timeBig }}</span>
+                        <p>avg. effort duration</p>
+                    </div> 
+                    <div class="col-md-3 text-right">
+                        <span class="h4"> {{ effort_averages.effort_count }}/{{ effort_averages.song_count }} </span>
+                        <p>effort/song count</p>
+                    </div>
+                    </div>
+
+                    <div class="row">
+                        {% if effort_averages.avg_avg_watts %}
+                        <div class="col-md-3 text-right">
+                        <span class="h5">{{ effort_averages.avg_avg_watts|floatformat:"2" }} {{ effort_averages.units.watts }}</span>
+                        <p>avg. power</p>
+                        </div>
+                        {% endif %}
+                        {% if effort_averages.avg_avg_cadence %}
+                        <div class="col-md-3 text-right">
+                        <span class="h5">{{ effort_averages.avg_avg_cadence|floatformat:"2" }} {{ effort_averages.units.cadence }}</span>
+                        <p>avg. cad.</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="col-md-3 text-right">
+
+
+                        
+
+                        {% if effort_averages.avg_diff_avg_speed|add:"0" > "0" %}
+                        <i class="fa fa-chevron-circle-up green_arrow"></i>
+                        {% elif effort_averages.avg_diff_avg_speed|add:"0" < "0" %}
+                        <i class="fa fa-chevron-circle-down red_arrow"></i>
+                        {% else %}
+                        <i class="blue_arrow">=</i>
+                        {% endif %}
+
+                        {% if activity_type == 0 %}
+
+                        <span class="h5">{{ effort_averages.avg_diff_avg_speed_s }} {{ effort_averages.units.speed_s }} </span>
+                        {% else %}
+                        <span class="h5">{{ effort_averages.avg_diff_avg_speed }} {{ effort_averages.units.speed }} </span>
+                        {% endif %}
+                        <p>diff avg. speed</p>
+
+                        </div>
+
+                        <div class="col-md-2 text-right">
+
+                        {% if effort_averages.avg_diff_last_speed|add:"0" > "0" %}
+                        <i class="fa fa-chevron-circle-up green_arrow"></i>
+                        {% elif effort_averages.avg_diff_last_speed|add:"0" < "0" %}
+                        <i class="fa fa-chevron-circle-down red_arrow"></i>
+                        {% else %}
+                        <i class="blue_arrow">=</i>
+                        {% endif %}
+
+
+                        {% if activity_type == 0 %}
+                        <span class="h5">{{ effort_averages.avg_diff_last_speed_s }} {{ effort_averages.units.speed_s }} </span>
+                        {% else %}
+                        <span class="h5">{{ effort_averages.avg_diff_last_speed }} {{ effort_averages.units.speed }} </span>
+                        {% endif %}
+
+                        <p>diff last speed</p>
+                        </div>
+
+                        {% if effort_averages.avg_avg_hr %}
+                        <div class="col-md-2 text-right">
+                        <span class="h5">{{ effort_averages.avg_avg_hr|floatformat:"2" }} {{ effort_averages.units.heartrate }}</span>
+                        <p>avg. hr</p>
+                        </div>
+                        {% endif %}
+
+                        {% if effort_averages.avg_diff_avg_hr %}
+                        <div class="col-md-2 text-right">
+
+                        {% if effort_averages.avg_diff_avg_hr > 0 %}
+                        <i class="fa fa-chevron-circle-up green_arrow"></i>
+                        {% elif effort_averages.avg_diff_avg_hr < 0 %}
+                        <i class="fa fa-chevron-circle-down red_arrow"></i>
+                        {% else %}
+                        <i class="blue_arrow">=</i>
+                        {% endif %}
+
+                        <span class="h5">{{ effort_averages.avg_diff_avg_hr|floatformat:"2" }} {{ effort_averages.units.heartrate }}</span>
+                        <p>diff avg. hr</p>
+                        </div>
+                        {% endif %}
+
+                        {% if effort_averages.avg_diff_last_hr %}
+                        <div class="col-md-2 text-right">
+
+                        {% if effort_averages.avg_diff_last_hr > 0 %}
+                        <i class="fa fa-chevron-circle-up green_arrow"></i>
+                        {% elif effort_averages.avg_diff_last_hr < 0 %}
+                        <i class="fa fa-chevron-circle-down red_arrow"></i>
+                        {% else %}
+                        <i class="blue_arrow">=</i>
+                        {% endif %}
+
+                        <span class="h5">{{ effort_averages.avg_diff_last_hr|floatformat:"2" }} {{ effort_averages.units.heartrate }}</span>
+                        <p>diff last hr</p>
+                        </div>
+                        {% endif %}
+
+                    </div>  
+
+                  </div>
+
+
+                </div>
+            </div>
+            </div>
+        </li>
+    </ul>
+   </div>
+
     <div id='top'> {% include "top_table_detail_artist.html" %} </div>
 
 {% endblock %}

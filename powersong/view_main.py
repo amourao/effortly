@@ -90,9 +90,18 @@ def index(request):
     result['athlete'] = athlete_model
     request.session['athlete_id'] = athlete_model.athlete_id
     
-    result['athlete_type'] = athlete_model.athlete_type
-    if 'athlete_type' in request.GET:
-        result['athlete_type'] = int(request.GET['athlete_type'])
+    
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+    if activity_type == None:
+        if not 'activity_type' in request.session:
+            activity_type = athlete_model.athlete_type
+        else:
+            activity_type = request.session['activity_type']
+
+    request.session['activity_type'] = activity_type
+    result['activity_type'] = activity_type
 
     result['syncing'] = False
     if 'sync_id' in request.session:
@@ -101,7 +110,7 @@ def index(request):
             if count > 0 and status != 'SUCCESS':
                 result['syncing'] = True
 
-    result['count_s'],result['count_a'] = get_scrobble_details(athlete_model.athlete_id,result['athlete_type'])
+    result['count_s'],result['count_a'] = get_scrobble_details(athlete_model.athlete_id,result['activity_type'])
     
     return render_to_response('top.html', result)
 

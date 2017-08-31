@@ -17,3 +17,8 @@ body {
 .gray-background {
 	background-color: #333c;
 }
+
+.top-box-padding {
+	padding-bottom: 50px;
+	padding-top: 25px;
+}

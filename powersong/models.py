@@ -5,6 +5,26 @@ from django.db.models import Q
 from powersong.unit_conversion import *
 import logging
 
+speed    = ['activity__avg_speed','activity__max_speed','avg_speed','diff_avg_speed','diff_last_speed','avg_avg_speed','avg_diff_avg_speed','avg_diff_last_speed']
+speed_s1 = ['activity__avg_speed','activity__max_speed','avg_speed','avg_avg_speed']
+speed_s  = ['activity__avg_speed_s','activity__max_speed_s','avg_speed_s','diff_avg_speed_s','diff_last_speed_s','avg_avg_speed_s','avg_diff_avg_speed_s','avg_diff_last_speed_s']
+
+distanceSmall = ['total_ascent','total_descent','distance','avg_distance']
+distanceBig = ['activity__distance','start_distance','avg_start_distance']
+temperature = ['activity__avg_temp']
+timeBig = ['start_time','duration','avg_duration']
+timeSmall = []
+
+heartrate = ['avg_avg_hr','avg_diff_avg_hr','avg_diff_last_hr','avg_hr','diff_avg_hr','diff_last_hr','activity__avg_hr','activity__max_hr']
+
+cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_cadence']
+
+watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
+
+common = {'timeBig':'min','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W'}
+metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
+imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
+
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +101,57 @@ class Activity(models.Model):
     
     avg_watts = models.FloatField(blank=True,null=True)
     max_watts = models.IntegerField(blank=True,null=True)
+
+    @property
+    def avg_speed_pretty_units(self):
+        if (self.athlete.measurement_preference == 0) and (self.act_type == 0):
+            return metric_legends['speed_s']
+        elif (self.athlete.measurement_preference == 0) and (self.act_type == 1):
+            return metric_legends['speed']
+        elif (self.athlete.measurement_preference == 1) and (self.act_type == 0):
+            return imperial_legends['speed_s']
+        else:
+            return imperial_legends['speed']
+
+    @property
+    def avg_speed_pretty(self):
+        if (self.athlete.measurement_preference == 0) and (self.act_type == 0):
+            return secondsPerMeterToMinPerKm(invertTimeDistance(self.avg_speed))
+        elif (self.athlete.measurement_preference == 0) and (self.act_type == 1):
+            return metersPerSecondToKmH(self.avg_speed)
+        elif (self.athlete.measurement_preference == 1) and (self.act_type == 0):
+            return secondsPerMeterToMinPerMi(invertTimeDistance(self.avg_speed))
+        else:
+            return metersPerSecondToMiH(invertTimeDistance(self.avg_speed))
+
+    @property
+    def distance_big_pretty_units(self):
+        if (self.athlete.measurement_preference == 0):
+            return metric_legends['distanceBig']
+        elif (self.athlete.measurement_preference == 1):
+            return imperial_legends['distanceBig']
+    
+    @property
+    def distance_small_pretty_units(self):
+        if (self.athlete.measurement_preference == 0):
+            return metric_legends['distanceSmall']
+        elif (self.athlete.measurement_preference == 1):
+            return imperial_legends['distanceSmall']
+
+    @property
+    def distance_pretty(self):
+        if (self.athlete.measurement_preference == 0):
+            return metersToKm(self.distance)
+        else:
+            return metersToMiles(self.distance)
+
+    @property
+    def moving_time_pretty(self):
+        return secondsToMinutesSecs(self.moving_time)
+
+    @property
+    def elapsed_time_pretty(self):
+        return secondsToMinutesSecs(self.elapsed_time)
 
 class Listener(models.Model):
     nickname = models.CharField(max_length=30,unique=True)
@@ -177,6 +248,78 @@ class Effort(models.Model):
     @property
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
+
+    @property
+    def avg_speed_pretty_units(self):
+        if (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 0):
+            return metric_legends['speed_s']
+        elif (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 1):
+            return metric_legends['speed']
+        elif (self.activity.athlete.measurement_preference == 1) and (self.activity.act_type == 0):
+            return imperial_legends['speed_s']
+        else:
+            return imperial_legends['speed']
+
+    @property
+    def avg_speed_pretty(self):
+        if (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 0):
+            return secondsPerMeterToMinPerKm(invertTimeDistance(self.avg_speed))
+        elif (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 1):
+            return metersPerSecondToKmH(self.avg_speed)
+        elif (self.activity.athlete.measurement_preference == 1) and (self.act_type == 0):
+            return secondsPerMeterToMinPerMi(invertTimeDistance(self.avg_speed))
+        else:
+            return metersPerSecondToMiH(invertTimeDistance(self.avg_speed))
+    @property
+    def diff_avg_speed_pretty(self):
+        if (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 0):
+            return secondsPerMeterToMinPerKm(invertTimeDistance(self.diff_avg_speed))
+        elif (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 1):
+            return metersPerSecondToKmH(self.diff_avg_speed)
+        elif (self.activity.athlete.measurement_preference == 1) and (self.act_type == 0):
+            return secondsPerMeterToMinPerMi(invertTimeDistance(self.diff_avg_speed))
+        else:
+            return metersPerSecondToMiH(invertTimeDistance(self.diff_avg_speed))
+
+    @property
+    def diff_last_speed_pretty(self):
+        if (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 0):
+            return secondsPerMeterToMinPerKm(invertTimeDistance(self.diff_last_speed))
+        elif (self.activity.athlete.measurement_preference == 0) and (self.activity.act_type == 1):
+            return metersPerSecondToKmH(self.diff_last_speed)
+        elif (self.activity.athlete.measurement_preference == 1) and (self.act_type == 0):
+            return secondsPerMeterToMinPerMi(invertTimeDistance(self.diff_last_speed))
+        else:
+            return metersPerSecondToMiH(invertTimeDistance(self.diff_last_speed))
+
+    @property
+    def distance_big_pretty_units(self):
+        if (self.activity.athlete.measurement_preference == 0):
+            return metric_legends['distanceBig']
+        elif (self.activity.athlete.measurement_preference == 1):
+            return imperial_legends['distanceBig']
+    
+    @property
+    def distance_small_pretty_units(self):
+        if (self.activity.athlete.measurement_preference == 0):
+            return metric_legends['distanceSmall']
+        elif (self.activity.athlete.measurement_preference == 1):
+            return imperial_legends['distanceSmall']
+
+    @property
+    def distance_pretty(self):
+        if (self.activity.athlete.measurement_preference == 0):
+            return metersToKm(self.distance)
+        else:
+            return metersToMiles(self.distance)
+
+    @property
+    def duration_pretty(self):
+        return secondsToMinutesSecs(self.duration)
+
+    @property
+    def start_time_pretty(self):
+        return secondsToMinutesSecs(self.start_time)
 
 
 #https://docs.djangoproject.com/en/1.11/topics/db/queries/#lookups-that-span-relationships
@@ -414,28 +557,6 @@ def strava_is_activity_to_ignore(act_id):
     return False
 
 
-
-speed    = ['activity__avg_speed','activity__max_speed','avg_speed','diff_avg_speed','diff_last_speed']
-speed_s1 = ['activity__avg_speed','activity__max_speed','avg_speed']
-speed_s  = ['activity__avg_speed_s','activity__max_speed_s','avg_speed_s','diff_avg_speed_s','diff_last_speed_s']
-
-distanceSmall = ['total_ascent','total_descent','distance']
-distanceBig = ['activity__distance','start_distance']
-temperature = ['activity__avg_temp']
-timeBig = ['start_time','duration']
-timeSmall = []
-
-heartrate = ['avg_hr','diff_avg_hr','diff_last_hr','activity__avg_hr','activity__max_hr']
-
-cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_cadence']
-
-watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
-
-common = {'timeBig':'min','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W'}
-metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
-imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
-
-
 def effort_convert(effort_dict, units):
     if units == 0:
         effort_dict = effort_to_metric(effort_dict)
@@ -447,7 +568,6 @@ def effort_convert(effort_dict, units):
 
 
 def effort_commom(effort_dict):
-    logger.error(effort_dict)
     if 'sort_key' in effort_dict and effort_dict['sort_key'] in heartrate and 'sort_value' in effort_dict:
         effort_dict['sort_value'] = "{:.2f}".format(effort_dict['sort_value'])
         effort_dict['sort_value_unit'] = common['heartrate']
@@ -460,6 +580,11 @@ def effort_commom(effort_dict):
     return effort_dict
 
 def effort_to_metric(effort_dict):
+    if effort_dict == None:
+        new_effort_dict = {}
+        new_effort_dict["units"] = {**imperial_legends, **common}
+        return new_effort_dict
+
     new_effort_dict = effort_dict
 
 
@@ -509,6 +634,11 @@ def effort_to_metric(effort_dict):
     return new_effort_dict
 
 def effort_to_imperial(effort_dict):
+    if effort_dict == None:
+        new_effort_dict = {}
+        new_effort_dict["units"] = {**imperial_legends, **common}
+        return new_effort_dict
+
     new_effort_dict = effort_dict
 
     for key in speed_s1:

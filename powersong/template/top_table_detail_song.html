@@ -6,55 +6,146 @@
       <li class="list-group-item">
         <div class="container">
             <div class="row">
-                <div class="col-lg-2 col-md-3">
+                <div class="col-md-12">
+                    <a class="h4 mylead-link" href="/activity/{{ effort.activity__activity_id }}/">{{ effort.activity__name}}</a>
+                    <p >{{ effort.activity__start_date_local }}</p>                    
                 </div>
-                <div class="col-lg-8 col-md-7">
-                    <div class="row">
-                        <div class="col-md-12 h4 mylead-overflow">
-                            <a href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
-                            {% if effort.activity__start_date_local %} 
-                            </br>
-                            <span class="h5">{{ effort.activity__start_date_local }}</span>
-                            {% endif %}
-                            
-                            <div class="h5 mylead-overflow">
-                                </br>
-                                {% if effort.average %}
-                                on average
-                                {% endif %}
-                                starts at min {{effort.start_time}} ({{effort.units.distanceBig}} {{effort.start_distance|floatformat:"2"}}) and 
-                                {% if effort.average %}
-                                </br>
-                                {% endif %}
-                                lasts for {{effort.duration}} {{effort.units.timeBig}} ({{effort.distance|floatformat:"2"}} {{effort.units.distanceSmall}})
-                            </div>
-                        </div>
+                <div class="col-md-1">
+                </div>
+                <div class="col-md-11"> 
+                <div class="row">
+                    <div class="col-md-2 text-right">
+                        {% if activity_type == 0 %}
+                        <span class="h5">{{ effort.avg_speed_s }} {{ effort.units.speed_s }} </span>
+                        {% else %}
+                        <span class="h5">{{ effort.avg_speed }} {{ effort.units.speed }} </span>
+                        {% endif %}
+                        <p>speed</p>
                     </div>
+                    <div class="col-md-2 text-right">
+                        <span class="h5"> {{ effort.distance }} {{ effort.units.distanceSmall }} </span>
+                        <p>distance</p>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        <span class="h5"> {{ effort.duration }} min</span>
+                        <p>duration</p>
+                    </div>  
+                    <div class="col-md-2 text-right">
+                    <span class="h5">{{effort.start_time}}</span>
+                    <p>started at (min)</p>
+                    </div>
+                    <div class="col-md-2 text-right">
+                    <span class="h5">{{effort.start_distance}}</span>
+                    <p>started at (km)</p>
+                    </div>
+                    {% if effort.avg_hr %}
+                    <div class="col-md-2 text-right">
+                    <span class="h5">{{ effort.avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+                    <p>avg. hr</p>
+                    </div>
+                    {% endif %}
+                    {% if effort.avg_watts %}
+                    <div class="col-md-2 text-right">
+                    <span class="h5">{{ effort.avg_watts }} W</span>
+                    <p>avg. power</p>
+                    </div>
+                    {% endif %}
+                    {% if effort.avg_cadence %}
+                    <div class="col-md-2 text-right">
+                    <span class="h5">{{ effort.avg_cadence }} spm</span>
+                    <p>avg. cad.</p>
+                    </div>
+                    {% endif %}
+                                     
                 </div>
-                <div class="text-right col-md-2">
-                <span>
-                {% if effort.average %}
-                    on average
-                    </br>
-                {% endif %} 
-                </span>
-                <span class="h5">
-                {% if effort.sort_value %} {{ effort.sort_value }} {{ effort.sort_value_unit }} {% endif %}
-                </span>
-                <span>
-                {% if effort.diff %} 
-                    </br>{{ effort.diff }} than 
-                    {% if effort.last %} 
-                        prev. effort
-                    {% elif effort.average %}
-                        activity avg.
-                    {% endif %} 
-                {% endif %}
                 
-                </span>
+                <div class="row">                    
+
+
+                    <div class="col-md-2 text-right">
+
+                    {% if effort.diff_avg_speed|add:"0" > "0" %}
+                    <i class="fa fa-chevron-circle-up green_arrow"></i>
+                    {% elif effort.diff_avg_speed|add:"0" < "0" %}
+                    <i class="fa fa-chevron-circle-down red_arrow"></i>
+                    {% else %}
+                    <i class="blue_arrow">=</i>
+                    {% endif %}
+
+
+                    {% if activity_type == 0 %}
+                    <span >{{ effort.diff_avg_speed_s }} {{ effort.units.speed_s }} </span>
+                    {% else %}
+                    <span >{{ effort.diff_avg_speed }} {{ effort.units.speed }} </span>
+                    {% endif %}
+                    <p>diff avg. speed</p>
+
+                    </div>
+
+                    <div class="col-md-2 text-right">
+
+                    {% if effort.diff_last_speed|add:"0" > "0" %}
+                    <i class="fa fa-chevron-circle-up green_arrow"></i>
+                    {% elif effort.diff_last_speed|add:"0" < "0" %}
+                    <i class="fa fa-chevron-circle-down red_arrow"></i>
+                    {% else %}
+                    <i class="blue_arrow">=</i>
+                    {% endif %}
+
+                    {% if activity_type == 0 %}
+                    <span >{{ effort.diff_last_speed_s }} {{ effort.units.speed_s }} </span>
+                    {% else %}
+                    <span >{{ effort.diff_last_speed }} {{ effort.units.speed }} </span>
+                    {% endif %}
+
+                    <p>diff last speed</p>
+                    </div>
+
+                    
+
+                    {% if effort.diff_avg_hr %}
+
+                    
+                    <div class="col-md-2 text-right">
+
+                    {% if effort.diff_avg_hr > 0 %}
+                    <i class="fa fa-chevron-circle-up green_arrow"></i>
+                    {% elif effort.diff_avg_hr < 0 %}
+                    <i class="fa fa-chevron-circle-down red_arrow"></i>
+                    {% else %}
+                    <i class="blue_arrow">=</i>
+                    {% endif %}
+
+                    <span >{{ effort.diff_avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+                    <p>diff avg. hr</p>
+                    </div>
+                    {% endif %}
+
+                    {% if effort.diff_last_hr %}
+
+                    
+
+                    <div class="col-md-2 text-right">
+
+                    {% if effort.diff_last_hr > 0 %}
+                    <i class="fa fa-chevron-circle-up green_arrow"></i>
+                    {% elif effort.diff_last_hr < 0 %}
+                    <i class="fa fa-chevron-circle-down red_arrow"></i>
+                    {% else %}
+                    <i class="blue_arrow">=</i>
+                    {% endif %}
+
+                    <span >{{ effort.diff_last_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+                    <p>diff last hr</p>
+                    </div>
+                    {% endif %}
+
+ 
+                </div>
                 </div>
             </div>
-        </div>
+            </div>
+        
       </li>
     {% endfor %}
     </ul>
