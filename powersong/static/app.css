@@ -22,3 +22,13 @@ body {
 	padding-bottom: 50px;
 	padding-top: 25px;
 }
+
+.col-md-no-side-padding {
+	padding-right: 0px;
+	padding-left: 0px;	
+}
+
+.fix-image-caption-overlay {
+	top: unset; 
+	background-color: #333d;
+}

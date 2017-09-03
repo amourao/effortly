@@ -1,114 +1,107 @@
 {% with "Power Song" as APPTITLE %}
 <!doctype html>
 <html>
-    <head>
-        <meta charset="utf-8"/>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <meta name="viewport" content="width=device-width, minimum-scale=1.0 minimal-ui"/>
-        <meta name="description" content=""/>
-        <meta name="author" content=""/>
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0 minimal-ui"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
 
-        {% load staticfiles %}
-        <link rel="shortcut icon" href="{% static "favicon.ico" %}" />
+    {% load staticfiles %}
+    <link rel="shortcut icon" href="{% static "favicon.ico" %}" />
 
-        <title>{{ APPTITLE }}</title>
-        
-        {% block head %}{% endblock %}
+    <title>{{ APPTITLE }}</title>
+    
+    {% block head %}{% endblock %}
 
-        <script type="text/javascript">
+    <script type="text/javascript">
+      function img_error(image) {
+          image.onerror = "";
+          image.src = '/static/nopicture.png';
+          image.style = 'width: 100%';
+          return true;
+      }
 
-    function img_error(image) {
-        image.onerror = "";
-        image.src = '/static/nopicture.png';
-        return true;
-    }
+      function load_async(div,url,dark) {
+          if (typeof(dark)==='undefined') dark = false;
+          if (dark)
+              $(div).html('<div class="text-center"><img src="/static/spinner_dark.gif" width="40" height="40"></div>');
+          else
+              $(div).html('<div class="text-center"><img src="/static/spinner_white.gif" width="40" height="40"></div>');
+          $(div).load(url)
+      }
 
-    function load_async(div,url,dark) {
-        if (typeof(dark)==='undefined') dark = false;
-        if (dark)
-            $(div).html('<div class="text-center"><img src="/static/spinner_dark.gif" width="40" height="40"></div>');
-        else
-            $(div).html('<div class="text-center"><img src="/static/spinner_white.gif" width="40" height="40"></div>');
-        $(div).load(url)
-    }
+      function update_all() {
 
-    function update_all() {
+          load_async('#progress','/get_sync_progress/',true)
+          load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}',true)
+          load_async('#top-hr','/top/?type=top&field=avg_hr&dispfield=avg_hr&activity_type={{ activity_type }}',true)
+          load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}&min_count=5',true)
+          load_async('#artists','/artists?activity_type={{ activity_type }}',true)
+          load_async('#songs','/songs?activity_type={{ activity_type }}',true)
+          load_async('#avg_diff_last_hr','/top/?type=avg&field=diff_last_hr&dispfield=diff_last_hr&activity_type={{ activity_type }}&min_count=5',true)
+          load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed_s&dispfield=diff_last_speed&activity_type={{ activity_type }}&min_count=5',true)
+      }
 
-        load_async('#progress','/get_sync_progress/',true)
-        load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}',true)
-        load_async('#top-hr','/top/?type=top&field=avg_hr&dispfield=avg_hr&activity_type={{ activity_type }}',true)
-        load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}&min_count=5',true)
-        load_async('#artists','/artists?activity_type={{ activity_type }}',true)
-        load_async('#songs','/songs?activity_type={{ activity_type }}',true)
-        load_async('#avg_diff_last_hr','/top/?type=avg&field=diff_last_hr&dispfield=diff_last_hr&activity_type={{ activity_type }}&min_count=5',true)
-        load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed_s&dispfield=diff_last_speed&activity_type={{ activity_type }}&min_count=5',true)
-    }
+      function sync() {
+          load_async('#progress','/sync/',true)
+      }
 
-    function sync() {
-        load_async('#progress','/sync/',true)
-    }
+      function progress() {
+          var sync = $('#progress').html(); 
+          if (sync.indexOf("IN PROGRESS") != -1)
+              load_async('#progress','/get_sync_progress/',true);
+          if (sync.indexOf("SUCCESS") != -1)
+              location.reload();
+      }
 
-    function progress() {
-        var sync = $('#progress').html(); 
-        if (sync.indexOf("IN PROGRESS") != -1)
-            load_async('#progress','/get_sync_progress/',true);
-        if (sync.indexOf("SUCCESS") != -1)
-            location.reload();
-    }
-
-    window.setInterval(function(){progress();}, 10000);
-
-
+      window.setInterval(function(){progress();}, 10000);
 
     </script>
-    </head>
-        {% if activity_type != -1 %}
-        <body class="background_image{{ activity_type }}">
-        {% else %}
-        <body class="background_image">
-        {% endif %}
-
-
-    
-
+  </head>
+  {% if activity_type != -1 %}
+  <body class="background_image{{ activity_type }}">
+  {% else %}
+  <body class="background_image">
+  {% endif %}
+  
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a href="/" class="navbar-brand">Power Song</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class="navbar-collapse collapse" id="collapsingNavbar3">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% if activity_type == 0 %}Running{% elif activity_type == 1 %}Cycling{% else %}All{% endif %}</a>
-                    <div class="dropdown-menu" aria-labelledby="dropdown01">
-                        <a class="dropdown-item" href="?activity_type=0">Running</a>
-                        <a class="dropdown-item" href="?activity_type=1">Cycling</a>
-                        <a class="dropdown-item" href="?activity_type=-1">All</a>
-                    </div>
-                </li>
-            </ul>
-            <ul class="navbar-nav ml-auto justify-content-end">
+      <a href="/" class="navbar-brand">Power Song</a>
 
-                <li class="nav-item" id="progress" style="display:flex"></li>
-                <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
-                <li class="nav-item"> <a class="nav-link">{{ athlete.runs_count }} runs</a> </li>
-                <li class="nav-item"> <a class="nav-link">{{ athlete.rides_count }} rides</a> </li>
-                <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
-                <li class="nav-item"> <a class="nav-link">{{ listener.scrobble_count }} scrobbles</a> </li>
-                <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
-                <li class="nav-item"> <a class="btn btn-margin-left btn-outline-danger" href="/logout" role="button">Logout</a> </li>
-            </ul>
-        </div>
+      <div class="navbar-collapse collapse" id="collapsingNavbar3">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% if activity_type == 0 %}Running{% elif activity_type == 1 %}Cycling{% else %}All{% endif %}</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              <a class="dropdown-item" href="?activity_type=0">Running</a>
+              <a class="dropdown-item" href="?activity_type=1">Cycling</a>
+              <a class="dropdown-item" href="?activity_type=-1">All</a>
+            </div>
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto justify-content-end">
+          <li class="nav-item" id="progress" style="display:flex"></li>
+          <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
+          <li class="nav-item"> <a class="nav-link">{{ athlete.runs_count }} runs</a> </li>
+          <li class="nav-item"> <a class="nav-link">{{ athlete.rides_count }} rides</a> </li>
+          <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
+          <li class="nav-item"> <a class="nav-link">{{ listener.scrobble_count }} scrobbles</a> </li>
+          <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
+          <li class="nav-item"> <a class="btn btn-margin-left btn-outline-danger" href="/logout" role="button">Logout</a></li>
+        </ul>
+      </div>
     </nav>
 
+    {% block content %}{% endblock %}  
+          
+    <hr>
     
-
-
-        {% block content %}{% endblock %}  
-
-        
-      <hr>
     <div class="container text-center">
       <footer>
         <p>&copy; André Mourão 2017</p>
@@ -128,11 +121,7 @@
 
     <link href="/static/app.css" rel="stylesheet">
     <link href="/static/cover.css" rel="stylesheet">
-
-    
-
-    </body>
-
-    {% block extra_js %}{% endblock %}
+  </body>
+{% block extra_js %}{% endblock %}
 </html>
 {% endwith %}
