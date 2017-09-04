@@ -9,7 +9,8 @@
     <meta name="author" content=""/>
 
     {% load staticfiles %}
-    <link rel="shortcut icon" href="{% static "favicon.ico" %}" />
+    <link rel="shortcut icon" href="{% static "favicon.png" %}" />
+    <link rel="apple-touch-icon" href="{% static "touch.png" %}" />
 
     <title>{{ APPTITLE }}</title>
     
@@ -19,7 +20,7 @@
       function img_error(image) {
           image.onerror = "";
           image.src = '/static/nopicture.png';
-          image.style = 'width: 100%';
+          image.class = 'rounded w-100';
           return true;
       }
 
@@ -71,7 +72,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <a href="/" class="navbar-brand">Power Song</a>
+      <a href="/" class="navbar-brand"><img src="/static/logo.png" style="height: 35px"></a>
 
       <div class="navbar-collapse collapse" id="collapsingNavbar3">
         <ul class="navbar-nav mr-auto">
