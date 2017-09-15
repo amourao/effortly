@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^about/', about),
     url(r'^logout/', logout),
     url(r'^top/', top),
-    url(r'^latest/', latest),
+    url(r'^activities/', latest),
     url(r'^artists/', artists),
     url(r'^songs/', songs),
     

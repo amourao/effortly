@@ -188,4 +188,4 @@ def resync_last_fm(request,activity_id):
     resync_activity(request.session['lastfm_username'],request.session['strava_token'],activity_id,request.session['athlete_id'])
     
     #return render_to_response('blank.html', {'message':response})
-    return HttpResponse({})
+    return redirect("/activity/" + activity_id)

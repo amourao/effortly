@@ -161,33 +161,35 @@ def top(request):
 def latest(request):
     data = {}
 
+    if not 'strava_token' in request.session:
+        return redirect("/")
+    
+    poweruser = get_poweruser(request.session['strava_token'])
+
+    data['athlete'] = poweruser.athlete
+    data['listener'] = poweruser.listener
+
     descending = -1
     if 'ascending' in request.GET:
         descending = 1
+
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+    if activity_type == None:
+        if not 'athlete_type' in request.session:
+            athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+            activity_type = athlete.athlete_type
+        else:
+            activity_type = request.session['activity_type']
+
+    data['activity_type'] = activity_type
+
     
     n = 10
     if 'n' in request.GET:
         n = int(request.GET['n'])
     
-    qs = Activity.objects.filter(athlete__athlete_id = request.session['athlete_id']).values('name','activity_id','workout_type','start_date_local').order_by('start_date_local')[::descending][:n]
-    render = 'html'
-    if 'render' in request.GET:
-        render = int(request.GET['render'])
-        
-    units = None
-    if 'units' in request.GET:
-        units = request.GET['units']
-    if not units:
-        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
-        units = athlete.measurement_preference
-    else:
-        units = 0
-    
-    data['top'] = []
-    for q in qs:
-        data['top'].append(effort_convert(q,units))
+    data['top'] = Activity.objects.filter(athlete__athlete_id = request.session['athlete_id']).order_by('start_date_local')[::descending][:n]
 
-    if render == 'json':
-        return JsonResponse(data)
-    else:
-        return render_to_response('top_summary_table.html', data)
+    return render_to_response('activities.html', data)

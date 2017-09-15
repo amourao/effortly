@@ -1,5 +1,5 @@
 body {
-	padding-top: 56px;
+	padding-top: 70px;
 }
 
 .btn-margin-left {
@@ -23,7 +23,7 @@ body {
 	padding-top: 25px;
 }
 
-.col-md-no-side-padding {
+.col-no-side-padding {
 	padding-right: 0px;
 	padding-left: 0px;	
 }
