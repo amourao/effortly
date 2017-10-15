@@ -170,6 +170,19 @@ def gen_sync_response(request):
 
 def sync(request):
 
+    if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) and not 'strava_token' in request.session:
+        return redirect('home.html')
+
+    if not 'strava_token' in request.session:
+        return redirect(strava_get_auth_url())
+    
+    poweruser = get_poweruser(request.session['strava_token'])
+
+    request.session['lastfm_key'] = poweruser.listener.lastfm_token
+    request.session['lastfm_username'] = poweruser.listener.nickname
+    request.session['strava_token'] = poweruser.athlete.strava_token
+    request.session['athlete_id'] = poweruser.athlete.athlete_id
+
     sync_id = get_sync_id(request)
 
     if sync_id == None or 'force' in request.GET:
@@ -185,6 +198,19 @@ def get_sync_progress(request):
 
 def resync_last_fm(request,activity_id):
 
+    if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) and not 'strava_token' in request.session:
+        return redirect('home.html')
+
+    if not 'strava_token' in request.session:
+        return redirect(strava_get_auth_url())
+    
+    poweruser = get_poweruser(request.session['strava_token'])
+
+    request.session['lastfm_key'] = poweruser.listener.lastfm_token
+    request.session['lastfm_username'] = poweruser.listener.nickname
+    request.session['strava_token'] = poweruser.athlete.strava_token
+    request.session['athlete_id'] = poweruser.athlete.athlete_id
+        
     resync_activity(request.session['lastfm_username'],request.session['strava_token'],activity_id,request.session['athlete_id'])
     
     #return render_to_response('blank.html', {'message':response})
