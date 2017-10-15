@@ -21,7 +21,7 @@ cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_c
 
 watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
 
-common = {'timeBig':'min','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W'}
+common = {'timeBig':'','timeSmall':'','heartrate':'bpm','cadence':'spm','watts':'W'}
 metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
 imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
 

@@ -27,10 +27,20 @@ def decMinutesToMinutesSecs(mpkm):
     if mpkm == 0:
         return "0:00"
     elif mpkm > 0:
-        return "{}:{:02.0f}".format(int(mpkm), int((mpkm-(int(mpkm)))*60)%60)   
+        hpkm = int(mpkm/60)
+        mpkm = mpkm-hpkm*60
+        if hpkm > 0:
+            return "{}:{:02.0f}:{:02.0f}".format(int(hpkm),int(mpkm), int((mpkm-(int(mpkm)))*60)%60)   
+        else:
+            return "{}:{:02.0f}".format(int(mpkm), int((mpkm-(int(mpkm)))*60)%60)   
     else:
-        mpkm=-mpkm
-        return "-{}:{:02.0f}".format(int(mpkm), int((mpkm-(int(mpkm)))*60)%60)
+        mpkm = -mpkm
+        hpkm = int(mpkm/60)
+        mpkm = mpkm-hpkm*60
+        if hpkm > 0:
+            return "-{}:{:02.0f}:{:02.0f}".format(int(hpkm),int(mpkm), int((mpkm-(int(mpkm)))*60)%60)
+        else:
+            return "-{}:{:02.0f}".format(int(mpkm), int((mpkm-(int(mpkm)))*60)%60)
 
 
 def metersPerSecondToMinPerMi(mps):
