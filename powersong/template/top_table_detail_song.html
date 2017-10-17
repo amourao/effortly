@@ -16,14 +16,14 @@
                 <div class="row">
                     <div class="col-6 col-md-2 text-right">
                         {% if activity_type == 0 %}
-                        <span class="h5">{{ effort.avg_speed_s }} {{ effort.units.speed_s }} </span>
+                        <span class="h5">{{ effort.avg_speed_s }} </span><span> {{ effort.units.speed_s }} </span>
                         {% else %}
-                        <span class="h5">{{ effort.avg_speed }} {{ effort.units.speed }} </span>
+                        <span class="h5">{{ effort.avg_speed }} </span><span> {{ effort.units.speed }} </span>
                         {% endif %}
                         <p>speed</p>
                     </div>
                     <div class="col-6 col-md-2 text-right">
-                        <span class="h5"> {{ effort.distance }} {{ effort.units.distanceSmall }} </span>
+                        <span class="h5"> {{ effort.distance }} </span><span> {{ effort.units.distanceSmall }} </span>
                         <p>distance</p>
                     </div>
                     <div class="col-6 col-md-2 text-right">
@@ -40,19 +40,19 @@
                     </div>
                     {% if effort.avg_hr %}
                     <div class="col-6 col-md-2 text-right">
-                    <span class="h5">{{ effort.avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+                    <span>{{ effort.avg_hr|floatformat:"2" }} </span><span> {{ effort.units.heartrate }}</span>
                     <p>avg. hr</p>
                     </div>
                     {% endif %}
                     {% if effort.avg_watts %}
                     <div class="col-6 col-md-2 text-right">
-                    <span class="h5">{{ effort.avg_watts }} W</span>
+                    <span>{{ effort.avg_watts }} </span><span> W</span>
                     <p>avg. power</p>
                     </div>
                     {% endif %}
                     {% if effort.avg_cadence %}
                     <div class="col-6 col-md-2 text-right">
-                    <span class="h5">{{ effort.avg_cadence }} spm</span>
+                    <span>{{ effort.avg_cadence }} </span><span> spm</span>
                     <p>avg. cad.</p>
                     </div>
                     {% endif %}
@@ -78,11 +78,12 @@
                     {% else %}
                     <span >{{ effort.diff_avg_speed }} {{ effort.units.speed }} </span>
                     {% endif %}
-                    <p>diff avg. speed</p>
+                    <p>&Delta; avg. speed</p>
 
                     </div>
 
-                    <div class="col-6 col-md-2 text-right">
+                    {% if effort.diff_last_speed %}
+                    <div class="col-6 col-md-2 text-right">                 
 
                     {% if effort.diff_last_speed|add:"0" > "0" %}
                     <i class="fa fa-chevron-circle-up green_arrow"></i>
@@ -96,12 +97,12 @@
                     <span >{{ effort.diff_last_speed_s }} {{ effort.units.speed_s }} </span>
                     {% else %}
                     <span >{{ effort.diff_last_speed }} {{ effort.units.speed }} </span>
-                    {% endif %}
+                    {% endif %}                    
 
-                    <p>diff last speed</p>
+                    <p>&Delta; last speed</p>
                     </div>
 
-                    
+                    {% endif %}
 
                     {% if effort.diff_avg_hr %}
 
@@ -117,7 +118,7 @@
                     {% endif %}
 
                     <span >{{ effort.diff_avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
-                    <p>diff avg. hr</p>
+                    <p>&Delta; avg. hr</p>
                     </div>
                     {% endif %}
 
@@ -136,7 +137,7 @@
                     {% endif %}
 
                     <span >{{ effort.diff_last_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
-                    <p>diff last hr</p>
+                    <p>&Delta; last hr</p>
                     </div>
                     {% endif %}
 

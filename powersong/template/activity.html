@@ -16,11 +16,11 @@
                 <div class="col-md-8">
                 <div class="row">
                     <div class="col-6 col-md-4 text-right">
-                		<span class="h4">{{ activity.avg_speed_pretty }} {{ activity.avg_speed_pretty_units }} </span>
+                		<span class="h4">{{ activity.avg_speed_pretty }} </span><span> {{ activity.avg_speed_pretty_units }} </span>
                         <p>speed</p>
                     </div>
                     <div class="col-6 col-md-4 text-right">
-                        <span class="h4"> {{ activity.distance_pretty }} {{ activity.distance_big_pretty_units }} </span>
+                        <span class="h4"> {{ activity.distance_pretty }} </span><span> {{ activity.distance_big_pretty_units }} </span>
                         <p>distance</p>
                     </div>
                     <div class="col-6 col-md-4 text-right">
@@ -31,25 +31,25 @@
                 
                 <div class="row">
                     <div class="col-6 col-md-4 text-right">
-                    <span class="h5">{{ activity.elapsed_time_pretty }} </span>
-                    <p>Elap. time</p>
+                    <span>{{ activity.elapsed_time_pretty }} </span>
+                    <p>elap. time</p>
                     </div>
                     {% if activity.avg_hr %}
                     <div class="col-6 col-md-4 text-right">
-                    <span class="h5">{{ activity.avg_hr }} bpm</span>
-                    <p>Avg. HR</p>
+                    <span>{{ activity.avg_hr }} </span><span> bpm</span>
+                    <p>avg. HR</p>
                     </div>
                     {% endif %}
                     {% if activity.avg_watts %}
                     <div class="col-6 col-md-4 text-right">
-                    <span class="h5">{{ activity.avg_watts }} W</span>
-                    <p>Avg. power</p>
+                    <span>{{ activity.avg_watts }} </span><span> W</span>
+                    <p>avg. power</p>
                     </div>
                     {% endif %}
                     {% if activity.avg_cadence %}
                     <div class="col-6 col-md-4 text-right">
-                    <span class="h5">{{ activity.avg_cadence }} spm</span>
-                    <p>Avg. cad</p>
+                    <span>{{ activity.avg_cadence }} </span><span> spm</span>
+                    <p>avg. cad</p>
                     </div>
                     {% endif %}
                 </div>

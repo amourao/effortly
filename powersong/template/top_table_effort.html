@@ -63,7 +63,7 @@
               {% else %}
               <span>{{ effort.diff_avg_speed }} {{ effort.units.speed }} </span>
               {% endif %}
-              <p>diff avg. speed</p>
+              <p>&Delta; avg. speed</p>
             </div>
             <div class="col-6 col-md-3 text-right">
 
@@ -82,7 +82,7 @@
               <span>{{ effort.diff_last_speed }} {{ effort.units.speed }} </span>
               {% endif %}
 
-              <p>diff last speed</p>
+              <p>&Delta; last speed</p>
             </div>
 
             {% if effort.diff_avg_hr %}
@@ -96,7 +96,7 @@
               <i class="blue_arrow">=</i>
               {% endif %}
               <span>{{ effort.diff_avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
-              <p>diff avg. hr</p>
+              <p>&Delta; avg. hr</p>
             </div>
             {% endif %}
 
@@ -111,7 +111,7 @@
               <i class="blue_arrow">=</i>
               {% endif %}
               <span>{{ effort.diff_last_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
-              <p>diff last hr</p>
+              <p>&Delta; last hr</p>
             </div>
             {% endif %}
 

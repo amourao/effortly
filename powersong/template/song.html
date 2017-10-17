@@ -19,22 +19,22 @@
                     
                     <div class="col-6 col-md-3 text-right">
                     	{% if activity_type == 0 %}
-                		<span class="h4">{{ effort_averages.avg_avg_speed_s }} {{ effort_averages.units.speed_s }} </span>
+                		<span class="h4">{{ effort_averages.avg_avg_speed_s }} </span><span> {{ effort_averages.units.speed_s }} </span>
                 		{% else %}
-                		<span class="h4">{{ effort_averages.avg_avg_speed }} {{ effort_averages.units.speed }} </span>
+                		<span class="h4">{{ effort_averages.avg_avg_speed }} </span><span> {{ effort_averages.units.speed }} </span>
                 		{% endif %}
                         <p>avg. speed</p>
                     </div>
                     <div class="col-6 col-md-3 text-right">
-                        <span class="h4"> {{ effort_averages.avg_distance }} {{ effort_averages.units.distanceSmall }} </span>
+                        <span class="h4"> {{ effort_averages.avg_distance }} </span><span> {{ effort_averages.units.distanceSmall }} </span> 
                         <p>avg. distance</p>
                     </div>
                     <div class="col-6 col-md-3 text-right">
-                        <span class="h4"> {{ effort_averages.avg_duration }} {{ effort_averages.units.timeBig }}</span>
+                        <span class="h4"> {{ effort_averages.avg_duration }} </span><span> {{ effort_averages.units.timeBig }}</span>
                         <p>avg. effort duration</p>
                     </div> 
                     <div class="col-6 col-md-3 text-right">
-                        <span class="h4"> {{ effort_averages.count }} </span>
+                        <span class="h4"> {{ effort_averages.count }} </span><span> </span>
                         <p>count</p>
                     </div>
                     </div>
@@ -54,14 +54,15 @@
 
 
                         {% if activity_type == 0 %}
-                        <span class="h5">{{ effort_averages.avg_diff_avg_speed_s }} {{ effort_averages.units.speed_s }} </span>
+                        <span>{{ effort_averages.avg_diff_avg_speed_s }} </span><span> {{ effort_averages.units.speed_s }} </span>
                         {% else %}
-                        <span class="h5">{{ effort_averages.avg_diff_avg_speed }} {{ effort_averages.units.speed }} </span>
+                        <span>{{ effort_averages.avg_diff_avg_speed }} </span><span> {{ effort_averages.units.speed }} </span>
                         {% endif %}
-                        <p>diff avg. speed</p>
+                        <p>&Delta; avg. speed</p>
 
                         </div>
 
+                        {% if effort_averages.avg_diff_last_speed %}
                         <div class="col-6 col-md-2 text-right">
 
                         {% if effort_averages.avg_diff_last_speed|add:"0" > "0" %}
@@ -74,17 +75,18 @@
 
 
                         {% if activity_type == 0 %}
-                        <span class="h5">{{ effort_averages.avg_diff_last_speed_s }} {{ effort_averages.units.speed_s }} </span>
+                        <span>{{ effort_averages.avg_diff_last_speed_s }} </span><span> {{ effort_averages.units.speed_s }} </span>
                         {% else %}
-                        <span class="h5">{{ effort_averages.avg_diff_last_speed }} {{ effort_averages.units.speed }} </span>
+                        <span>{{ effort_averages.avg_diff_last_speed }} </span><span> {{ effort_averages.units.speed }} </span>
                         {% endif %}
 
-                        <p>diff last speed</p>
+                        <p>&Delta; last speed</p>
                         </div>
+                        {% endif %}
 
                         {% if effort_averages.avg_avg_hr %}
                         <div class="col-6 col-md-2 text-right">
-                        <span class="h5">{{ effort_averages.avg_avg_hr|floatformat:"2" }} {{ effort_averages.units.heartrate }}</span>
+                        <span>{{ effort_averages.avg_avg_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
                         <p>avg. hr</p>
                         </div>
                         {% endif %}
@@ -100,8 +102,8 @@
                         <i class="blue_arrow">=</i>
                         {% endif %}
 
-	                    <span class="h5">{{ effort_averages.avg_diff_avg_hr|floatformat:"2" }} {{ effort_averages.units.heartrate }}</span>
-	                    <p>diff avg. hr</p>
+	                    <span>{{ effort_averages.avg_diff_avg_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
+	                    <p>&Delta; avg. hr</p>
 	                    </div>
 	                    {% endif %}
 
@@ -116,20 +118,20 @@
                         <i class="blue_arrow">=</i>
                         {% endif %}
 
-	                    <span class="h5">{{ effort_averages.avg_diff_last_hr|floatformat:"2" }} {{ effort_averages.units.heartrate }}</span>
-	                    <p>diff last hr</p>
+	                    <span>{{ effort_averages.avg_diff_last_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
+	                    <p>&Delta; last hr</p>
 	                    </div>
 	                    {% endif %}
 
                         {% if effort_averages.avg_avg_watts %}
                         <div class="col-6 col-md-3 text-right">
-                        <span class="h5">{{ effort_averages.avg_avg_watts|floatformat:"2" }} {{ effort_averages.units.watts }}</span>
+                        <span>{{ effort_averages.avg_avg_watts|floatformat:"2" }} </span><span> {{ effort_averages.units.watts }}</span>
                         <p>avg. power</p>
                         </div>
                         {% endif %}
                         {% if effort_averages.avg_avg_cadence %}
                         <div class="col-6 col-md-3 text-right">
-                        <span class="h5">{{ effort_averages.avg_avg_cadence|floatformat:"2" }} {{ effort_averages.units.cadence }}</span>
+                        <span>{{ effort_averages.avg_avg_cadence|floatformat:"2" }} </span><span> {{ effort_averages.units.cadence }}</span>
                         <p>avg. cad.</p>
                         </div>
                         {% endif %}
