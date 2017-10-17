@@ -35,13 +35,16 @@ def strava_download_activity(access_token,act):
         act_ign.save()
         return None
     try:
-        stream_keys = ['time','distance','heartrate','watts','altitude']
+        stream_keys = ['time','distance','heartrate','watts','altitude','cadence','velocity_smooth','grade_smooth','moving']
+
         #actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
         act_stream_api = client.get_activity_streams(act['id'],types=stream_keys)
         act_stream = {}
         for k in stream_keys:
             if k in act_stream_api:
                 act_stream[k] = act_stream_api[k].data
+        stored_act.detailed_vectors = act_stream
+        stored_act.save()
     except Exception as e:
         logger.error("Exception on activity {}".format(act['id']))
         logger.error(e)

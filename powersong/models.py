@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db.models import Q
 
 from powersong.unit_conversion import *
+from picklefield.fields import PickledObjectField
 import logging
 
 speed    = ['activity__avg_speed','activity__max_speed','avg_speed','diff_avg_speed','diff_last_speed','avg_avg_speed','avg_diff_avg_speed','avg_diff_last_speed']
@@ -101,6 +102,8 @@ class Activity(models.Model):
     
     avg_watts = models.FloatField(blank=True,null=True)
     max_watts = models.IntegerField(blank=True,null=True)
+
+    detailed_vectors = PickledObjectField(blank=True,null=True)
 
     @property
     def avg_speed_pretty_units(self):
