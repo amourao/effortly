@@ -11,36 +11,36 @@
           </div>
         <div class="col-md-lg-8 col-md-7">
           <div class="row">
-            <div class="col-md-12 h4">
-              <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a> - <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
+            <div class="col-md-12">
+              <a class="h4" href="/song/{{ effort.song}}/">{{effort.song__title}}</a> - <a class="h4" href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
                 {% if effort.activity__activity_id %}
               </br>
               <a class="h5 mylead-link mylead-overflow" href="/activity/{{ effort.activity__activity_id}}/">{{ effort.activity__name}}</a>
               </br>
-              <span class="h5">{{ effort.activity__start_date_local }}</span>
+              <span>{{ effort.activity__start_date_local }}</span>
               {% endif %}
             </div>
           </div>
           <div class="row">               
             <div class="col-6 col-md-3 text-right">
               {% if activity_type == 0 %}
-                <span class="h5">{{ effort.avg_speed_s_pretty }} {{ effort.units.speed_s }} </span>
+                <span class="h5">{{ effort.avg_speed_s_pretty }} </span><span> {{ effort.units.speed_s }} </span>
               {% else %}
-                <span class="h5">{{ effort.avg_speed_pretty }} {{ effort.units.speed }} </span>
+                <span class="h5">{{ effort.avg_speed_pretty }} </span><span> {{ effort.units.speed }} </span>
               {% endif %}
               <p>avg. speed</p>
             </div>
             <div class="col-6 col-md-3 text-right">
-              <span class="h5"> {{ effort.distance_pretty }} {{ effort.units.distanceSmall }} </span>
+              <span class="h5"> {{ effort.distance_pretty }} </span><span> {{ effort.units.distanceSmall }} </span>
               <p>distance</p>
             </div>
             <div class="col-6 col-md-3 text-right">
-              <span class="h5">{{ effort.duration_pretty }} {{ effort.units.timeBig }}</span>
+              <span class="h5">{{ effort.duration_pretty }} </span><span> {{ effort.units.timeBig }}</span>
               <p>duration</p>
             </div>
             {% if effort.avg_hr %}
             <div class="col-6 col-md-3 text-right">
-              <span class="h5">{{ effort.avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+              <span class="h5">{{ effort.avg_hr|floatformat:"2" }} </span><span> {{ effort.units.heartrate }}</span>
               <p>avg. hr</p>
             </div>
             {% endif %}
@@ -51,10 +51,10 @@
               
               {% if activity_type == 0 %}
                 {% get_delta_symbol effort.diff_avg_speed_s 0 %}
-                <span>{{ effort.diff_avg_speed_s_pretty }} {{ effort.units.speed_s }} </span>
+                <span>{{ effort.diff_avg_speed_s_pretty }} </span><span> {{ effort.units.speed_s }} </span>
               {% else %}
                 {% get_delta_symbol effort.diff_avg_speed 0 %}
-                <span>{{ effort.diff_avg_speed_pretty }} {{ effort.units.speed }} </span>
+                <span>{{ effort.diff_avg_speed_pretty }} </span><span> {{ effort.units.speed }} </span>
               {% endif %}
               
               <p>&Delta; avg. speed</p>
@@ -65,10 +65,10 @@
               
               {% if activity_type == 0 %}
                 {% get_delta_symbol effort.diff_last_speed_s 0 %}
-                <span>{{ effort.diff_last_speed_s_pretty }} {{ effort.units.speed_s }} </span>
+                <span>{{ effort.diff_last_speed_s_pretty }} </span><span> {{ effort.units.speed_s }} </span>
               {% else %}
                 {% get_delta_symbol effort.diff_last_speed 0 %}
-                <span>{{ effort.diff_last_speed_pretty }} {{ effort.units.speed }} </span>
+                <span>{{ effort.diff_last_speed_pretty }} </span><span> {{ effort.units.speed }} </span>
               {% endif %}
 
               <p>&Delta; last speed</p>
@@ -78,7 +78,7 @@
             <div class="col-6 col-md-3 text-right">
 
               {% get_delta_symbol effort.diff_avg_hr 0 %}
-              <span>{{ effort.diff_avg_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+              <span>{{ effort.diff_avg_hr|floatformat:"2" }} </span><span> {{ effort.units.heartrate }}</span>
               <p>&Delta; avg. hr</p>
             </div>
             {% endif %}
@@ -87,7 +87,7 @@
             <div class="col-6 col-md-3 text-right">
 
               {% get_delta_symbol effort.diff_last_hr 0 %}
-              <span>{{ effort.diff_last_hr|floatformat:"2" }} {{ effort.units.heartrate }}</span>
+              <span>{{ effort.diff_last_hr|floatformat:"2" }} </span><span> {{ effort.units.heartrate }}</span>
               <p>&Delta; last hr</p>
             </div>
             {% endif %}
@@ -104,7 +104,7 @@
       {% endif %} 
       </span>
       <span class="h5">
-      {% if effort.sort_value %} {{ effort.sort_value }} {{ effort.sort_value_unit }} {% endif %}
+      {% if effort.sort_value %} {{ effort.sort_value }} </span><span> {{ effort.sort_value_unit }} {% endif %}
       </span>
       <span>
       {% if effort.diff %} 
