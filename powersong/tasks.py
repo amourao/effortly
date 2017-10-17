@@ -137,8 +137,6 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
         song = create_song_from_dict(song_api)
         
-
-
         #stream_keys = ['time','distance','heartrate','watts','altitude']
         # time:     integer seconds
         # latlng:     floats [latitude, longitude]
@@ -245,8 +243,39 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     return True
 
 @shared_task
-def lastfm_download_track_info(track_id):
-    return None
+def lastfm_download_track_info(artist_name,track_name):
+    method = 'track.getInfo'
+
+    url = settings.LASTFM_API_TRACK.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name),quote_plus(track_name))
+
+    response = requests.get(url).json()
+
+    if 'lfm' in response:
+        response = response['lfm']
+    track_json = response['track']
+
+    track = lastfm_get_track(artist_name,track_name)
+
+    if track == None:
+        track = Song()
+
+    image_url = None
+    if 'album' in track_json and 'image' in track_json['album']:
+        image_url = lastfm_get_largest_image(track_json['album']['image'])
+
+    if image_url != None:
+        track.image_url = image_url
+
+    if 'mbid' in track_json and track_json['mbid'].strip() != "":
+        track.mbid = track_json['mbid']
+
+    track.duration = int(track_json['duration'])
+    track.listeners_count = int(track_json['listeners'])
+    track.plays_count = int(track_json['playcount'])
+    track.url =  track_json['url']
+    track.last_sync_date =  datetime.now()
+
+    track.save()
 
 @shared_task
 def lastfm_download_artist_info(artist_name,mb_id=None):
@@ -256,7 +285,6 @@ def lastfm_download_artist_info(artist_name,mb_id=None):
     else:
         url = settings.LASTFM_API_ARTIST.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name))
 
-    logger.debug(url)
     response = requests.get(url).json()
 
     if 'lfm' in response:

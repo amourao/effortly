@@ -2,7 +2,7 @@ from django.conf import settings
 from hashlib import md5
 
 from powersong.models import *
-from powersong.tasks import lastfm_download_artist_info
+from powersong.tasks import lastfm_download_artist_info,lastfm_download_track_info
 
 from celery import chain, group
 from celery.result import AsyncResult,GroupResult
@@ -79,3 +79,22 @@ def lastfm_sync_artists():
         job_result = promise.delay()
     
     return job_result.id, len(artists_to_sync)
+
+def lastfm_sync_tracks():
+
+    songs = Song.objects.all()
+
+    songs_to_sync = []
+    for song in songs:
+        #if song.last_sync_date == None or song.last_sync_date == "":
+        songs_to_sync.append(lastfm_download_track_info.s(song.artist_name,song.title))
+
+    if len(songs_to_sync) > 1:
+        promise = group(*songs_to_sync)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = songs_to_sync[0]
+        job_result = promise.delay()
+    
+    return job_result.id, len(songs_to_sync)

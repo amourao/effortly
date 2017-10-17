@@ -540,6 +540,13 @@ def lastfm_get_artist(name,mbid=None):
         return artists[0]
 
 
+def lastfm_get_track(artist,name):
+    
+    songs = Song.objects.filter(title=name,artist_name=artist)
+
+    if songs:
+        return songs[0]
+
 
 def strava_get_activity_by_id(act_id):
     if strava_is_activity_to_ignore(act_id):
@@ -593,7 +600,6 @@ def effort_to_metric(effort_dict):
 
     for key in speed_s1:
         if key in effort_dict and effort_dict[key] != None:
-            logger.error(key + " " + str(effort_dict[key]))
             new_effort_dict[key+'_s'] = invertTimeDistance(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key+'_s':
             new_effort_dict['sort_value'] = new_effort_dict[key+'_s']
