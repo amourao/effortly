@@ -272,7 +272,7 @@ def artists(request):
     if render == 'json':
         return JsonResponse(data)
     else:
-        return render_to_response('top_table_song.html', data)
+        return render_to_response('top_table_artist.html', data)
 
 def songs(request):
     data = {}

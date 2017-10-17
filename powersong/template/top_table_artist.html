@@ -1,42 +1,32 @@
 {% block top_table %}
 
 <div class="container">
-    
-        <div class="container">
-        <div class="row">
+    <div class="row">
         {% for effort in top %}
             {% if forloop.first %}
-            <div class="col-md-6">
-            <div class="row">
-            <div class="col-md-12 text-center col-md-no-side-padding">
-                <a href="{{ effort.song__artist__url }}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__title }}"></a>
-                <div class="card-img-overlay" style="">
-                    <h4 class="card-title"><a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a></h4>
-                    {% if effort.sort_value %}<p class="card-text">{{ effort.sort_value }} {{ effort.sort_value_unit }} plays</p>{% endif %}
+                <div class="col-md-12 text-center col-no-side-padding">
+                    <a href="{{ effort.song__artist__url}}/"><img src="{{ effort.song__artist__image_url }}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__artist_name }}"></a>
+                    <div class="card-img-overlay fix-image-caption-overlay">
+                        <h4 class="card-title"><a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a></h4>
+                        {% if effort.sort_value %}<p class="card-text">{{ effort.sort_value }} {{ effort.sort_value_unit }} plays</p>{% endif %}
+                    </div>
                 </div>
-            </div>
-            </div>
-            </div>
-            <div class="col-md-6">
-            <div class="row">
             {% else %}
-            <div class="col-md-6 text-center col-md-no-side-padding">
-                <a href="{{ effort.song__artist__url }}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__title }}"></a>
-                <div class="card-img-overlay fix-image-caption-overlay">
-                    <p class="card-text"><a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
-                    {% if effort.sort_value %}<br/>{{ effort.sort_value }} {{ effort.sort_value_unit }} plays{% endif %}
-                    </p>
+                <div class="col-md-6 text-center col-no-side-padding">
+                    <a href="{{ effort.song__artist__url}}/"><img src="{{ effort.song__artist__image_url }}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__artist_name }}"></a>
+                    <div class="card-img-overlay fix-image-caption-overlay">
+                        <p class="card-text">
+                        <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
+                        {% if effort.sort_value %}<br/>{{ effort.sort_value }} {{ effort.sort_value_unit }} plays{% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
             {% endif %}
             
         {% endfor %}
-        </div>
-        </div>
-        </div>
-
-     </div>
-  </div>
-  <hr>
+    </div>
+</div>
+<hr>
 
 {% endblock %}
+
