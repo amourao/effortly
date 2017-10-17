@@ -8,7 +8,8 @@ from django.conf import settings
 from django.http import JsonResponse
 
 from powersong.models import *
-from django.db.models import Avg,Sum,Max,Count
+from django.db.models import Value,Avg,Sum,Max,Count,F,Case,When,IntegerField,FloatField
+
 
 from django.core import serializers
 
@@ -124,7 +125,15 @@ def song(request,song_id):
 
     avg_qs = None
     if qs.count() > 0:
+        
         avg_qs = qs.aggregate(avg_diff_last_speed_s=Avg('diff_last_speed_s'),avg_diff_avg_speed_s=Avg('diff_avg_speed_s'),avg_diff_last_speed=Avg('diff_last_speed'),avg_diff_avg_speed=Avg('diff_avg_speed'),avg_diff_last_hr=Avg('diff_last_hr'),avg_diff_avg_hr=Avg('diff_avg_hr'),avg_avg_hr=Avg('avg_hr'),avg_avg_speed=Avg('avg_speed'),avg_start_distance=Avg('start_distance'),avg_distance=Avg('distance'),avg_duration=Avg('duration'),avg_start_time=Avg('start_time'))
+        
+        ## alternative method adjusted for effort duration
+
+        #qs = qs.annotate(hr_duration=Sum(Case(When(avg_hr__gt=0.0, then='duration'),default=0,output_field=FloatField())))
+        #qs = qs.annotate(ndiff_last_speed_s=(F('diff_last_speed_s') * F('distance')),ndiff_avg_speed_s=(F('diff_avg_speed_s') * F('distance')),ndiff_last_speed=(F('diff_last_speed') * F('distance')),ndiff_avg_speed=(F('diff_avg_speed') * F('distance')),ndiff_last_hr=(F('diff_last_hr') * F('duration')),ndiff_avg_hr=(F('diff_avg_hr') * F('duration')),navg_hr=(F('avg_hr') * F('duration')),navg_speed=(F('avg_speed') * F('distance')))
+        #avg_qs = qs.aggregate(avg_diff_last_speed_s=Sum('ndiff_last_speed_s') / Sum('distance'),avg_diff_avg_speed_s=Sum('ndiff_avg_speed_s')/Sum('distance'),avg_diff_last_speed=Sum('ndiff_last_speed')/Sum('distance'),avg_diff_avg_speed=Sum('ndiff_avg_speed')/Sum('distance'),avg_diff_last_hr=Sum('ndiff_last_hr')/Sum('hr_duration'),avg_diff_avg_hr=Sum('ndiff_avg_hr')/Sum('hr_duration'),avg_avg_hr=Sum('navg_hr')/Sum('hr_duration'),avg_avg_speed=Sum('navg_speed')/Sum('distance'),avg_start_distance=Avg('start_distance'),avg_distance=Avg('distance'),avg_duration=Avg('duration'),avg_start_time=Avg('start_time'))
+        
         data['effort_averages'] = effort_convert(avg_qs,units)
         data['effort_averages']['count'] = qs.count()
     
@@ -189,7 +198,15 @@ def artist(request,artist_id):
 
     avg_qs = None
     if qs.count() > 0:
+        
         avg_qs = qs.aggregate(avg_diff_last_speed_s=Avg('diff_last_speed_s'),avg_diff_avg_speed_s=Avg('diff_avg_speed_s'),avg_diff_last_speed=Avg('diff_last_speed'),avg_diff_avg_speed=Avg('diff_avg_speed'),avg_diff_last_hr=Avg('diff_last_hr'),avg_diff_avg_hr=Avg('diff_avg_hr'),avg_avg_hr=Avg('avg_hr'),avg_avg_speed=Avg('avg_speed'),avg_start_distance=Avg('start_distance'),avg_distance=Avg('distance'),avg_duration=Avg('duration'),avg_start_time=Avg('start_time'))
+
+        ## alternative method adjusted for effort duration        
+        
+        #qs = qs.annotate(hr_duration=Sum(Case(When(avg_hr__gt=0.0, then='duration'),default=0,output_field=FloatField())))
+        #qs = qs.annotate(ndiff_last_speed_s=(F('diff_last_speed_s') * F('distance')),ndiff_avg_speed_s=(F('diff_avg_speed_s') * F('distance')),ndiff_last_speed=(F('diff_last_speed') * F('distance')),ndiff_avg_speed=(F('diff_avg_speed') * F('distance')),ndiff_last_hr=(F('diff_last_hr') * F('duration')),ndiff_avg_hr=(F('diff_avg_hr') * F('duration')),navg_hr=(F('avg_hr') * F('duration')),navg_speed=(F('avg_speed') * F('distance')))
+        #avg_qs = qs.aggregate(avg_diff_last_speed_s=Sum('ndiff_last_speed_s') / Sum('distance'),avg_diff_avg_speed_s=Sum('ndiff_avg_speed_s')/Sum('distance'),avg_diff_last_speed=Sum('ndiff_last_speed')/Sum('distance'),avg_diff_avg_speed=Sum('ndiff_avg_speed')/Sum('distance'),avg_diff_last_hr=Sum('ndiff_last_hr')/Sum('hr_duration'),avg_diff_avg_hr=Sum('ndiff_avg_hr')/Sum('hr_duration'),avg_avg_hr=Sum('navg_hr')/Sum('hr_duration'),avg_avg_speed=Sum('navg_speed')/Sum('distance'),avg_start_distance=Avg('start_distance'),avg_distance=Avg('distance'),avg_duration=Avg('duration'),avg_start_time=Avg('start_time'))
+        
         data['effort_averages'] = effort_convert(avg_qs,units)
         data['effort_averages']['effort_count'] = effort_count
         data['effort_averages']['song_count'] = qs.values('song').distinct().count()
