@@ -136,21 +136,38 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
             continue
 
         song = create_song_from_dict(song_api)
-    
+        
+
+
         #stream_keys = ['time','distance','heartrate','watts','altitude']
+        # time:     integer seconds
+        # latlng:     floats [latitude, longitude]
+        # distance:   float meters
+        # altitude:   float meters
+        # velocity_smooth:    float meters per second
+        # heartrate:  integer BPM
+        # cadence:    integer RPM
+        # watts:  integer watts
+        # temp:   integer degrees Celsius
+        # moving:     boolean
+        # grade_smooth:   float percent
+
         (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
         (effort_avg_hr, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'heartrate')
         (effort_avg_watts, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'watts')
-        (effort_total_ascent,effort_total_descent, effort_start_dist, effort_end_dist) = get_ascent_in_interval(act_stream,start,end,'altitude')
+        (effort_avg_cadence, effort_start_cadence, effort_end_cadence) = get_avg_in_interval(act_stream,start,end,'cadence')
+        (effort_total_ascent, effort_total_descent, effort_start_dist, effort_end_dist) = get_ascent_in_interval(act_stream,start,end,'altitude')
 
-        effort_diff_hr = 0
-        effort_diff_speed = 0
-        effort_diff_watts = 0
+        effort_diff_hr = None
+        effort_diff_speed = None
+        effort_diff_watts = None
+        effort_diff_cadence = None
         
         if effort_idx_in_act > 0: # ignore diff to last in the first activity of the session
             effort_diff_hr = effort_avg_hr-last_hr
             effort_diff_speed = effort_avg_speed-last_speed
             effort_diff_watts = effort_avg_watts-last_watts
+            effort_diff_cadence = effort_avg_cadence-last_cadence
 
         effort = Effort()
         
@@ -169,7 +186,7 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         if effort_idx_in_act > 0:
             effort.diff_last_speed = effort_avg_speed-last_speed
         else:
-            effort.diff_last_speed = 0
+            effort.diff_last_speed = None
 
         effort_avg_speed_s = 0
         if effort_avg_speed != 0:
@@ -188,13 +205,18 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         if effort_idx_in_act > 0:
             effort.diff_last_speed_s = last_speed_s-effort_avg_speed_s
         else:
-            effort.diff_last_speed_s = 0
+            effort.diff_last_speed_s = None
         
         
         if (stored_act.avg_hr):
             effort.avg_hr = effort_avg_hr
             effort.diff_avg_hr = (effort_avg_hr - stored_act.avg_hr)
             effort.diff_last_hr = effort_diff_hr
+
+        if (stored_act.avg_cadence):
+            effort.avg_cadence = effort_avg_cadence
+            effort.diff_avg_cadence = (effort_avg_cadence - stored_act.avg_cadence)
+            effort.diff_last_cadence = effort_diff_cadence
         
         effort.idx_in_activity = effort_idx_in_act
 
@@ -211,11 +233,14 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                 effort.diff_last_watts = effort_diff_watts
 
         effort.save()
-        effort_idx_in_act+=1
+        
 
         last_hr = effort_avg_hr
         last_speed = effort_avg_speed
         last_watts = effort_avg_watts
+        last_cadence = effort_avg_cadence
+
+        effort_idx_in_act+=1
 
     return True
 
@@ -335,6 +360,8 @@ def get_avg_in_interval(stream, start, end, key):
         last_time = stream['time'][start_pos+idx]
         sum_key_value += key_value*time_diff
     
+    if sum_time == 0:
+        return 0,0,0
     
     return sum_key_value/(sum_time),begin_dist,end_dist
 

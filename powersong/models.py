@@ -227,10 +227,10 @@ class Effort(models.Model):
     distance = models.FloatField()
 
     avg_speed = models.FloatField()
-    diff_last_speed = models.FloatField() #m/s
+    diff_last_speed = models.FloatField(blank=True,null=True) #m/s
     diff_avg_speed = models.FloatField() #m/s
 
-    diff_last_speed_s = models.FloatField() #s/m
+    diff_last_speed_s = models.FloatField(blank=True,null=True) #s/m
     diff_avg_speed_s = models.FloatField() #s/m
     
     avg_hr = models.FloatField(blank=True,null=True)
@@ -592,41 +592,44 @@ def effort_to_metric(effort_dict):
 
 
     for key in speed_s1:
-        if key in effort_dict:
+        if key in effort_dict and effort_dict[key] != None:
+            logger.error(key + " " + str(effort_dict[key]))
             new_effort_dict[key+'_s'] = invertTimeDistance(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key+'_s':
             new_effort_dict['sort_value'] = new_effort_dict[key+'_s']
             new_effort_dict['sort_value_unit'] = metric_legends['speed_s']
 
     for key in speed_s:
-        if key in effort_dict:
+        if key in effort_dict and effort_dict[key] != None:
+            logger.error(key + " a " + str(effort_dict[key]))
             new_effort_dict[key] = secondsPerMeterToMinPerKm(new_effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsPerMeterToMinPerKm(new_effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = metric_legends['speed_s']
     
     for key in speed:
-        if key in effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = metersPerSecondToKmH(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersPerSecondToKmH(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = metric_legends['speed']
+            
     for key in timeBig:
-        if key in new_effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = secondsToMinutesSecs(effort_dict[key])
         if 'sort_key' in effort_dict and effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsToMinutesSecs(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = common['timeBig']
 
     for key in distanceBig:
-        if key in new_effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = metersToKm(effort_dict[key])
         if 'sort_key' in effort_dict and effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersToKm(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = metric_legends['distanceBig']
 
     for key in distanceSmall:
-        if key in new_effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = metersToMeters(effort_dict[key])
         if 'sort_key' in effort_dict and effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersToMeters(effort_dict['sort_value'])
@@ -645,42 +648,42 @@ def effort_to_imperial(effort_dict):
     new_effort_dict = effort_dict
 
     for key in speed_s1:
-        if key in effort_dict:
+        if key in effort_dict and effort_dict[key] != None:
             new_effort_dict[key+'_s'] = invertTimeDistance(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key+'_s':
             new_effort_dict['sort_value'] = new_effort_dict[key+'_s']
             new_effort_dict['sort_value_unit'] = imperial_legends['speed_s']
 
     for key in speed_s:
-        if key in effort_dict:
+        if key in effort_dict and effort_dict[key] != None:
             new_effort_dict[key] = secondsPerMeterToMinPerMi(new_effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsPerMeterToMinPerMi(new_effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = imperial_legends['speed_s']
     
     for key in speed:
-        if key in effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = metersPerSecondToMiH(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersPerSecondToMiH(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = imperial_legends['speed']
 
     for key in timeBig:
-        if key in effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = secondsToMinutesSecs(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsToMinutesSecs(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = common['timeBig']
 
     for key in distanceBig:
-        if key in effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = metersToMiles(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersToMiles(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = imperial_legends['distanceBig']
 
     for key in distanceSmall:
-        if key in effort_dict:
+        if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key] = metersToFeet(effort_dict[key])      
         if 'sort_key' in effort_dict and effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersToFeet(effort_dict['sort_value'])
