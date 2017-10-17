@@ -15,22 +15,29 @@
                             <p class="h4">{{artist.name}}</p>
                         </div>
                     </div>
+                    {% if not top %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="h5">No {% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% endif %} efforts found :(</p>
+                        </div>
+                    </div>
+                    {% else %}
                     <div class="row">
                     
                     <div class="col-6 col-md-3 text-right">
                         {% if activity_type == 0 %}
-                        <span class="h4">{{ effort_averages.avg_avg_speed_s }} </span><span> {{ effort_averages.units.speed_s }} </span>
+                        <span class="h4">{{ effort_averages.avg_avg_speed_s_pretty }} </span><span> {{ effort_averages.units.speed_s }} </span>
                         {% else %}
-                        <span class="h4">{{ effort_averages.avg_avg_speed }} </span><span> {{ effort_averages.units.speed }} </span>
+                        <span class="h4">{{ effort_averages.avg_avg_speed_pretty }} </span><span> {{ effort_averages.units.speed }} </span>
                         {% endif %}
                         <p>avg. speed</p>
                     </div>
                     <div class="col-6 col-md-3 text-right">
-                        <span class="h4"> {{ effort_averages.avg_distance }} </span><span> {{ effort_averages.units.distanceSmall }} </span>
+                        <span class="h4"> {{ effort_averages.avg_distance_pretty }} </span><span> {{ effort_averages.units.distanceSmall }} </span>
                         <p>avg. distance</p>
                     </div>
                     <div class="col-6 col-md-3 text-right">
-                        <span class="h4"> {{ effort_averages.avg_duration }} </span><span> {{ effort_averages.units.timeBig }}</span>
+                        <span class="h4"> {{ effort_averages.avg_duration_pretty }} </span><span> {{ effort_averages.units.timeBig }}</span>
                         <p>avg. duration</p>
                     </div> 
                     <div class="col-6 col-md-3 text-right">
@@ -53,24 +60,14 @@
                         </div>
                         {% endif %}
 
-                        <div class="col-6 col-md-3 text-right">
-
-
-                        
-
-                        {% if effort_averages.avg_diff_avg_speed|add:"0" > "0" %}
-                        <i class="fa fa-chevron-circle-up green_arrow"></i>
-                        {% elif effort_averages.avg_diff_avg_speed|add:"0" < "0" %}
-                        <i class="fa fa-chevron-circle-down red_arrow"></i>
-                        {% else %}
-                        <i class="blue_arrow">=</i>
-                        {% endif %}
+                        <div class="col-6 col-md-2 text-right">
 
                         {% if activity_type == 0 %}
-
-                        <span>{{ effort_averages.avg_diff_avg_speed_s }} </span><span> {{ effort_averages.units.speed_s }} </span>
+                            {% get_delta_symbol effort_averages.avg_diff_avg_speed_s 0 %}
+                            <span>{{ effort_averages.avg_diff_avg_speed_s_pretty }} </span><span> {{ effort_averages.units.speed_s }} </span>
                         {% else %}
-                        <span>{{ effort_averages.avg_diff_avg_speed }} </span><span> {{ effort_averages.units.speed }} </span>
+                            {% get_delta_symbol effort_averages.avg_diff_avg_speed 0 %}
+                            <span>{{ effort_averages.avg_diff_avg_speed_pretty }} </span><span> {{ effort_averages.units.speed }} </span>
                         {% endif %}
                         <p>&Delta; avg. speed</p>
 
@@ -79,19 +76,12 @@
                         {% if effort_averages.avg_diff_last_speed %}
                         <div class="col-6 col-md-2 text-right">
 
-                        {% if effort_averages.avg_diff_last_speed|add:"0" > "0" %}
-                        <i class="fa fa-chevron-circle-up green_arrow"></i>
-                        {% elif effort_averages.avg_diff_last_speed|add:"0" < "0" %}
-                        <i class="fa fa-chevron-circle-down red_arrow"></i>
-                        {% else %}
-                        <i class="blue_arrow">=</i>
-                        {% endif %}
-
-
                         {% if activity_type == 0 %}
-                        <span>{{ effort_averages.avg_diff_last_speed_s }} </span><span> {{ effort_averages.units.speed_s }} </span>
+                            {% get_delta_symbol effort_averages.avg_diff_last_speed_s 0 %}
+                            <span>{{ effort_averages.avg_diff_last_speed_s_pretty }} </span><span> {{ effort_averages.units.speed_s }} </span>
                         {% else %}
-                        <span>{{ effort_averages.avg_diff_last_speed }} </span><span> {{ effort_averages.units.speed }} </span>
+                            {% get_delta_symbol effort_averages.avg_diff_last_speed 0 %}
+                            <span>{{ effort_averages.avg_diff_last_speed_pretty }} </span><span> {{ effort_averages.units.speed }} </span>
                         {% endif %}
 
                         <p>&Delta; last speed</p>
@@ -100,22 +90,16 @@
 
                         {% if effort_averages.avg_avg_hr %}
                         <div class="col-6 col-md-2 text-right">
-                        <span>{{ effort_averages.avg_avg_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
-                        <p>avg. hr</p>
+                            <span>{{ effort_averages.avg_avg_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
+                            <p>avg. hr</p>
                         </div>
                         {% endif %}
 
                         {% if effort_averages.avg_diff_avg_hr %}
                         <div class="col-6 col-md-2 text-right">
 
-                        {% if effort_averages.avg_diff_avg_hr > 0 %}
-                        <i class="fa fa-chevron-circle-up green_arrow"></i>
-                        {% elif effort_averages.avg_diff_avg_hr < 0 %}
-                        <i class="fa fa-chevron-circle-down red_arrow"></i>
-                        {% else %}
-                        <i class="blue_arrow">=</i>
-                        {% endif %}
-
+                        {% get_delta_symbol effort_averages.avg_diff_avg_hr 0 %}
+                        
                         <span>{{ effort_averages.avg_diff_avg_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
                         <p>&Delta; avg. hr</p>
                         </div>
@@ -124,21 +108,15 @@
                         {% if effort_averages.avg_diff_last_hr %}
                         <div class="col-6 col-md-2 text-right">
 
-                        {% if effort_averages.avg_diff_last_hr > 0 %}
-                        <i class="fa fa-chevron-circle-up green_arrow"></i>
-                        {% elif effort_averages.avg_diff_last_hr < 0 %}
-                        <i class="fa fa-chevron-circle-down red_arrow"></i>
-                        {% else %}
-                        <i class="blue_arrow">=</i>
-                        {% endif %}
-
+                        {% get_delta_symbol effort_averages.avg_diff_last_hr 0 %}
+                        
                         <span>{{ effort_averages.avg_diff_last_hr|floatformat:"2" }} </span><span> {{ effort_averages.units.heartrate }}</span>
                         <p>&Delta; last hr</p>
                         </div>
                         {% endif %}
 
                     </div>  
-
+                    {% endif %}
                   </div>
 
 
