@@ -43,7 +43,7 @@ def strava_download_activity(access_token,act):
         for k in stream_keys:
             if k in act_stream_api:
                 act_stream[k] = act_stream_api[k].data
-        stored_act.detailed_vectors = act_stream
+        #stored_act.detailed_vectors = act_stream
         stored_act.save()
     except Exception as e:
         logger.error("Exception on activity {}".format(act['id']))
@@ -313,22 +313,6 @@ def lastfm_download_artist_info(artist_name,mb_id=None):
 
 def strava_get_start_timestamp(st):
     return int(time.mktime(st.timetuple()))
-
-def kmHToMinPerKm(kph):
-    if kph == 0:
-        return "0:00"
-    return "{}:{:02.0f}".format(int((60.0/(kph))), int(((60.0/(kph))-(int(60.0/(kph))))*60)%60)    
-
-def kmHToMinPerKmDec(kph):
-    if kph == 0:
-        return 0
-    return 60.0/(kph)
-
-def minPerKmDecToMinPerKm(mpk):
-    if mpk == 0:
-        return "0:00"
-    return "{}:{:02.0f}".format(int(mpk), int((mpk-(int(mpk)))*60)%60)    
-
 
 def take_closest_point(myList, myNumber):
     pos = bisect_left(myList, myNumber)

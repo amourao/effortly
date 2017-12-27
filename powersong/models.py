@@ -46,8 +46,8 @@ class Athlete(models.Model):
 
     date_preference = models.CharField(max_length=10)
     measurement_preference = models.PositiveSmallIntegerField()
-    sex = models.PositiveSmallIntegerField()
-    country = models.CharField(max_length=50)
+    sex = models.PositiveSmallIntegerField(null=True)
+    country = models.CharField(max_length=50,null=True)
     athlete_type = models.PositiveSmallIntegerField(choices=ATHELETE_TYPE)
     last_sync_date = models.DateTimeField(blank=True,null=True)
     
@@ -165,12 +165,12 @@ class Activity(models.Model):
 
 class Listener(models.Model):
     nickname = models.CharField(max_length=30,unique=True)
-    real_name = models.CharField(max_length=30) 
-    profile_image_url = models.URLField()
-    country = models.CharField(max_length=50)
-    age = models.PositiveSmallIntegerField()
+    real_name = models.CharField(max_length=30,null=True)
+    profile_image_url = models.URLField(null=True)
+    country = models.CharField(max_length=50,null=True)
+    age = models.PositiveSmallIntegerField(null=True)
 
-    scrobble_count = models.IntegerField()
+    scrobble_count = models.IntegerField(null=True)
 
     last_sync_date = models.DateTimeField(null=True)
     last_scrobble_date = models.DateTimeField(blank=True,null=True)
@@ -399,11 +399,20 @@ def create_listener_from_dict(listener_api,key):
     listener = Listener()
 
     listener.nickname = listener_api['name']
-    listener.real_name = listener_api['realname']
+    
+    if 'realname' in listener_api:
+        listener.real_name = listener_api['realname']
+
+    if 'country' in listener_api:
+        listener.country = listener_api['country']
+
+    if 'age' in listener_api:
+        listener.age = listener_api['age']
+
+    if 'playcount' in listener_api:
+        listener.scrobble_count = int(listener_api['playcount'])
+
     listener.profile_image_url = listener_api['image'][-1]['#text']
-    listener.country = listener_api['country']
-    listener.age = int(listener_api['age'])
-    listener.scrobble_count = int(listener_api['playcount'])
     listener.lastfm_token = key
 
     return listener
