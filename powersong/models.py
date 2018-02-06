@@ -627,7 +627,7 @@ def effort_to_metric(effort_dict):
 
     for key in speed_s:
         if key in effort_dict and effort_dict[key] != None:
-            logger.error(key + " a " + str(effort_dict[key]))
+            #logger.error(key + " a " + str(effort_dict[key]))
             new_effort_dict[key + "_pretty"] = secondsPerMeterToMinPerKm(new_effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsPerMeterToMinPerKm(new_effort_dict['sort_value'])

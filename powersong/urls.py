@@ -40,6 +40,8 @@ urlpatterns = [
     url(r'^async_include/', include('async_include.urls', namespace="async_include")),
 ]
 
+#urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
+
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [

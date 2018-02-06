@@ -26,7 +26,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "#fyrd@(hr0g6^w_o!iz7x3gj4ot5epf@i24m@a2*haf0+g$dgl"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False	
+DEBUG = False
 SITE_ID = 1
 # Application definition
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'debug_toolbar',
     'async_include',
+    # 'silk',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'powersong.urls'
