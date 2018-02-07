@@ -99,6 +99,13 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     start_time = stored_act.start_date
     elapsed_time = timedelta(seconds=int(stored_act.elapsed_time))
 
+    (total_ascent, total_descent, _, _) = get_ascent_in_interval(act_stream, 0, elapsed_time.seconds, 'altitude')
+
+    stored_act.total_ascent = total_ascent
+    stored_act.total_descent = -total_descent
+
+    stored_act.save()
+
     act_start_timestamp = strava_get_start_timestamp(start_time)
 
     last_speed = 0
@@ -150,7 +157,8 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         # moving:     boolean
         # grade_smooth:   float percent
 
-        (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
+        #(effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
+        (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_moving_speed_in_interval(act_stream,start,end)
         (effort_avg_hr, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'heartrate')
         (effort_avg_watts, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'watts')
         (effort_avg_cadence, effort_start_cadence, effort_end_cadence) = get_avg_in_interval(act_stream,start,end,'cadence')
@@ -219,7 +227,7 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         effort.idx_in_activity = effort_idx_in_act
 
         effort.total_ascent = effort_total_ascent
-        effort.total_descent = effort_total_descent
+        effort.total_descent = -effort_total_descent
 
         effort.song = song
         effort.activity = stored_act
@@ -230,13 +238,12 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                 effort.diff_avg_watts = (effort_avg_watts - stored_act.avg_watts)
                 effort.diff_last_watts = effort_diff_watts
 
-        effort.save()
-        
-
-        last_hr = effort_avg_hr
-        last_speed = effort_avg_speed
-        last_watts = effort_avg_watts
-        last_cadence = effort_avg_cadence
+        if effort_avg_speed != 0.0:
+            effort.save()
+            last_hr = effort_avg_hr
+            last_speed = effort_avg_speed
+            last_watts = effort_avg_watts
+            last_cadence = effort_avg_cadence
 
         effort_idx_in_act+=1
 
@@ -341,7 +348,44 @@ def get_avg_speed_in_interval(stream, start, end):
         return (0,0,0)
     return (float(end_dist-begin_dist)/float(end_time-begin_time)),begin_dist,end_dist
 
-def get_avg_in_interval(stream, start, end, key):
+def get_avg_moving_speed_in_interval(stream, start, end):
+    start_pos = take_closest_point(stream['time'],start)
+    end_pos = take_closest_point(stream['time'],end)
+    
+    begin_time = stream['time'][start_pos]
+    end_time = stream['time'][end_pos]
+    
+    begin_dist = stream['distance'][start_pos]
+    end_dist = stream['distance'][end_pos]
+    
+    if(end_time-begin_time)==0:
+        return 0,0,0
+    
+    last_time = 0
+    last_dist = 0
+    
+    if start_pos > 0:
+        last_time = stream['time'][start_pos-1]
+        last_dist = stream['distance'][start_pos-1]
+    
+    sum_key_value = 0.0
+    sum_time  = 0.0
+    
+    for idx, key_value in enumerate(stream['distance'][start_pos:end_pos]):
+        time_diff = stream['time'][start_pos+idx] - last_time
+        dist_diff = stream['distance'][start_pos+idx] - last_dist
+        last_time = stream['time'][start_pos+idx]
+        last_dist = stream['distance'][start_pos+idx]
+        if stream['moving'][start_pos+idx]:
+            sum_key_value += dist_diff
+            sum_time += time_diff
+    
+    if sum_time == 0:
+        return 0,0,0
+
+    return sum_key_value/(sum_time),begin_dist,end_dist
+
+def get_avg_in_interval(stream, start, end, key, ignore_moving = False):
     
     if not key in stream:
         return 0,0,0
@@ -367,17 +411,18 @@ def get_avg_in_interval(stream, start, end, key):
     sum_time  = 0
     
     for idx, key_value in enumerate(stream[key][start_pos:end_pos]):
-        time_diff = stream['time'][start_pos+idx] - last_time
-        sum_time += time_diff
+        time_diff = stream['time'][start_pos+idx] - last_time        
         last_time = stream['time'][start_pos+idx]
-        sum_key_value += key_value*time_diff
+        if stream['moving'][start_pos+idx] or ignore_moving:
+            sum_time += time_diff
+            sum_key_value += key_value*time_diff
     
     if sum_time == 0:
         return 0,0,0
     
     return sum_key_value/(sum_time),begin_dist,end_dist
 
-def get_sum_in_interval(stream, start, end, key):
+def get_sum_in_interval(stream, start, end, key, ignore_moving = False):
     
     if not key in stream:
         return 0,0,0
@@ -404,9 +449,10 @@ def get_sum_in_interval(stream, start, end, key):
     
     for idx, key_value in enumerate(stream[key][start_pos:end_pos]):
         time_diff = stream['time'][start_pos+idx] - last_time
-        sum_time += time_diff
         last_time = stream['time'][start_pos+idx]
-        sum_key_value += key_value
+        if stream['moving'][start_pos+idx] or ignore_moving:
+            sum_time += time_diff
+            sum_key_value += key_value*time_diff
     
     
     return sum_key_value,begin_dist,end_dist

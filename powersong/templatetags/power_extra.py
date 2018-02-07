@@ -5,8 +5,10 @@ register = template.Library()
 
 @register.simple_tag
 def get_delta_symbol(value,reverse):
+    if value == None:
+        return ''
     if reverse == 1:
-       value = -value
+        value = -value
         
     if value > 0.001:
         return mark_safe('<i class="fa fa-chevron-circle-up green_arrow"></i>')

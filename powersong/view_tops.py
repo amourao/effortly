@@ -186,7 +186,7 @@ def latest(request):
     data['activity_type'] = activity_type
 
     
-    n = 100
+    n = 10
     if 'n' in request.GET:
         n = int(request.GET['n'])
     

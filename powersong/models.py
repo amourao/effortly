@@ -105,6 +105,9 @@ class Activity(models.Model):
 
     detailed_vectors = PickledObjectField(blank=True,null=True)
 
+    total_ascent = models.FloatField(blank=True,null=True)
+    total_descent = models.FloatField(blank=True,null=True)
+
     @property
     def avg_speed_pretty_units(self):
         if (self.athlete.measurement_preference == 0) and (self.act_type == 0):
