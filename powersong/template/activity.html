@@ -8,10 +8,18 @@
             <div class="row">
             	<div class="col-md-4">
             		<a class="h4 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/">{{ activity.name}}</a>
-            		<p class="h5">{{ activity.start_date_local }}</p>                   
-                    <a href="/resync_last_fm/{{ activity.activity_id}}" class="btn btn-info btn-sm">
-                        <span class="glyphicon glyphicon-repeat"></span> Resync scrobbles
-                    </a>
+            		<p class="h5">{{ activity.start_date_local }}</p>
+                    <p>
+                        <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="btn btn-info btn-sm">
+                            <span class="glyphicon glyphicon-repeat"></span> See on last.fm
+                        </a>
+                    </p>               
+                    <p>
+                        <a href="/resync_last_fm/{{ activity.activity_id}}" class="btn btn-info btn-sm">
+                            <span class="glyphicon glyphicon-repeat"></span> Resync scrobbles
+                        </a>
+                    </p>
+                    
             	</div>
                 <div class="col-md-8">
                 <div class="row">

@@ -186,10 +186,10 @@ def latest(request):
     data['activity_type'] = activity_type
 
     
-    n = 10
+    n = 100
     if 'n' in request.GET:
         n = int(request.GET['n'])
     
-    data['top'] = Activity.objects.filter(athlete__athlete_id = request.session['athlete_id']).order_by('start_date_local')[::descending][:n]
+    data['top'] = Activity.objects.filter(athlete__athlete_id = request.session['athlete_id']).annotate(ecount = Count('effort')).order_by('-start_date_local')[:n]
 
     return render_to_response('activities.html', data)
