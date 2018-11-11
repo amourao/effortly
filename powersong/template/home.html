@@ -30,27 +30,30 @@
             <h2 class="lead">The ones that give that real extra push?</h2>
             <p>Get started!</p>
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                  {% if strava_authorize_url %}
                     <p><a class="btn btn-secondary color_strava" href="{{ strava_authorize_url }}" role="button">Authorize Strava &raquo;</a></p>
                 {% else %}
-                    <p><a class="btn btn-secondary disabled" href="#" role="button">Strava authorized</a></p>
-                {% endif %}
-                </div>
-                <div class="col-md-6">        
-                  {% if lastfm_authorize_url %}
+                    {% if lastfm_authorize_url %}
                       <p><a class="btn btn-secondary color_lastfm" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
                   {% else %}
                       <p><a class="btn btn-secondary disabled" href="#" role="button">last.fm authorized</a></p>
                   {% endif %}        
+                  {% if spotify_authorize_url %}
+                      <p><a class="btn btn-secondary color_spotify" href="{{ spotify_authorize_url }}" role="button">Authorize Spotify &raquo;</a></p>
+                  {% else %}
+                      <p><a class="btn btn-secondary disabled" href="#" role="button">Spotify authorized</a></p>
+                  {% endif %}        
+                {% endif %}
                 </div>
+
               </div>
 
           </div>
 
           <div class="mastfoot">
             <div class="inner">
-              <p><a href="https://andremourao.com">&copy;  André Mourão 2017</a> </p>
+              <p><a href="https://andremourao.com">&copy;  André Mourão 2018</a> </p>
             </div>
           </div>
 

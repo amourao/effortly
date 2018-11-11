@@ -3,21 +3,24 @@ import stravalib.client
 from celery import shared_task
 from datetime import datetime,timedelta
 
-import time
+import time, json
 import math
 from bisect import bisect_left
 
 import numpy as np
+import base64
 
 from django.conf import settings
 import requests
 
 from powersong.models import *
+from powersong.spotify_aux import spotify_get_recent_tracks, spotify_get_user_info
 from urllib.error import HTTPError
 
 from urllib.parse import quote_plus
 
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +29,6 @@ def strava_download_activity(access_token,act):
     client = stravalib.client.Client()
     client.access_token = access_token
     
-    logger.debug(act)
     stored_act = create_activity_from_dict(act)
 
     if stored_act == None:
@@ -72,9 +74,30 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
     method = 'user.getrecenttracks'
     url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,username,start,end)
     response = requests.get(url).json()
-    logger.debug(response)
+
+    with open('data_in_{}.json'.format(stored_act_id), 'w') as outfile:
+        json.dump(response, outfile)
+    
     lastfm_tracks = response
     return act_stream, stored_act_id, lastfm_tracks
+
+@shared_task
+def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,athlete_id):
+    if act_stream_stored_act == None:
+        return None
+
+    (act_stream,stored_act_id) = act_stream_stored_act
+    try:
+        spotify_tracks = spotify_get_recent_tracks(token)
+    except:
+        logger.debug("Refreshing spotify token")
+        r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'refresh_token', 'refresh_token': reftoken, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
+        out = r.json()
+        spotify_get_user_info(code,out['access_token'],reftoken,athlete_id)
+        spotify_tracks = spotify_get_recent_tracks(out['access_token'])
+        
+    return act_stream, stored_act_id, spotify_tracks
+
 
 @shared_task
 def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
@@ -84,13 +107,16 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     stored_act = strava_get_activity_by_id(stored_act_id)
     
     if lastfm_tracks:
-        songs = lastfm_tracks['recenttracks']['track'][::-1]
+        if not 'recenttracks' in lastfm_tracks:
+            logger.error("Bad response in activity {}".format(stored_act_id))
+            logger.error(lastfm_tracks)
+            return {}
+        else:
+            songs = lastfm_tracks['recenttracks']['track'][::-1]
     else:
         logger.debug("No songs in activity {}".format(stored_act_id))
         return {}
-    if not 'recenttracks' in lastfm_tracks:
-        logger.error("Bad response in activity {}".format(stored_act_id))
-        logger.error(lastfm_tracks)
+    
         return {}
 
     act_avg_speed = stored_act.avg_speed

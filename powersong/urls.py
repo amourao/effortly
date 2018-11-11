@@ -1,11 +1,11 @@
 from django.conf.urls import url
 from django.contrib import admin
 
-from powersong.view_oauth import strava_oauth, lastfm_oauth
+from powersong.view_oauth import strava_oauth, lastfm_oauth, spotify_oauth
 from powersong.view_home import index, about, home, logout
 from powersong.view_tops import top,latest
 from powersong.view_detail import activity,song,artist,artists,songs
-from powersong.view_main import get_sync_progress, sync, resync_last_fm
+from powersong.view_main import get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify
 
 from django.conf import settings
 from django.conf.urls import include
@@ -15,6 +15,7 @@ urlpatterns = [
     
     url(r'^home/', home),
     url(r'^sync/', sync),
+    url(r'^sync_spotify/', sync_spotify),
     url(r'^about/', about),
     url(r'^logout/', logout),
     url(r'^top/', top),
@@ -30,10 +31,12 @@ urlpatterns = [
     url(r'^get_sync_progress/', get_sync_progress),
 
     url(r'^resync_last_fm/(?P<activity_id>.*)/', resync_last_fm),
+    url(r'^resync_spotify/(?P<activity_id>.*)/', resync_spotify),
 
 
     url(r'^strava_oauth_callback/', strava_oauth),
     url(r'^lastfm_oauth_callback/', lastfm_oauth),
+    url(r'^spotify_oauth_callback/', spotify_oauth),
     
     url(r'^admin/', admin.site.urls),
 

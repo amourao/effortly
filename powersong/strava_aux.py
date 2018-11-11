@@ -3,7 +3,7 @@ import stravalib.client
 from django.conf import settings
 
 from datetime import datetime,timedelta
-from powersong.tasks import strava_download_activity,lastfm_download_activity_tracks,strava_activity_to_efforts
+from powersong.tasks import spotify_download_activity_tracks,strava_download_activity,lastfm_download_activity_tracks,strava_activity_to_efforts
 
 
 
@@ -29,7 +29,6 @@ cache = {}
 
 def strava_get_auth_url():
     client = stravalib.client.Client()
-    logger.debug("generating strava auth url")
     return client.authorization_url(settings.STRAVA_CLIENT_ID, redirect_uri = settings.STRAVA_CALLBACK_URL,scope = 'view_private')
 
 def strava_get_user_info(access_token):
@@ -46,7 +45,6 @@ def strava_get_user_info(access_token):
     athlete_api = client.get_athlete()
     
     athletes = Athlete.objects.filter(athlete_id=athlete_api.id)
-
     if athletes:
         logger.debug("Athlete {} found with invalid token. Updating token.".format(athlete.athlete_id))
         athlete = athletes[0]
@@ -132,6 +130,47 @@ def sync_efforts(username,access_token,limit=None):
     
     return job_result.id, len(new_activities)
 
+
+def sync_efforts_lastfm(token,access_token,limit=None):
+    client = stravalib.client.Client()
+    client.access_token = access_token
+
+    athlete = strava_get_user_info(access_token)
+
+    athlete_api = client.get_athlete()
+    stats = athlete_api.stats
+
+    athlete.activity_count = stats.all_ride_totals.count
+    athlete.runs_count = stats.all_run_totals.count
+    athlete.rides_count = stats.all_ride_totals.count
+    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
+    athlete.updated_strava_at = athlete_api.updated_at
+    athlete.save()
+
+    all_activities = client.get_activities(limit=limit)
+    new_activities = []
+    for act in all_activities:
+        if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
+            act_p = strava_parse_base_activity(act)
+            download_chain = chain(strava_download_activity.s(access_token,act_p),
+                                    lastfm_download_activity_tracks.s(token),
+                                    strava_activity_to_efforts.s()
+                            )
+            new_activities.append(download_chain)
+    if len(new_activities) == 0:
+        return "", 0
+
+    if len(new_activities) > 1:
+        promise = group(*new_activities)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = new_activities[0]
+        job_result = promise.delay()
+    
+    return job_result.id, len(new_activities)
+
+
 def resync_activity(username,access_token,activity_id,athlete_id):
     client = stravalib.client.Client()
     client.access_token = access_token
@@ -152,6 +191,28 @@ def resync_activity(username,access_token,activity_id,athlete_id):
     job_result = download_chain.delay()
     
     return job_result.id, 1
+
+def resync_activity_spotify(code,token,reftoken,access_token,activity_id,athlete_id):
+    client = stravalib.client.Client()
+    client.access_token = access_token
+
+    activity = strava_get_activity_by_id(activity_id)
+
+    if athlete_id != activity.athlete.athlete_id:
+        return None, None
+
+    efforts_to_delete = Effort.objects.filter(activity__activity_id = activity_id)
+    efforts_to_delete.delete()
+    act_p = {}
+    act_p['id'] = activity_id
+    download_chain = chain(strava_download_activity.s(access_token,act_p),
+                            spotify_download_activity_tracks.s(code,token,reftoken,activity.athlete.id),
+                            strava_activity_to_efforts.s()
+                    )
+    job_result = download_chain.delay()
+    
+    return job_result.id, 1
+
 
 def strava_parse_base_activity(act):
     actFinal = {}

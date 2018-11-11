@@ -7,6 +7,7 @@ from django.conf import settings
 
 from powersong.strava_aux import strava_get_auth_url
 from powersong.lastfm_aux import lastfm_get_auth_url
+from powersong.spotify_aux import spotify_get_auth_url
 
 from powersong.view_main import index as main_index
 
@@ -24,6 +25,9 @@ def index(request):
     if not 'lastfm_token' in request.session or request.session['lastfm_token'] == None:
         result['lastfm_authorize_url'] = lastfm_get_auth_url()
 
+    if not 'spotify_token' in request.session or request.session['spotify_token'] == None:
+        result['spotify_authorize_url'] = spotify_get_auth_url()
+
     #if "lastfm_token" in request.session and "strava_token" in request.session:
     #    result
     if not "lastfm_token" in request.session or not "strava_token" in request.session:
@@ -32,7 +36,7 @@ def index(request):
         return main_index(request)
 
 def home(request):
-    return render_to_response('home.html', {'strava_authorize_url': "#", 'lastfm_authorize_url': "#"})
+    return render_to_response('home.html', {'strava_authorize_url': "#", 'lastfm_authorize_url': "#", 'spotify_authorize_url': "#"})
 
 
 def about(request):

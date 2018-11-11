@@ -59,8 +59,12 @@ class Athlete(models.Model):
     updated_strava_at = models.DateTimeField()
 
     last_celery_task_id = models.UUIDField(blank=True,null=True)
-
     strava_token = models.CharField(max_length=100)
+
+class ListenerSpotify(models.Model):
+    spotify_code = models.CharField(max_length=100,blank=True,null=True)
+    spotify_token = models.CharField(max_length=100,blank=True,null=True)
+    spotify_refresh_token = models.CharField(max_length=100,blank=True,null=True)
 
 class ActivitiesToIgnore(models.Model):
     activity_id = models.CharField(max_length=16,unique=True)
@@ -182,7 +186,8 @@ class Listener(models.Model):
 
 class PowerUser(models.Model):
     athlete = models.ForeignKey(Athlete)
-    listener = models.ForeignKey(Listener)
+    listener = models.ForeignKey(Listener, models.SET_NULL, blank=True, null=True)
+    listener_spotify = models.ForeignKey(ListenerSpotify, models.SET_NULL, blank=True, null=True)
 
 class Tags(models.Model):
     name = models.CharField(max_length=100,unique=True)
@@ -432,7 +437,7 @@ def lastfm_get_largest_image(image_list):
 
 def create_song_from_dict(song_api):
 
-    songs = Song.objects.filter(artist_name=song_api['artist']['name'],title=song_api['name'])
+    songs = Song.objects.filter(artist_name__iexact=song_api['artist']['name'],title__iexact=song_api['name'])
 
     if songs:
         return songs[0]
@@ -451,9 +456,9 @@ def create_song_from_dict(song_api):
 
     if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
         artist_mb_id = song_api['artist']['mbid']
-        artists = Artist.objects.filter(Q(name=song_api['artist']['name']) | Q(mb_id=artist_mb_id))
+        artists = Artist.objects.filter(Q(name__iexact=song_api['artist']['name']) | Q(mb_id=artist_mb_id))
     else:
-        artists = Artist.objects.filter(name=song_api['artist']['name'])
+        artists = Artist.objects.filter(name__iexact=song_api['artist']['name'])
 
     if artists:
         artist = artists[0]
