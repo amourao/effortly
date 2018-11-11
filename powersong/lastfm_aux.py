@@ -67,8 +67,7 @@ def lastfm_sync_artists():
 
     artists_to_sync = []
     for artist in artists:
-        if artist.last_sync_date == None or artist.last_sync_date == "":
-            artists_to_sync.append(lastfm_download_artist_info.s(artist.name,artist.mb_id))
+        artists_to_sync.append(lastfm_download_artist_info.s(artist.name,artist.mb_id))
 
     if len(artists_to_sync) > 1:
         promise = group(*artists_to_sync)
