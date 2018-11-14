@@ -1,5 +1,7 @@
 {% block top_table %}
 
+
+
 <div class="container">
     <ul class="list-group">    
     {% for effort in top %}
@@ -8,7 +10,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <a class="h4 mylead-link" href="/activity/{{ effort.activity__activity_id }}/">{{ effort.activity__name}}</a>
-                    <p >{{ effort.activity__start_date_local }}</p>                    
+                    <p >{{ effort.activity__start_date_local }}</p>
                 </div>
                 <div class="col-md-1">
                 </div>

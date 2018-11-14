@@ -8,6 +8,8 @@ from django.conf import settings
 from django.http import JsonResponse
 
 from powersong.models import *
+from powersong.curve_fit import get_best_curve_fit
+
 from django.db.models import Value,Avg,Sum,Max,Count,F,Case,When,IntegerField,FloatField
 
 
@@ -90,6 +92,10 @@ def song(request,song_id):
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
     data['song'] = Song.objects.filter(id = song_id)[0]
+    if data['song'].original_song:
+        data['song'] = data['song'].original_song
+        song_id = data['song'].id
+
 
     activity_type = None
     if 'activity_type' in request.GET:
@@ -108,8 +114,12 @@ def song(request,song_id):
     else:
         qs = Effort.objects
     
-    qs = qs.filter(song__id = song_id, activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s').order_by('activity__start_date_local')
+    qs = qs.filter(((Q(song__id = song_id) | Q(song__original_song = data['song'])) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','time').order_by('activity__start_date_local')
 
+    xdata, ydata = get_best_curve_fit(qs)
+
+    data['chart_data'] = zip(ydata.ravel(),xdata.ravel())
+    
     render = 'html'
     if 'render' in request.GET:
         render = int(request.GET['render'])

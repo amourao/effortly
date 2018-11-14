@@ -75,8 +75,8 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
     url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,username,start,end)
     response = requests.get(url).json()
 
-    with open('data_in_{}.json'.format(stored_act_id), 'w') as outfile:
-        json.dump(response, outfile)
+    #with open('data_in_{}.json'.format(stored_act_id), 'w') as outfile:
+    #    json.dump(response, outfile)
     
     lastfm_tracks = response
     return act_stream, stored_act_id, lastfm_tracks
@@ -114,9 +114,7 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         else:
             songs = lastfm_tracks['recenttracks']['track'][::-1]
     else:
-        logger.debug("No songs in activity {}".format(stored_act_id))
-        return {}
-    
+        logger.debug("No songs in activity {}".format(stored_act_id))    
         return {}
 
     act_avg_speed = stored_act.avg_speed
@@ -190,6 +188,8 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         (effort_avg_cadence, effort_start_cadence, effort_end_cadence) = get_avg_in_interval(act_stream,start,end,'cadence')
         (effort_total_ascent, effort_total_descent, effort_start_dist, effort_end_dist) = get_ascent_in_interval(act_stream,start,end,'altitude')
 
+        (data_vel,time_vel) = get_diff_set(act_stream,start,end,'velocity_smooth')
+
         effort_diff_hr = None
         effort_diff_speed = None
         effort_diff_watts = None
@@ -257,6 +257,9 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
         effort.song = song
         effort.activity = stored_act
+
+        effort.data = data_vel.tobytes()
+        effort.time = time_vel.tobytes()
 
         if stored_act.act_type == 1:
             if (stored_act.avg_watts) != None:
@@ -546,3 +549,38 @@ def get_ascent_in_interval(stream, start, end, key):
     
     
     return sum_pos_key_value,sum_neg_key_value,begin_dist,end_dist
+
+def get_diff_set(stream, start, end, key, ignore_moving = False):
+    start_pos = take_closest_point(stream['time'],start)
+    end_pos = take_closest_point(stream['time'],end)
+    
+    begin_time = stream['time'][start_pos]
+    end_time = stream['time'][end_pos]
+    
+    begin_dist = stream['distance'][start_pos]
+    end_dist = stream['distance'][end_pos]
+    
+    data = []
+    time = []
+
+    if(end_time-begin_time)==0:
+        return np.array(data,np.float16),np.array(time,np.uint16)
+    
+    last_key_val = None
+    
+    if start_pos > 0:
+        last_time = stream['time'][start_pos-1]
+    else:
+        last_time = 0
+        
+    for idx, key_value in enumerate(stream[key][start_pos:end_pos]):
+        time_diff = stream['time'][start_pos+idx] - last_time        
+        last_time = stream['time'][start_pos+idx]
+        if stream['moving'][start_pos+idx] or ignore_moving:
+            key_val_diff = key_value
+            stream_time =  last_time - begin_time
+            data.append(key_val_diff)
+            time.append(stream_time)
+        last_key_val = key_value
+
+    return np.array(data,np.float16),np.array(time,np.uint16)

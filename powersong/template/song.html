@@ -1,6 +1,63 @@
 {% extends "base.html" %}
 {% block content %}
   
+<script>
+    var color = Chart.helpers.color;
+    var scatterChartData = {
+        datasets: [
+            {
+            label: 'Average',
+            borderColor: color('#FF0000').alpha(1).rgbString(),
+            backgroundColor: color('#FF0000').alpha(1).rgbString(),
+            showLine: true,
+            pointRadius: 0,
+            fill: false,
+            data: [
+                {% for data,time in chart_data %}{x: {{ time }}, y: {{ data }}},{% endfor %}
+            ]
+            },
+            {% if False %}
+            {% for effort in top %}
+            {
+            label: '{{ effort.activity__name }}',
+            backgroundColor: color('#0000FF').alpha(0.2).rgbString(),
+            data: [
+                {% decode_bytes_data data=effort.data time=effort.time as data_time %}
+                {% for data,time in data_time %}{x: {{ time }}, y: {{ data }}},{% endfor %}
+            ]
+            },
+            {% endfor %}
+            {% endif %}
+        ]
+    };
+
+    window.onload = function() {
+        var ctx = document.getElementById('canvas').getContext('2d');
+        window.myScatter = Chart.Scatter(ctx, {
+            data: scatterChartData,
+            options: {
+                title: {
+                    display: true,
+                    text: 'Diference in Speed over time'
+                },
+                legend: {
+                    display: false 
+                },
+                scales: {
+                    yAxes: [{
+                        labelString: 'Speed (m/s)',
+                        display: true
+                    },
+                    xAxes: [{
+                        labelString: 'Time in Song (s)',
+                        display: true
+                    }
+                }
+        });
+    };
+</script>
+
+
   <div class="container top-box-padding">
     <ul class="list-group">    
       <li class="list-group-item">
@@ -24,7 +81,7 @@
                     </div>
                     {% else %}
                     <div class="row">
-                    
+                        
                     <div class="col-6 col-md-3 text-right">
                         {% if activity_type == 0 %}
                         <span class="h4">{{ effort_averages.avg_avg_speed_s_pretty }} </span><span> {{ effort_averages.units.speed_s }} </span>
@@ -122,6 +179,9 @@
 
                 	</div> 
                     {% endif %} 
+                    <div class="row">
+                        <canvas id="canvas"></canvas>
+                    </div> 
 
                   </div>
 

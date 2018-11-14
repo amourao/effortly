@@ -4,6 +4,8 @@ from django.db.models import Q
 
 from powersong.unit_conversion import *
 from picklefield.fields import PickledObjectField
+
+import numpy as np
 import logging
 
 speed    = ['activity__avg_speed','activity__max_speed','avg_speed','diff_avg_speed','diff_last_speed','avg_avg_speed','avg_diff_avg_speed','avg_diff_last_speed']
@@ -227,9 +229,16 @@ class Song(models.Model):
     mb_id = models.UUIDField(blank=True,null=True)
     tags = models.ManyToManyField(Tags)
 
+    original_song = models.ForeignKey("self",blank=True,null=True)
     @property
     def duration_pretty(self):
         return secondsToMinutesSecs(self.duration/1000.0)
+
+class SongEffortPerUser(models.Model):
+    song = models.ForeignKey(Song, on_delete=models.CASCADE)
+    user = models.ForeignKey(PowerUser, on_delete=models.CASCADE)
+    data = models.BinaryField(blank=True,null=True)
+    count = models.BinaryField(blank=True,null=True)
 
 class Effort(models.Model):
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
@@ -267,9 +276,19 @@ class Effort(models.Model):
     diff_avg_watts = models.FloatField(blank=True,null=True)
     diff_last_watts = models.FloatField(blank=True,null=True)
 
+    data = models.BinaryField(blank=True,null=True)
+    time = models.BinaryField(blank=True,null=True)
     @property
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
+
+    @property
+    def data_array(self):
+        return np.fromstring(self.data,dtype=np.float16)
+
+    @property
+    def time_array(self):
+        return np.fromstring(self.time,dtype=np.uint8)
 
     @property
     def avg_speed_pretty_units(self):
@@ -573,7 +592,11 @@ def lastfm_get_track(artist,name):
     songs = Song.objects.filter(title=name,artist_name=artist)
 
     if songs:
-        return songs[0]
+        song = songs[0]
+        if song.original_song:
+            return song.original_song
+        else:
+            return song
 
 
 def strava_get_activity_by_id(act_id):
