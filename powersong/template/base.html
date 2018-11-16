@@ -36,8 +36,9 @@
       }
 
       function update_all() {
-
+          {% if not demo %}
           load_async('#progress','/get_sync_progress/',true)
+          {% endif %}
           load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}',true)
           load_async('#top-hr','/top/?type=top&field=avg_hr&dispfield=avg_hr&activity_type={{ activity_type }}',true)
           load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}&min_count=3',true)
@@ -52,22 +53,30 @@
       }
 
       function sync() {
+        {% if not demo %}
           load_async('#progress','/sync/',true)
+          {% endif%}
       }
 
       function sync_spotify() {
+        {% if not demo %}
           load_async('#progress_spotify','/sync_spotify/',true)
+        {% endif %}
       }
 
       function progress() {
+        {% if not demo %}
           var sync = $('#progress').html(); 
           if (sync.indexOf("IN PROGRESS") != -1)
               load_async('#progress','/get_sync_progress/',true);
           if (sync.indexOf("SUCCESS") != -1)
               location.reload();
+        {% endif %}
       }
 
+      {% if not demo %}
       window.setInterval(function(){progress();}, 10000);
+      {% endif %}
 
     </script>
   </head>
@@ -111,9 +120,10 @@
           <li class="nav-item"> <a class="nav-link">{{ athlete.rides_count }} rides</a> </li>
           <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
           <li class="nav-item"> <a class="nav-link">{{ listener.scrobble_count }} scrobbles</a> </li>
+          {% if not demo %}
           <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
           <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->
-
+          {% endif %}
           <li class="nav-item"> <a class="btn btn-margin-left btn-outline-danger" href="/logout" role="button">Logout</a></li>
         </ul>
       </div>

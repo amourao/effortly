@@ -1,6 +1,142 @@
 {% extends "base.html" %}
 {% block content %}
-  
+
+{% if spotify_token %}
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script>
+    var player = undefined
+
+    var spotify_ids = []
+    var start_times = []
+    {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__spotify_id }}')
+    start_times.push({{effort.start_time}})
+    {% endfor %}
+
+    var play = ({
+          spotify_uri,
+          position,
+          playerInstance: {
+            _options: {
+              getOAuthToken,
+              id
+            }
+          }
+        }) => {
+          getOAuthToken(access_token => {
+            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${id}`, {
+              method: 'PUT',
+              body: JSON.stringify({ uris: spotify_uri, position_ms: position }),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${access_token}`
+              },
+            });
+          });
+        };
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const token = '{{ spotify_token }}';
+      player = new Spotify.Player({
+        name: 'PowerSong web player',
+        getOAuthToken: cb => { cb(token); }
+      });
+
+
+      // Error handling
+      player.addListener('initialization_error', ({ message }) => { console.error(message); });
+      player.addListener('authentication_error', ({ message }) => { console.error(message); });
+      player.addListener('account_error', ({ message }) => { console.error(message); });
+      player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+      // Playback status updates
+
+      // Ready
+      player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+      });
+
+      // Not Ready
+      player.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+      });
+
+      // Connect to the player!
+      player.connect();
+      };
+
+</script>  
+{% endif %}
+
+
+  <script>
+    //var color_base = ['002b36', '073642', '586e75', '657b83', '839496', '93a1a1', 'eee8d5', 'fdf6e3'];
+    var color_base = ['ff0000', '00ff00'];
+
+    var color = Chart.helpers.color;
+    var scatterChartData = {
+        datasets: [
+            {% if True %}
+            {% decode_all qs=top as data_times %}
+            {% for data_time in data_times %}
+            {
+            label: '',
+            backgroundColor: color('#'+ color_base[{{ forloop.counter0 }} % color_base.length]).alpha(1).rgbString(),
+            borderColor: color('#'+ color_base[{{ forloop.counter0 }} % color_base.length]).alpha(1).rgbString(),
+            showLine: true,
+            pointRadius: 3,
+            fill: false,
+            data: [
+                {% for data,time,time_on_song in data_time %}{x: {{ time }}, y: {{ data }}}, {% endfor %}
+            ]
+            },
+            {% endfor %}
+            {% endif %}
+        ]
+    };
+
+    window.onload = function() {
+        var ctx = document.getElementById('canvas').getContext('2d');
+        window.myScatter = Chart.Scatter(ctx, {
+            data: scatterChartData,
+            options: {
+                title: {
+                    display: true,
+                    text: 'Speed over Time'
+                }, legend: {
+                    display: false 
+                }, scales: {
+                    yAxes: [{
+                        label: 'Speed (m/s)',
+                        display: true
+                    }],
+                    xAxes: [{
+                        label: 'Time in Activity (s)',
+                        display: true,
+                        ticks: {
+                            max: {{ activity.elapsed_time }}
+                        }
+                    }]
+                },
+                onClick: function(event, array) {
+                    let element = this.getElementAtEvent(event);
+                    if (element.length > 0) {
+                        var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
+                        
+                        position = (value.x - start_times[element[0]._datasetIndex]) * 1000
+                        play({
+                          playerInstance: player,
+                          spotify_uri: spotify_ids.slice(element[0]._datasetIndex),
+                          position: (position)
+                        });
+                        
+                    }
+                }
+            }
+        });
+    };
+</script>
+
+
   <div class="container top-box-padding">
     <ul class="list-group">    
       <li class="list-group-item">
@@ -9,22 +145,21 @@
             	<div class="col-md-4">
             		<a class="h4 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/">{{ activity.name}}</a>
             		<p class="h5">{{ activity.start_date_local }}</p>
+                    {% if not demo %}
                     <p>
                         <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="btn btn-info btn-sm">
                             <span class="glyphicon glyphicon-repeat"></span> See on last.fm
                         </a>
-                    </p>               
+                    </p>
                     <p>
                         <a href="/resync_last_fm/{{ activity.activity_id}}" class="btn btn-info btn-sm">
                             <span class="glyphicon glyphicon-repeat"></span> Resync scrobbles
                         </a>
-                    </p>
-                    <p>
                         <a href="/resync_spotify/{{ activity.activity_id}}" class="btn btn-info btn-sm">
                             <span class="glyphicon glyphicon-repeat"></span> Resync Spotify
                         </a>
                     </p>
-                    
+                    {% endif %}
             	</div>
                 <div class="col-md-8">
                 <div class="row">
@@ -65,11 +200,15 @@
                     <p>avg. cad</p>
                     </div>
                     {% endif %}
-                </div>
+
                 </div>
             </div>
-            </div>
-        </li>
+        </div>
+        <div class="row">
+            <canvas id="canvas"></canvas>
+        </div> 
+      </div>
+    </li>
     </ul>
    </div>
 

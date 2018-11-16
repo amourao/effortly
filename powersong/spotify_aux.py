@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 TEMPLATE = {
         "album": {
           "#text": "",
-          "mbid": ""
+          "mbid": "",
+          "name": ""
         },
         "artist": {
           "image": [
@@ -87,6 +88,7 @@ def spotify_get_recent_tracks(token):
 
     for track in results['items']:
         res = d2 = copy.deepcopy(TEMPLATE)
+        res['spotify_id'] = track['track']['id']
         res['name'] = track['track']['name']
         res['url'] = track['track']['external_urls']['spotify']
         res['image'][0]['extralarge'] = track['track']['album']['images'][0]['url']

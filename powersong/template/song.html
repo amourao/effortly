@@ -1,6 +1,65 @@
 {% extends "base.html" %}
 {% block content %}
-  
+
+{% if song.spotify_id and spotify_token %}
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script>
+    var player = undefined
+
+    var play = ({
+          spotify_uri,
+          position,
+          playerInstance: {
+            _options: {
+              getOAuthToken,
+              id
+            }
+          }
+        }) => {
+          getOAuthToken(access_token => {
+            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${id}`, {
+              method: 'PUT',
+              body: JSON.stringify({ uris: [spotify_uri], position_ms: position }),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${access_token}`
+              },
+            });
+          });
+        };
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const token = '{{ spotify_token }}';
+      player = new Spotify.Player({
+        name: 'PowerSong web player',
+        getOAuthToken: cb => { cb(token); }
+      });
+
+
+      // Error handling
+      player.addListener('initialization_error', ({ message }) => { console.error(message); });
+      player.addListener('authentication_error', ({ message }) => { console.error(message); });
+      player.addListener('account_error', ({ message }) => { console.error(message); });
+      player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+      // Playback status updates
+
+      // Ready
+      player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+      });
+
+      // Not Ready
+      player.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+      });
+
+      // Connect to the player!
+      player.connect();
+      };
+
+</script>  
+{% endif %}
 <script>
     var color = Chart.helpers.color;
     var scatterChartData = {
@@ -10,7 +69,7 @@
             borderColor: color('#FF0000').alpha(1).rgbString(),
             backgroundColor: color('#FF0000').alpha(1).rgbString(),
             showLine: true,
-            pointRadius: 0,
+            pointRadius: 3,
             fill: false,
             data: [
                 {% for data,time in chart_data %}{x: {{ time }}, y: {{ data }}},{% endfor %}
@@ -38,7 +97,7 @@
             options: {
                 title: {
                     display: true,
-                    text: 'Diference in Speed over time'
+                    text: 'Diference in Speed over Time'
                 },
                 legend: {
                     display: false 
@@ -47,12 +106,31 @@
                     yAxes: [{
                         labelString: 'Speed (m/s)',
                         display: true
-                    },
+                    }],
                     xAxes: [{
                         labelString: 'Time in Song (s)',
-                        display: true
+                        display: true,
+                        ticks: {
+                            max: ({{ song.duration }}/1000)+5
+                        }
+                    }]
+                },
+                onClick: function(event, array) {
+                    let element = this.getElementAtEvent(event);
+                    if (element.length > 0) {
+                        var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
+                        position = value.x * 1000
+                        if (position >= ({{ song.duration }}-6000))
+                            position = ({{ song.duration }}-6000)
+                        play({
+                          playerInstance: player,
+                          spotify_uri: 'spotify:track:{{ song.spotify_id }}',
+                          position: (position)
+                        });
+                        
                     }
                 }
+            }
         });
     };
 </script>
@@ -179,14 +257,14 @@
 
                 	</div> 
                     {% endif %} 
-                    <div class="row">
-                        <canvas id="canvas"></canvas>
-                    </div> 
-
+                    
                   </div>
 
 
                 </div>
+                <div class="row">
+                        <canvas id="canvas"></canvas>
+                    </div> 
             </div>
             </div>
         </li>

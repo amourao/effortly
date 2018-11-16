@@ -215,7 +215,8 @@ class Artist(models.Model):
 
 class Song(models.Model):
     title = models.CharField(max_length=100)    
-    artist_name = models.CharField(max_length=100)    
+    artist_name = models.CharField(max_length=100)
+    album_name = models.CharField(max_length=100,blank=True,null=True)
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     duration = models.IntegerField(blank=True,null=True)
     listeners_count = models.IntegerField(blank=True,null=True)
@@ -227,18 +228,13 @@ class Song(models.Model):
     url = models.URLField(blank=True,null=True)
 
     mb_id = models.UUIDField(blank=True,null=True)
+    spotify_id = models.CharField(max_length=22,blank=True,null=True)    
     tags = models.ManyToManyField(Tags)
 
     original_song = models.ForeignKey("self",blank=True,null=True)
     @property
     def duration_pretty(self):
         return secondsToMinutesSecs(self.duration/1000.0)
-
-class SongEffortPerUser(models.Model):
-    song = models.ForeignKey(Song, on_delete=models.CASCADE)
-    user = models.ForeignKey(PowerUser, on_delete=models.CASCADE)
-    data = models.BinaryField(blank=True,null=True)
-    count = models.BinaryField(blank=True,null=True)
 
 class Effort(models.Model):
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
@@ -277,6 +273,7 @@ class Effort(models.Model):
     diff_last_watts = models.FloatField(blank=True,null=True)
 
     data = models.BinaryField(blank=True,null=True)
+    hr = models.BinaryField(blank=True,null=True)
     time = models.BinaryField(blank=True,null=True)
     @property
     def full_name(self):
@@ -459,13 +456,21 @@ def create_song_from_dict(song_api):
     songs = Song.objects.filter(artist_name__iexact=song_api['artist']['name'],title__iexact=song_api['name'])
 
     if songs:
-        return songs[0]
+        song = songs[0]
+        if ('spotify_id' in song_api and song_api['spotify_id'].strip() != ""):
+            song.spotify_id = song_api['spotify_id']
+            song.save()
+        return song
 
     song = Song()
     
     song.title = song_api['name']
     song.url = song_api['url']
     song.artist_name = song_api['artist']['name']
+    song.album_name = song_api['album']['#text']
+
+    if ('spotify_id' in song_api and song_api['spotify_id'].strip() != ""):
+        song.spotify_id = song_api['spotify_id']
 
     if ('mbid' in song_api and song_api['mbid'].strip() != ""):
         song.mb_id = song_api['mbid']

@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from powersong.view_oauth import strava_oauth, lastfm_oauth, spotify_oauth
-from powersong.view_home import index, about, home, logout
+from powersong.view_home import index, about, home, logout, demo, setting
 from powersong.view_tops import top,latest
 from powersong.view_detail import activity,song,artist,artists,songs
 from powersong.view_main import get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify
@@ -12,11 +12,14 @@ from django.conf.urls import include
 
 urlpatterns = [
 	url(r'^$', index, name='index'),
+
+    url(r'^demo/', demo),
     
     url(r'^home/', home),
     url(r'^sync/', sync),
     url(r'^sync_spotify/', sync_spotify),
     url(r'^about/', about),
+    url(r'^settings/', setting),
     url(r'^logout/', logout),
     url(r'^top/', top),
     url(r'^activities/', latest),

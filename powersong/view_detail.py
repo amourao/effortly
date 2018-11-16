@@ -39,15 +39,22 @@ def activity(request,activity_id):
 
     data = {}
 
-    if not 'strava_token' in request.session:
+    if not 'strava_token' in request.session and not 'demo' in request.session:
         return redirect("/")
     
-    poweruser = get_poweruser(request.session['strava_token'])
+    if 'demo' in request.session:
+        poweruser = PowerUser.objects.filter(id=1)[0]
+        data['demo'] = True
+    else:
+        poweruser = get_poweruser(request.session['strava_token'])
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
 
-    qs = Effort.objects.filter(activity__activity_id = activity_id, activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','diff_last_hr','diff_avg_hr','diff_last_speed','diff_avg_speed','avg_speed','start_distance','distance','duration','avg_hr','start_time','song__artist__id','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s').order_by('start_time')
+    if poweruser.listener_spotify:
+        data['spotify_token'] = poweruser.listener_spotify.spotify_token
+
+    qs = Effort.objects.filter(activity__activity_id = activity_id, activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','diff_last_hr','diff_avg_hr','diff_last_speed','diff_avg_speed','avg_speed','start_distance','distance','duration','avg_hr','start_time','song__artist__id','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id').order_by('start_time')
     activity = Activity.objects.filter(activity_id = activity_id)[0]
     data['activity_type'] = activity.act_type
     data['activity'] = activity
@@ -84,10 +91,16 @@ def song(request,song_id):
 
     data = {}
 
-    if not 'strava_token' in request.session:
+    if not 'strava_token' in request.session and not 'demo' in request.session:
         return redirect("/")
     
-    poweruser = get_poweruser(request.session['strava_token'])
+    if 'demo' in request.session:
+        poweruser = PowerUser.objects.filter(id=1)[0]
+        data['demo'] = True
+    else:
+        poweruser = get_poweruser(request.session['strava_token'])
+
+
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
@@ -95,6 +108,9 @@ def song(request,song_id):
     if data['song'].original_song:
         data['song'] = data['song'].original_song
         song_id = data['song'].id
+
+    if poweruser.listener_spotify:
+        data['spotify_token'] = poweruser.listener_spotify.spotify_token
 
 
     activity_type = None
@@ -114,9 +130,14 @@ def song(request,song_id):
     else:
         qs = Effort.objects
     
-    qs = qs.filter(((Q(song__id = song_id) | Q(song__original_song = data['song'])) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','time').order_by('activity__start_date_local')
+    qs = qs.filter(((Q(song__id = song_id) | Q(song__original_song = data['song'])) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id').order_by('activity__start_date_local')
 
     xdata, ydata = get_best_curve_fit(qs)
+
+    if data['song'].duration:
+        duration_in_seconds = int(data['song'].duration / 1000)
+        xdata = xdata[:duration_in_seconds]
+        ydata = ydata[:duration_in_seconds]
 
     data['chart_data'] = zip(ydata.ravel(),xdata.ravel())
     
@@ -165,10 +186,16 @@ def song(request,song_id):
 def artist(request,artist_id):
     data = {}
 
-    if not 'strava_token' in request.session:
+    if not 'strava_token' in request.session and not 'demo' in request.session:
         return redirect("/")
     
-    poweruser = get_poweruser(request.session['strava_token'])
+    if 'demo' in request.session:
+        poweruser = PowerUser.objects.filter(id=1)[0]
+        data['demo'] = True
+    else:
+        poweruser = get_poweruser(request.session['strava_token'])
+
+
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener

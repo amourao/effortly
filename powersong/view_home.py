@@ -13,16 +13,26 @@ from powersong.view_main import index as main_index
 
 from powersong.models import get_poweruser, PowerUser
 
+
+def demo(request):
+    request.session.flush()
+    request.session['demo'] = True
+    return main_index(request)
+
+
 def index(request):
     
     result = {}
+
+    if 'demo' in request.session:
+        return demo(request)
     
     if not 'strava_token' in request.session:
         result['strava_authorize_url'] = strava_get_auth_url()
     elif get_poweruser(request.session['strava_token']) != None:
         return main_index(request)
 
-    if not 'lastfm_token' in request.session or request.session['lastfm_token'] == None:
+    if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or (request.session['lastfm_token'] == None and request.session['lastfm_key'] == None):
         result['lastfm_authorize_url'] = lastfm_get_auth_url()
 
     if not 'spotify_token' in request.session or request.session['spotify_token'] == None:
@@ -41,6 +51,20 @@ def home(request):
 
 def about(request):
     return render_to_response('about.html', {})    
+
+def setting(request):
+
+    result = {}
+
+    if not 'strava_token' in request.session:
+        result['strava_authorize_url'] = strava_get_auth_url()
+
+    if not 'lastfm_token' in request.session or request.session['lastfm_token'] == None:
+        result['lastfm_authorize_url'] = lastfm_get_auth_url()
+
+    if not 'spotify_token' in request.session or request.session['spotify_token'] == None:
+        result['spotify_authorize_url'] = spotify_get_auth_url()
+    return render_to_response('settings.html', result) 
 
 def logout(request):
     request.session.flush()
