@@ -1,6 +1,6 @@
 from django.conf import settings
 
-import copy
+import copy, time
 import json
 import spotipy
 from dateutil.parser import parse
@@ -77,13 +77,13 @@ def spotify_get_user_info(code,token,refresh,athlete_id):
 def spotify_get_auth_url():
     return settings.SPOTIFY_BASE.format(settings.SPOTIPY_CLIENT_ID, settings.SPOTIFY_CALLBACK_URL)
 
-def spotify_get_recent_tracks(token):
+def spotify_get_recent_tracks(token,athlete_id):
     sp = spotipy.Spotify(auth=token)
     results = sp.current_user_recently_played()    
     track_list = []
     last_timestamp = None
 
-    with open('data_in.json', 'w') as outfile:
+    with open('data_{}_{}.json'.format(athlete_id,str(time.time())).split('.')[0], 'w') as outfile:
         json.dump(results, outfile)
 
     for track in results['items']:
@@ -113,9 +113,6 @@ def spotify_get_recent_tracks(token):
     final_res = {}
     final_res['recenttracks'] = {}
     final_res['recenttracks']['track'] = track_list
-
-    with open('data_in_parsed.json', 'w') as outfile:
-        json.dump(final_res, outfile)
 
     return final_res
 

@@ -88,13 +88,13 @@ def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,a
 
     (act_stream,stored_act_id) = act_stream_stored_act
     try:
-        spotify_tracks = spotify_get_recent_tracks(token)
+        spotify_tracks = spotify_get_recent_tracks(token,athlete_id)
     except:
         logger.debug("Refreshing spotify token")
         r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'refresh_token', 'refresh_token': reftoken, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
         out = r.json()
         spotify_get_user_info(code,out['access_token'],reftoken,athlete_id)
-        spotify_tracks = spotify_get_recent_tracks(out['access_token'])
+        spotify_tracks = spotify_get_recent_tracks(out['access_token'],athlete_id)
         
     return act_stream, stored_act_id, spotify_tracks
 
