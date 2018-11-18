@@ -1,6 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
 
+<script>
+
+  function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+
+  function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+
+  
+
+  function sendPost(activity_id,key,value) {
+    data = {}
+    data[key] = value
+    $.ajaxSetup({
+      crossDomain: false, // obviates need for sameOrigin test
+      beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type)) {
+              xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+          }
+      }
+  });
+
+    $.ajax({
+        type: "POST",
+        url: "/flag_activity/" + activity_id + '/',
+        data: JSON.stringify(data),
+        success: setTimeout(function(){ location.reload(); }, 1000)
+    });
+  }
+
+</script>
+
 {% if spotify_token %}
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
@@ -153,11 +201,21 @@
                     </p>
                     <p>
                         <a href="/resync_last_fm/{{ activity.activity_id}}" class="btn btn-info btn-sm">
-                            <span class="glyphicon glyphicon-repeat"></span> Resync scrobbles
+                            <span class="glyphicon glyphicon-repeat"></span> Resync last.fm
                         </a>
                         <a href="/resync_spotify/{{ activity.activity_id}}" class="btn btn-info btn-sm">
                             <span class="glyphicon glyphicon-repeat"></span> Resync Spotify
                         </a>
+                    </p>
+                    <p>
+                        <button onclick="sendPost({{ activity.activity_id }},'flagged',!{{ activity.flagged|lower  }})" class="btn btn-alert btn-sm">
+                            <span class="glyphicon glyphicon-repeat"></span>{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity
+                        </button>
+                        <button onclick="sendPost({{ activity.activity_id }},'flagged_hr',!{{ activity.flagged_hr|lower }})" class="btn btn-alert btn-sm">
+                            <span class="glyphicon glyphicon-repeat"></span>{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR
+                        </button>
+
+                        
                     </p>
                     {% endif %}
             	</div>

@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 from django.db.models.fields.related import ManyToManyField
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 def get_scrobble_details(athlete_id,activity_type):
@@ -35,6 +36,7 @@ def get_scrobble_details(athlete_id,activity_type):
     count_a = len(qs.values('activity_id').annotate(t_count=Count('activity_id')))
     return count_s,count_a
 
+@ensure_csrf_cookie
 def activity(request,activity_id):
 
     data = {}
@@ -51,11 +53,16 @@ def activity(request,activity_id):
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
 
+    activity = Activity.objects.filter(activity_id = activity_id)[0]
+    
+    if activity.athlete_id != poweruser.athlete.id:
+        return render_to_response('access_denied.html', data)
+        
+
     if poweruser.listener_spotify:
         data['spotify_token'] = poweruser.listener_spotify.spotify_token
 
     qs = Effort.objects.filter(activity__activity_id = activity_id, activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','diff_last_hr','diff_avg_hr','diff_last_speed','diff_avg_speed','avg_speed','start_distance','distance','duration','avg_hr','start_time','song__artist__id','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id').order_by('start_time')
-    activity = Activity.objects.filter(activity_id = activity_id)[0]
     data['activity_type'] = activity.act_type
     data['activity'] = activity
 

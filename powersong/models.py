@@ -114,6 +114,9 @@ class Activity(models.Model):
     total_ascent = models.FloatField(blank=True,null=True)
     total_descent = models.FloatField(blank=True,null=True)
 
+    flagged = models.BooleanField(default=False)
+    flagged_hr = models.BooleanField(default=False)
+
     @property
     def avg_speed_pretty_units(self):
         if (self.athlete.measurement_preference == 0) and (self.act_type == 0):
@@ -543,6 +546,8 @@ def create_activity_from_dict(activity_api):
 
     # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
     activity.workout_type = 0
+
+    logger.debug(activity_api['workout_type'])
     if activity_api['workout_type'] == "race":
         activity.workout_type = 1
     elif activity_api['workout_type'] == "long run":
