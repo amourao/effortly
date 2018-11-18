@@ -260,6 +260,12 @@
                     
                   </div>
 
+                  <p>
+                    <button onclick="sendPost({{ song.id }},'flag_song','flagged',!{{ flagged|lower }})" class="btn btn-alert btn-sm">
+                        <span class="glyphicon glyphicon-repeat"></span>{% if flagged %}Unflag{% else %}Flag{% endif %} song
+                    </button>
+                  </p>
+
 
                 </div>
                 <div class="row">

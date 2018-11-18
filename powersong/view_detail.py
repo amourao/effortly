@@ -62,7 +62,7 @@ def activity(request,activity_id):
     if poweruser.listener_spotify:
         data['spotify_token'] = poweruser.listener_spotify.spotify_token
 
-    qs = Effort.objects.filter(activity__activity_id = activity_id, activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','diff_last_hr','diff_avg_hr','diff_last_speed','diff_avg_speed','avg_speed','start_distance','distance','duration','avg_hr','start_time','song__artist__id','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id').order_by('start_time')
+    qs = Effort.objects.filter(flagged=False,activity__activity_id = activity_id, activity__athlete__athlete_id = request.session['athlete_id']).values('id','song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','diff_last_hr','diff_avg_hr','diff_last_speed','diff_avg_speed','avg_speed','start_distance','distance','duration','avg_hr','start_time','song__artist__id','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id','flagged','flagged_hr','activity__flagged','activity__flagged_hr').order_by('start_time')
     data['activity_type'] = activity.act_type
     data['activity'] = activity
 
@@ -94,6 +94,7 @@ def activity(request,activity_id):
     else:
         return render_to_response('activity.html', data)
 
+@ensure_csrf_cookie
 def song(request,song_id):
 
     data = {}
@@ -137,7 +138,7 @@ def song(request,song_id):
     else:
         qs = Effort.objects
     
-    qs = qs.filter(((Q(song__id = song_id) | Q(song__original_song = data['song'])) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id').order_by('activity__start_date_local')
+    qs = qs.filter(((Q(song__id = song_id) | Q(song__original_song = data['song'])) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id','id').order_by('activity__start_date_local')
 
     xdata, ydata = get_best_curve_fit(qs)
 
@@ -147,6 +148,8 @@ def song(request,song_id):
         ydata = ydata[:duration_in_seconds]
 
     data['chart_data'] = zip(ydata.ravel(),xdata.ravel())
+
+    data['flagged'] = bool(FlaggedSong.objects.filter(song=data['song'], poweruser=poweruser))
     
     render = 'html'
     if 'render' in request.GET:
@@ -190,6 +193,7 @@ def song(request,song_id):
     else:
         return render_to_response('song.html', data)
 
+@ensure_csrf_cookie
 def artist(request,artist_id):
     data = {}
 
@@ -226,6 +230,8 @@ def artist(request,artist_id):
         qs = qs.filter(act_type = data['activity_type'])  
 
     effort_count = qs.count()
+
+    data['flagged'] = bool(FlaggedArtist.objects.filter(artist=data['artist'], poweruser=poweruser))
 
     render = 'html'
     if 'render' in request.GET:
@@ -284,6 +290,8 @@ def artists(request):
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
+    poweruser = get_poweruser(request.session['strava_token'])
+
     n = 5
     if 'n' in request.GET:
         n = int(request.GET['n'])
@@ -294,7 +302,13 @@ def artists(request):
     else:
         qs = Effort.objects
 
-    qs = qs.filter(activity__athlete__athlete_id = request.session['athlete_id']).values('song__artist_name','song__artist__image_url','song__artist__url','song__artist__id').annotate(sort_value=Count('song__artist')).order_by('sort_value')[::-1][:n]
+    flaggedsong_ids = [a[0] for a in FlaggedSong.objects.filter(poweruser=poweruser).values_list('song_id')]
+    flaggedartist_ids = [a[0] for a in FlaggedArtist.objects.filter(poweruser=poweruser).values_list('artist_id')]
+
+    qs = qs.exclude(song__original_song__in=flaggedsong_ids)
+    qs = qs.exclude(song__original_song__artist__in=flaggedartist_ids)
+
+    qs = qs.filter(flagged=False,activity__flagged=False,activity__athlete__athlete_id = request.session['athlete_id']).values('song__artist_name','song__artist__image_url','song__artist__url','song__artist__id','flagged','flagged_hr','activity__flagged','activity__flagged_hr').annotate(sort_value=Count('song__artist')).order_by('sort_value')[::-1][:n]
     
     render = 'html'
     if 'render' in request.GET:
@@ -334,6 +348,8 @@ def songs(request):
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
+    poweruser = get_poweruser(request.session['strava_token'])
+
     n = 5
     if 'n' in request.GET:
         n = int(request.GET['n'])
@@ -343,7 +359,13 @@ def songs(request):
     else:
         qs = Effort.objects
 
-    qs = qs.filter(activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url').annotate(sort_value=Count('song')).order_by('sort_value')[::-1][:n]
+    flaggedsong_ids = [a[0] for a in FlaggedSong.objects.filter(poweruser=poweruser).values_list('song_id')]
+    flaggedartist_ids = [a[0] for a in FlaggedArtist.objects.filter(poweruser=poweruser).values_list('artist_id')]
+
+    qs = qs.exclude(song__original_song__in=flaggedsong_ids)
+    qs = qs.exclude(song__original_song__artist__in=flaggedartist_ids)
+
+    qs = qs.filter(flagged=False,activity__flagged=False,activity__athlete__athlete_id = request.session['athlete_id']).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','flagged','flagged_hr','activity__flagged','activity__flagged_hr').annotate(sort_value=Count('song')).order_by('sort_value')[::-1][:n]
     
     render = 'html'
     if 'render' in request.GET:

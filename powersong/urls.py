@@ -6,7 +6,7 @@ from powersong.view_home import index, about, home, logout, demo, setting
 from powersong.view_tops import top,latest
 from powersong.view_detail import activity,song,artist,artists,songs
 from powersong.view_main import get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify
-from powersong.view_settings import flag_activity
+from powersong.view_settings import flag_activity, flag_artist, flag_song, flag_effort
 
 from django.conf import settings
 from django.conf.urls import include
@@ -29,8 +29,14 @@ urlpatterns = [
     
     url(r'^activity/(?P<activity_id>.*)/', activity),
     url(r'^flag_activity/(?P<activity_id>.*)/', flag_activity),
+    url(r'^flag_effort/(?P<effort_id>.*)/', flag_effort),
+    
+
     url(r'^song/(?P<song_id>.*)/', song),
+    url(r'^flag_song/(?P<song_id>.*)/', flag_song),
+
     url(r'^artist/(?P<artist_id>.*)/', artist),
+    url(r'^flag_artist/(?P<artist_id>.*)/', flag_artist),
 
     url(r'^get_sync_progress/', get_sync_progress),
 

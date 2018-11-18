@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+F{% extends "base.html" %}
 {% block content %}
   
   <div class="container top-box-padding">
@@ -118,6 +118,12 @@
                     </div>  
                     {% endif %}
                   </div>
+
+                  <p>
+                    <button onclick="sendPost({{ artist.id }},'flag_artist','flagged',!{{ flagged|lower }})" class="btn btn-alert btn-sm">
+                        <span class="glyphicon glyphicon-repeat"></span>{% if flagged %}Unflag{% else %}Flag{% endif %} artist
+                    </button>
+                  </p>
 
 
                 </div>

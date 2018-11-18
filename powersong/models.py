@@ -93,7 +93,7 @@ class Activity(models.Model):
     upload_id = models.CharField(max_length=100,blank=True,null=True)
 
     embed_token = models.CharField(max_length=100,blank=True,null=True)
-    workout_type = models.PositiveSmallIntegerField() # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
+    workout_type = models.PositiveSmallIntegerField(default=0,blank=True) # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
 
     avg_speed = models.FloatField() #:  float meters per second
     max_speed = models.FloatField() #:  float meters per second
@@ -114,8 +114,8 @@ class Activity(models.Model):
     total_ascent = models.FloatField(blank=True,null=True)
     total_descent = models.FloatField(blank=True,null=True)
 
-    flagged = models.BooleanField(default=False)
-    flagged_hr = models.BooleanField(default=False)
+    flagged = models.BooleanField(default=False,blank=True)
+    flagged_hr = models.BooleanField(default=False,blank=True)
 
     @property
     def avg_speed_pretty_units(self):
@@ -239,6 +239,14 @@ class Song(models.Model):
     def duration_pretty(self):
         return secondsToMinutesSecs(self.duration/1000.0)
 
+class FlaggedArtist(models.Model):
+    artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
+    poweruser = models.ForeignKey(PowerUser, on_delete=models.CASCADE)
+
+class FlaggedSong(models.Model):
+    song = models.ForeignKey(Song, on_delete=models.CASCADE)
+    poweruser = models.ForeignKey(PowerUser, on_delete=models.CASCADE)
+
 class Effort(models.Model):
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
@@ -278,6 +286,10 @@ class Effort(models.Model):
     data = models.BinaryField(blank=True,null=True)
     hr = models.BinaryField(blank=True,null=True)
     time = models.BinaryField(blank=True,null=True)
+
+    flagged = models.BooleanField(default=False,blank=True)
+    flagged_hr = models.BooleanField(default=False,blank=True)
+
     @property
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
@@ -544,16 +556,9 @@ def create_activity_from_dict(activity_api):
 
     activity.embed_token = activity_api['embed_token']
 
-    # or runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
     activity.workout_type = 0
-
-    logger.debug(activity_api['workout_type'])
-    if activity_api['workout_type'] == "race":
-        activity.workout_type = 1
-    elif activity_api['workout_type'] == "long run":
-        activity.workout_type = 2
-    elif activity_api['workout_type'] == "workout":
-        activity.workout_type = 3
+    if 'workout_type' in activity_api and activity_api['workout_type']:
+        activity.workout_type = int(activity_api['workout_type'])
 
     activity.avg_speed = float(activity_api['average_speed'])
     activity.max_speed = float(activity_api['max_speed'])

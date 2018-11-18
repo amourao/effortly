@@ -130,6 +130,18 @@
                         </div>
                         {% endif %}
 
+                        <div class="col-12">
+                         <p>
+                        <button onclick="sendPost({{ effort.id }},'flag_effort','flagged',!{{ effort.flagged|lower  }})" class="btn btn-alert btn-sm">
+                            <span class="glyphicon glyphicon-repeat"></span>{% if effort.flagged %}Unflag{% else %}Flag{% endif %} effort
+                        </button>
+                        <button onclick="sendPost({{ effort.id }},'flag_effort','flagged_hr',!{{ effort.flagged_hr|lower }})" class="btn btn-alert btn-sm">
+                            <span class="glyphicon glyphicon-repeat"></span>{% if effort.flagged_hr %}Unflag{% else %}Flag{% endif %} effort HR
+                        </button>                        
+                        </p>
+
+                        </div>
+
                     </div>  
                 </div>
             </div>
