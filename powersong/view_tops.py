@@ -9,6 +9,7 @@ from django.http import JsonResponse
 
 from powersong.models import *
 from django.db.models import Avg,Sum,Max,Count
+from django.db.models import Q
 
 from django.core import serializers
 
@@ -90,6 +91,7 @@ def top(request):
     activity_type = None
     if 'activity_type' in request.GET:
         activity_type = int(request.GET['activity_type'])
+
     if activity_type == None:
         if not 'athlete_type' in request.session:
             athlete = strava_get_user_info_by_id(request.session['athlete_id'])
@@ -98,6 +100,13 @@ def top(request):
             activity_type = request.session['activity_type']
 
     request.session['activity_type'] = activity_type
+
+    workout_type = -1
+    if 'workout_type' in request.GET:
+        try:
+            workout_type = int(request.GET['workout_type'])
+        except:
+            pass
 
     if activity_type == 0 and 'diff' in field and 'speed' in field:
         field += "_s"
@@ -128,10 +137,21 @@ def top(request):
 
     poweruser = get_poweruser(request.session['strava_token'])
 
-    if activity_type == -1:
-        qs = Effort.objects
-    else:
-        qs = Effort.objects.filter(act_type=activity_type)
+    
+    qs = Effort.objects
+
+    if activity_type != -1:
+        qs = qs.filter(act_type=activity_type)
+
+    if workout_type != -1:
+        if workout_type == 0:
+            qs = qs.filter((Q(activity__workout_type=10) | Q(activity__workout_type=0)))
+        elif workout_type == 1:
+            qs = qs.filter((Q(activity__workout_type=11) | Q(activity__workout_type=1)))
+        elif workout_type == 3:
+            qs = qs.filter((Q(activity__workout_type=12) | Q(activity__workout_type=3)))
+        else:
+            qs = qs.filter(activity__workout_type=workout_type)
 
     if 'hr' in field:
         qs = qs.filter(activity__flagged_hr=False,flagged_hr=False).exclude(avg_hr__isnull=True)

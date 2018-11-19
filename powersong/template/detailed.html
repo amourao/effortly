@@ -8,13 +8,14 @@
       top_avg = top_avg_form_id.value
       field = field_form_id.value
       asc_desc = asc_desc_form_id.value
+      workout_type = workout_type_form_id.value
 
       if (query_changed){
         $('#page')[0].value = 0
       }
       page = parseInt($('#page')[0].value)  
           
-      url = `/top/?type=${top_avg}&field=${field}&dispfield=${field}&page=${page}&activity_type={{ activity_type }}&header`
+      url = `/top/?type=${top_avg}&field=${field}&dispfield=${field}&page=${page}&activity_type={{ activity_type }}&header&workout_type=${workout_type}`
       if (asc_desc == 'asc'){
         url += '&ascending=1'
       }
@@ -35,7 +36,7 @@
       if(page < 0)
         page = 0
 
-      $('#page')[0].innerHTML = page
+      $('#page')[0].value = page
       update(false)
   }
 
@@ -70,6 +71,15 @@
           <select class="selectpicker" id="asc_desc_form_id" onchange="update(true)">
               <option name="asc_desc_form" value="desc" selected>Descending</option>
               <option name="asc_desc_form" value="asc">Ascending</option>
+          </select>
+
+          <select class="selectpicker" id="workout_type_form_id" onchange="update(true)">
+              <option name="workout_type_form" value="-1" selected>All</option>
+              <option name="workout_type_form" value="0">Regular</option>
+              <option name="workout_type_form" value="1">Race</option>
+              <option name="workout_type_form" value="2">Long Run</option>
+              <option name="workout_type_form" value="3">Workout</option>
+              
           </select>
 
         </div> 
