@@ -26,7 +26,7 @@ def get_song_symbol(spotify_id):
     result = ''
 
     if spotify_id:
-        result += '<i class="fab fa-spotify" data-toggle="tooltip" data-placement="top" title="Spotify"></i>'
+        result += '<i class="fab fa-spotify" data-toggle="tooltip" data-placement="top" title="Available on Spotify"></i>'
 
     if result:
         result = mark_safe('{}'.format(result))

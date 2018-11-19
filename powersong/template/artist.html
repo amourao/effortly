@@ -1,5 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
+
+{% if spotify_token %}
+
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script>
+    var player = undefined
+    var token = '{{ spotify_token }}';
+    var first_play = true
+
+    var spotify_ids = []
+    {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__original_song__spotify_id }}')
+    {% endfor %}
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+        createPlayer()
+    }
+
+    function playList(){
+        if (first_play){
+            play({
+                playerInstance: player,
+                spotify_uri: spotify_ids,
+                position: 0
+            });
+            first_play = false
+        } else {
+            player.togglePlay()
+        }
+
+    }
+</script>  
+{% endif %}
+
   
   <div class="container top-box-padding">
     <ul class="list-group">    
@@ -117,8 +150,21 @@
 
                     </div>  
                     {% endif %}
-                  
-                  <div class="col-12 text-right">      
+                  </div>
+
+                </div>
+                   {% if not demo %}
+                <div class="row"> 
+                    <div class="col-10 text-left">
+                        {% if spotify_token %}
+                    <p>
+                        <button onclick="playList()" class="fa fa-play-circle"></button>
+                        <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
+                    </p>
+                    {% endif %}
+                    </div>
+                    <div class="col-2 text-right">
+                        
                     <div class="dropdown">
                       <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       </button>
@@ -126,10 +172,9 @@
                         <button onclick="sendPost({{ artist.id }},'flag_artist','flagged',!{{ flagged|lower }})" class="dropdown-item" type="button">{% if flagged %}Unflag{% else %}Flag{% endif %} artist</button>
                       </div>
                     </div>
-                  </div>
-                  </div>
-
+                    </div>
                 </div>
+                {% endif %}
             </div>
             </div>
         </li>

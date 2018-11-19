@@ -158,33 +158,33 @@
             </div>
         </div>
         {% if not demo %}
-                    <div class="row">
-                    <div class="col-10 text-left">
-                        {% if spotify_token %}
-                    <p>
-                        <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
-                        <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
-                    </p>
-                    {% endif %}
-                    </div>
-                    <div class="col-2 text-right">
-                        
-                    <div class="dropdown">
-                      <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      </button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenu">
-                        <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="dropdown-item" type="button">See on last.fm</a>
-                        <a href="/resync_last_fm/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync last.fm</a>
-                        <a href="/resync_spotify/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync Spotify</a>
-                        <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
+        <div class="row">
+            <div class="col-10 text-left">
+                {% if spotify_token %}
+            <p>
+                <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
+                <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
+            </p>
+            {% endif %}
+            </div>
+            <div class="col-2 text-right">
+                
+            <div class="dropdown">
+              <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+                <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="dropdown-item" type="button">See on last.fm</a>
+                <a href="/resync_last_fm/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync last.fm</a>
+                <a href="/resync_spotify/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync Spotify</a>
+                <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
 
-                        <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="dropdown-item" type="button">{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR</button>
+                <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="dropdown-item" type="button">{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR</button>
 
-                      </div>
-                    </div>
-                    </div>
-                    </div>
-                    {% endif %}
+              </div>
+            </div>
+            </div>
+        </div>
+        {% endif %}
         <div class="row">
             <canvas id="canvas"></canvas>
         </div> 
