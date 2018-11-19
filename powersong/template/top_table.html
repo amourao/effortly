@@ -10,7 +10,7 @@
         <span class="badge badge-default badge-pill">{{ forloop.counter }}</span>
         </div>
         <div class="col-md-9">
-        <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a> - <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a>
+        <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a> - <a href="/song/{{ effort.song}}/">{% get_song_symbol effort.song__spotify_id %}{{effort.song__title}}</a>
         <a href="{{ effort.song__url}}/">(last.fm link)</a>
         
         </div>

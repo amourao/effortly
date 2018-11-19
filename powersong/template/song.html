@@ -3,62 +3,20 @@
 
 {% if song.spotify_id and spotify_token %}
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
-  <script>
+<script>
     var player = undefined
+    var token = '{{ spotify_token }}';
 
-    var play = ({
-          spotify_uri,
-          position,
-          playerInstance: {
-            _options: {
-              getOAuthToken,
-              id
-            }
-          }
-        }) => {
-          getOAuthToken(access_token => {
-            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${id}`, {
-              method: 'PUT',
-              body: JSON.stringify({ uris: [spotify_uri], position_ms: position }),
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${access_token}`
-              },
-            });
-          });
-        };
+    var spotify_ids = []
+    var start_times = []
+    {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__original_song__spotify_id }}')
+    start_times.push({{effort.start_time}})
+    {% endfor %}
 
     window.onSpotifyWebPlaybackSDKReady = () => {
-      const token = '{{ spotify_token }}';
-      player = new Spotify.Player({
-        name: 'PowerSong web player',
-        getOAuthToken: cb => { cb(token); }
-      });
-
-
-      // Error handling
-      player.addListener('initialization_error', ({ message }) => { console.error(message); });
-      player.addListener('authentication_error', ({ message }) => { console.error(message); });
-      player.addListener('account_error', ({ message }) => { console.error(message); });
-      player.addListener('playback_error', ({ message }) => { console.error(message); });
-
-      // Playback status updates
-
-      // Ready
-      player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
-      });
-
-      // Not Ready
-      player.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
-      });
-
-      // Connect to the player!
-      player.connect();
-      };
-
-</script>  
+        createPlayer()
+    }
+</script>   
 {% endif %}
 <script>
     var color = Chart.helpers.color;
@@ -110,9 +68,11 @@
                     xAxes: [{
                         labelString: 'Time in Song (s)',
                         display: true,
+                        {% if song.duration %}
                         ticks: {
                             max: ({{ song.duration }}/1000)+5
                         }
+                        {% endif %}
                     }]
                 },
                 onClick: function(event, array) {
@@ -120,11 +80,13 @@
                     if (element.length > 0) {
                         var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
                         position = value.x * 1000
+                        {% if song.duration %}
                         if (position >= ({{ song.duration }}-6000))
                             position = ({{ song.duration }}-6000)
+                        {% endif %}
                         play({
                           playerInstance: player,
-                          spotify_uri: 'spotify:track:{{ song.spotify_id }}',
+                          spotify_uri: ['spotify:track:{{ song.spotify_id }}'],
                           position: (position)
                         });
                         
@@ -147,7 +109,7 @@
                 <div class="col-md-lg-10 col-md-9">
                     <div class="row">
                         <div class="col-md-12">
-                            <p class="h4">{{song.title}} - <a href="/artist/{{ song.artist.id }}/">{{song.artist_name}}</a></p>
+                            <p class="h4">{% get_song_symbol song.spotify_id %} {{song.title}} - <a href="/artist/{{ song.artist.id }}/">{{song.artist_name}}</a></p>
                         </div>
                     </div>
 
@@ -259,6 +221,12 @@
                     {% endif %} 
                     
                   </div>
+                  {% if spotify_token %}
+                    <p>
+                        <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
+                        <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
+                    </p>
+                  {% endif %}
 
                   <p>
                     <button onclick="sendPost({{ song.id }},'flag_song','flagged',!{{ flagged|lower }})" class="btn btn-alert btn-sm">

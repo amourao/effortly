@@ -18,6 +18,8 @@ def get_best_curve_fit(qs):
     tmp_data = []
     tmp_time = []
     max_time = -1
+    if not qs:
+        return np.array([]), np.array([])
     for q in qs:
         data, time = convert_bytes_to_np(q['data'],q['time'])
         data -= data[0]

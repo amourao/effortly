@@ -3,79 +3,20 @@
 
 {% if spotify_token %}
 
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
     var player = undefined
+    var token = '{{ spotify_token }}';
 
     var spotify_ids = []
     var start_times = []
-    {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__spotify_id }}')
+    {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__original_song__spotify_id }}')
     start_times.push({{effort.start_time}})
     {% endfor %}
 
-    var play = ({
-          spotify_uri,
-          position,
-          playerInstance: {
-            _options: {
-              getOAuthToken,
-              id
-            }
-          }
-        }) => {
-          getOAuthToken(access_token => {
-            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${id}`, {
-              method: 'PUT',
-              body: JSON.stringify({ uris: spotify_uri, position_ms: position }),
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${access_token}`
-              },
-            });
-          });
-        };
-
     window.onSpotifyWebPlaybackSDKReady = () => {
-      const token = '{{ spotify_token }}';
-      player = new Spotify.Player({
-        name: 'PowerSong web player',
-        getOAuthToken: cb => { cb(token); }
-      });
-
-
-      // Error handling
-      player.addListener('initialization_error', ({ message }) => { console.error(message); });
-      player.addListener('authentication_error', ({ message }) => { console.error(message); });
-      player.addListener('account_error', ({ message }) => { console.error(message); });
-      player.addListener('playback_error', ({ message }) => { console.error(message); });
-
-     player.addListener('player_state_changed', state => {
-       title = state.track_window.current_track.name
-       artists = state.track_window.current_track.artists
-       artist = ''
-       artists.forEach(function(entry) {
-          artist += entry.name + ', '
-       });
-       artist = artist.substring(0,artist.length-2)
-       all = artist + ' - ' + title
-       document.getElementById('nowPlaying').innerHTML = all
-     });
-
-      // Playback status updates
-
-      // Ready
-      player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
-      });
-
-      // Not Ready
-      player.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
-      });
-
-      // Connect to the player!
-      player.connect();
-      };
-
+        createPlayer()
+    }
 </script>  
 {% endif %}
 
@@ -170,35 +111,26 @@
             	<div class="col-md-4">
             		<a class="h4 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/">{{ activity.name}}</a>
             		<p class="h5">{{ activity.start_date_local }}</p>
+                {% get_symbols activity.workout_type activity.flagged activity.flagged_hr %}
                     {% if not demo %}
-                    <p>
-                        <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="btn btn-info btn-sm">
-                            <span class="glyphicon glyphicon-repeat"></span> See on last.fm
-                        </a>
-                    </p>
-                    <p>
-                        <a href="/resync_last_fm/{{ activity.activity_id}}" class="btn btn-info btn-sm">
-                            <span class="glyphicon glyphicon-repeat"></span> Resync last.fm
-                        </a>
-                        <a href="/resync_spotify/{{ activity.activity_id}}" class="btn btn-info btn-sm">
-                            <span class="glyphicon glyphicon-repeat"></span> Resync Spotify
-                        </a>
-                    </p>
-                    <p>
-                        <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="btn btn-alert btn-sm">
-                            <span class="glyphicon glyphicon-repeat"></span>{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity
-                        </button>
-                        <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="btn btn-alert btn-sm">
-                            <span class="glyphicon glyphicon-repeat"></span>{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR
-                        </button>                        
-                    </p>
+                    <div class="dropdown">
+                      <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+                        <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="dropdown-item" type="button">See on last.fm</a>
+                        <a href="/resync_last_fm/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync last.fm</a>
+                        <a href="/resync_spotify/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync Spotify</a>
+                        <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
 
+                        <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="dropdown-item" type="button">{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR</button>
 
+                      </div>
+                    </div>
                     {% endif %}
                     {% if spotify_token %}
                     <p>
                         <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
-                        <span id="nowPlaying"></span>
+                        <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
                     </p>
                     {% endif %}
             	</div>

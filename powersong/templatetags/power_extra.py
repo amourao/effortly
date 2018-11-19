@@ -22,6 +22,43 @@ def get_delta_symbol(value,reverse):
         return mark_safe('<i class="blue_arrow">=</i>')
 
 @register.simple_tag
+def get_song_symbol(spotify_id):
+    result = ''
+
+    if spotify_id:
+        result += '<i class="fab fa-spotify" alt="Spotify"></i>'
+
+    if result:
+        result = mark_safe('{}'.format(result))
+
+    return result
+
+#runs: 0 -> ‘default’, 1 -> ‘race’, 2 -> ‘long run’, 3 -> ‘workout’; 
+# for rides: 10 -> ‘default’, 11 -> ‘race’, 12 -> ‘workout’
+@register.simple_tag
+def get_symbols(value,flagged,flagged_hr):
+    result = ''
+        
+    if value == 1 or value == 11:
+        result += '<i class="fa fa-flag-checkered" alt="Race"></i>'
+    elif value == 2:
+        result += '<i class="fa fa-mountain" alt="Long Run"></i>'
+    elif value == 3 or value == 12:
+        result += '<i class="fa fa-circle-notch" alt="Workout"></i>'
+
+    if flagged:
+        result += '<i class="fa fa-flag" alt="Flagged"></i>'
+
+    if flagged_hr:
+        result += '<i class="fa fa-heartbeat" alt="Flagged HR"></i>'
+    
+    if result:
+        result = mark_safe('<p>{}</p>'.format(result))
+
+    return result
+
+
+@register.simple_tag
 def decode_bytes_data(**kwargs):
     data,time = convert_bytes_to_np(kwargs['data'],kwargs['time'])
     return zip((data-data[0]),time)

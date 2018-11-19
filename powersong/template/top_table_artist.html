@@ -5,18 +5,18 @@
         {% for effort in top %}
             {% if forloop.first %}
                 <div class="col-md-12 text-center col-no-side-padding">
-                    <a href="{{ effort.song__artist__url}}/"><img src="{{ effort.song__artist__image_url }}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__artist_name }}"></a>
+                    <a href="{{ effort.song__original_song__artist__url}}/"><img src="{{ effort.song__original_song__artist__image_url }}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__original_song__artist_name }}"></a>
                     <div class="card-img-overlay fix-image-caption-overlay">
-                        <h4 class="card-title"><a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a></h4>
+                        <h4 class="card-title"><a href="/artist/{{ effort.song__original_song__artist__id}}/">{{effort.song__original_song__artist_name}}</a></h4>
                         {% if effort.sort_value %}<p class="card-text">{{ effort.sort_value }} {{ effort.sort_value_unit }} plays</p>{% endif %}
                     </div>
                 </div>
             {% else %}
                 <div class="col-md-6 text-center col-no-side-padding">
-                    <a href="{{ effort.song__artist__url}}/"><img src="{{ effort.song__artist__image_url }}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__artist_name }}"></a>
+                    <a href="{{ effort.song__original_song__artist__url}}/"><img src="{{ effort.song__original_song__artist__image_url }}" class="card-img w-100"  onerror="img_error(this); " alt="{{ effort.song__original_song__artist_name }}"></a>
                     <div class="card-img-overlay fix-image-caption-overlay">
                         <p class="card-text">
-                        <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
+                        <a href="/artist/{{ effort.song__original_song__artist__id}}/">{{effort.song__original_song__artist_name}}</a>
                         {% if effort.sort_value %}<br/>{{ effort.sort_value }} {{ effort.sort_value_unit }} plays{% endif %}
                         </p>
                     </div>

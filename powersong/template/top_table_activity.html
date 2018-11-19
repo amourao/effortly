@@ -8,12 +8,13 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-lg-2 col-md-3">
-                <a href="{{ effort.song__url}}/"><img src="{% if effort.song__image_url %}{{ effort.song__image_url }}{% else %}{{ effort.song__artist__image_url }}{% endif %}" class="rounded w-100" onerror="img_error(this);" alt="{{ effort.song__title }}"></a>
+                <a href="{{ effort.song__original_song__url}}/"><img src="{% if effort.song__original_song__image_url %}{{ effort.song__original_song__image_url }}{% else %}{{ effort.song__original_song__artist__image_url }}{% endif %}" class="rounded w-100" onerror="img_error(this);" alt="{{ effort.song__original_song__title }}"></a>
                 </div>
                 <div class="col-md-lg-10 col-md-9">
                 <div class="row">
                         <div class="col-md-12 h4">
-                            <a href="/song/{{ effort.song}}/">{{effort.song__title}}</a> - <a href="/artist/{{ effort.song__artist__id}}/">{{effort.song__artist_name}}</a>
+                            {% get_song_symbol effort.song__original_song__spotify_id %}
+                            <a href="/song/{{ effort.song__original_song }}/">{{effort.song__original_song__title}}</a> - <a href="/artist/{{ effort.song__original_song__artist__id}}/">{{effort.song__original_song__artist_name}}</a>
                         </div>
                     </div>
                     <div class="row">

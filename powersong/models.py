@@ -513,6 +513,10 @@ def create_song_from_dict(song_api):
     song.artist = artist
 
     song.save()
+
+    song.original_song = song
+    song.save()
+        
     return song
 
 def create_activity_from_dict(activity_api):

@@ -14,7 +14,7 @@ from django.conf import settings
 import requests
 
 from powersong.models import *
-from powersong.spotify_aux import spotify_get_recent_tracks, spotify_get_user_info
+from powersong.spotify_aux import *
 from urllib.error import HTTPError
 
 from urllib.parse import quote_plus
@@ -81,6 +81,33 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
     lastfm_tracks = response
     return act_stream, stored_act_id, lastfm_tracks
 
+
+@shared_task
+def spotify_get_spotify_ids(code,token,reftoken,song_id):
+    try:
+        song = Song.objects.filter(id=song_id)[0]
+        song = song.original_song
+
+        athlete_id = 1
+
+        sp = spotipy.Spotify(auth=token)
+        query = "{} {}".format(song.title,song.artist_name)
+        #out_file = "{}-{}.json".format(song.title.replace(' ','_'),song.artist_name.replace(' ','_'))
+        
+        try:
+            results = sp.search(q=query, type="track", limit=20)
+        except:
+            logger.debug("Refreshing spotify token")
+            r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'refresh_token', 'refresh_token': reftoken, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
+            out = r.json()
+            spotify_get_user_info(code,out['access_token'],reftoken,athlete_id)
+
+        if not song.spotify_id and results['tracks'] and results['tracks']['items']:
+            song.spotify_id = results['tracks']['items'][0]['id']
+            song.save()
+    except:
+        return
+
 @shared_task
 def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,athlete_id):
     if act_stream_stored_act == None:
@@ -90,11 +117,8 @@ def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,a
     try:
         spotify_tracks = spotify_get_recent_tracks(token,athlete_id)
     except:
-        logger.debug("Refreshing spotify token")
-        r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'refresh_token', 'refresh_token': reftoken, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
-        out = r.json()
-        spotify_get_user_info(code,out['access_token'],reftoken,athlete_id)
-        spotify_tracks = spotify_get_recent_tracks(out['access_token'],athlete_id)
+        token = spotify_refresh_token(code,token,reftoken,athlete_id)
+        spotify_tracks = spotify_get_recent_tracks(token,athlete_id)
         
     return act_stream, stored_act_id, spotify_tracks
 
