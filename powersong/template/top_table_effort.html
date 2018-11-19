@@ -71,6 +71,7 @@
               <p>&Delta; avg. speed</p>
 
             </div>
+            {% if effort.diff_last_speed %}
             <div class="col-6 col-md-3 text-right">
 
               
@@ -84,7 +85,7 @@
 
               <p>&Delta; last speed</p>
             </div>
-
+            {% endif %}
             {% if effort.diff_avg_hr %}
             <div class="col-6 col-md-3 text-right">
 
