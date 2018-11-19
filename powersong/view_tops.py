@@ -99,7 +99,7 @@ def top(request):
 
     request.session['activity_type'] = activity_type
 
-    if activity_type == 0 and field == 'diff_last_speed':
+    if activity_type == 0 and 'diff' in field and 'speed' in field:
         field += "_s"
 
     if activity_type == 0 and dispfield in speed:

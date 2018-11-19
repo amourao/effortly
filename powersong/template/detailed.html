@@ -4,11 +4,11 @@
 <script>
   function update(query_changed) {
 
-      type = $('input[name="type_form"]:checked').val()
-      top_avg = $('input[name="top_avg_form"]:checked').val()
-      field = $('input[name="field_form"]:checked').val()
-      asc_desc = $('input[name="asc_desc_form"]:checked').val()
-      
+      type = type_form_id.value
+      top_avg = top_avg_form_id.value
+      field = field_form_id.value
+      asc_desc = asc_desc_form_id.value
+
       if (query_changed){
         $('#page')[0].value = 0
       }
@@ -43,43 +43,35 @@
 
 
 <div class="site-wrapper">
-  <div class="site-wrapper-inner">  
-    <div class="cover-container">
+    <div class="container">
       <div class="row">
-        <div class="col-12 mb-3">
-          <div class="btn-toolbar">
-            <div class="btn-group btn-group-toggle ml-2" data-toggle="buttons">
-              <label class="btn btn-secondary active">
-                <input type="text" id="page" style="display:none" value="0">
-                <input type="radio" class="toggle" name="type_form" value="effort" autocomplete="off" checked>Effort</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="type_form" value="song" autocomplete="off">Song</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="type_form" value="artist" autocomplete="off"> Artist</label>
-            </div>
-            <div class="btn-group btn-group-toggle ml-2" data-toggle="buttons">
-              <label class="btn btn-secondary active">
-                <input type="radio" class="toggle" name="top_avg_form" value="top" autocomplete="off" checked>Top</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="top_avg_form" value="avg" autocomplete="off">Average</label>
-            </div>
-            <div class="btn-group btn-group-toggle ml-2" data-toggle="buttons">
-              <label class="btn btn-secondary active">
-                <input type="radio" class="toggle" name="field_form" value="avg_speed" autocomplete="off" checked>Avg. Speed</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="field_form" value="avg_hr" autocomplete="off">Avg. HR</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="field_form" value="diff_last_speed" autocomplete="off">Diff. Last Speed</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="field_form" value="diff_last_hr" autocomplete="off">Diff. Last HR</label>
-            </div>
-            <div class="btn-group btn-group-toggle ml-2" data-toggle="buttons">
-              <label class="btn btn-secondary active">
-                <input type="radio" class="toggle" name="asc_desc_form" value="desc" autocomplete="off" checked>Descending</label>
-              <label class="btn btn-secondary">
-                <input type="radio" class="toggle" name="asc_desc_form" value="asc" autocomplete="off">Ascending</label>
-            </div>
-          </div>
+        <div class="col-12">
+          <input type="text" id="page" style="display:none" value="0">
+          <select class="selectpicker" id="type_form_id" onchange="update(true)">
+              <option name="type_form" value="effort" selected>Effort</option>
+              <option name="type_form" value="song">Song</option>
+              <option name="type_form" value="artist">Artist</option>
+          </select>
+
+          <select class="selectpicker" id="top_avg_form_id" onchange="update(true)">
+              <option name="top_avg_form" value="top" selected>Top</option>
+              <option name="top_avg_form" value="avg">Average</option>
+          </select>
+
+          <select class="selectpicker" id="field_form_id" onchange="update(true)">
+              <option name="field_form" value="avg_speed" selected>Avg. Speed</option>
+              <option name="field_form" value="diff_avg_speed">Diff. Avg. Speed</option>
+              <option name="field_form" value="diff_last_speed">Diff. Last Speed</option>
+              <option name="field_form" value="avg_hr">Avg. HR</option>
+              <option name="field_form" value="diff_avg_hr">Diff. Avg. HR</option>
+              <option name="field_form" value="diff_last_hr">Diff. Last HR</option>
+          </select>
+
+          <select class="selectpicker" id="asc_desc_form_id" onchange="update(true)">
+              <option name="asc_desc_form" value="desc" selected>Descending</option>
+              <option name="asc_desc_form" value="asc">Ascending</option>
+          </select>
+
         </div> 
         <div class="col-6">
             <button onclick="previous()" class="btn btn-alert btn-sm">
@@ -108,19 +100,10 @@
         </div>
       </div>
     </div>
-  </div>
 </div>
-
 
 <script>
 
-    forms = ['input[name="type_form"]','input[name="top_avg_form"]','input[name="field_form"]','input[name="asc_desc_form"]']
-
-    forms.forEach(function(item){
-      $(item).on("change", function() {
-        update(true)
-      });  
-    });
     update(true)
 
 </script>
