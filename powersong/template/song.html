@@ -219,23 +219,33 @@
 
                 	</div> 
                     {% endif %} 
-                    
                   </div>
-                  {% if spotify_token %}
+                </div>
+                {% if not demo %}
+                <div class="row">
+                    <div class="col-10 text-left">
+                        {% if spotify_token %}
                     <p>
                         <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
                         <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
                     </p>
-                  {% endif %}
-
-                  <p>
-                    <button onclick="sendPost({{ song.id }},'flag_song','flagged',!{{ flagged|lower }})" class="btn btn-alert btn-sm">
-                        <span class="glyphicon glyphicon-repeat"></span>{% if flagged %}Unflag{% else %}Flag{% endif %} song
-                    </button>
-                  </p>
-
-
+                    {% endif %}
+                    </div>
+                    <div class="col-2 text-right">
+                        
+                    <div class="dropdown">
+                      <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+                        <button onclick="sendPost({{ song.id }},'flag_song','flagged',!{{ flagged|lower }})" class="dropdown-item" type="button">{% if flagged %}Unflag{% else %}Flag{% endif %} song</button>
+                      </div>
+                    </div>
+                    </div>
                 </div>
+                {% endif %}
+
+
+
                 <div class="row">
                         <canvas id="canvas"></canvas>
                     </div> 

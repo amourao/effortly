@@ -106,4 +106,6 @@ powersong/static/
 powersong/staticfiles/
 powersong/migrations/
 
+data/
+
 db.sqlite3*
