@@ -122,7 +122,7 @@ def spotify_get_recent_tracks(token,athlete_id):
     track_list = []
     last_timestamp = None
 
-    with open("data_{}_{}.json".format(athlete_id,str(time.time())).split('.')[0], 'w') as outfile:
+    with open("data/data_{}_{}.json".format(athlete_id,str(time.time())).split('.')[0], 'w') as outfile:
         json.dump(results, outfile)
 
     final_res = {}
