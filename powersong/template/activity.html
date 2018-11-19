@@ -7,6 +7,7 @@
 <script>
     var player = undefined
     var token = '{{ spotify_token }}';
+    var first_play = true
 
     var spotify_ids = []
     var start_times = []
@@ -16,6 +17,20 @@
 
     window.onSpotifyWebPlaybackSDKReady = () => {
         createPlayer()
+    }
+
+    function playList(){
+        if (first_play){
+            play({
+                playerInstance: player,
+                spotify_uri: spotify_ids,
+                position: 0
+            });
+            first_play = false
+        } else {
+            player.togglePlay()
+        }
+
     }
 </script>  
 {% endif %}
@@ -162,7 +177,7 @@
             <div class="col-10 text-left">
                 {% if spotify_token %}
             <p>
-                <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
+                <button onclick="playList()" class="fa fa-play-circle"></button>
                 <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
             </p>
             {% endif %}
