@@ -15,18 +15,18 @@ def get_delta_symbol(value,reverse):
         value = -value
         
     if value > 0.001:
-        return mark_safe('<i class="fa fa-chevron-circle-up green_arrow"></i>')
+        return mark_safe('<i class="fa fa-chevron-circle-up green_arrow" data-toggle="tooltip" data-placement="top" title="Higher"></i>')
     elif value < -0.001:
-        return mark_safe('<i class="fa fa-chevron-circle-down red_arrow"></i>')
+        return mark_safe('<i class="fa fa-chevron-circle-down red_arrow" data-toggle="tooltip" data-placement="top" title="Lower"></i>')
     else:
-        return mark_safe('<i class="blue_arrow">=</i>')
+        return mark_safe('<i class="blue_arrow" data-toggle="tooltip" data-placement="top" title="No Change">=</i>')
 
 @register.simple_tag
 def get_song_symbol(spotify_id):
     result = ''
 
     if spotify_id:
-        result += '<i class="fab fa-spotify" alt="Spotify"></i>'
+        result += '<i class="fab fa-spotify" data-toggle="tooltip" data-placement="top" title="Spotify"></i>'
 
     if result:
         result = mark_safe('{}'.format(result))
@@ -40,17 +40,17 @@ def get_symbols(value,flagged,flagged_hr):
     result = ''
         
     if value == 1 or value == 11:
-        result += '<i class="fa fa-flag-checkered" alt="Race"></i>'
+        result += '<i class="fa fa-flag-checkered" data-toggle="tooltip" data-placement="top" title="Race"></i>'
     elif value == 2:
-        result += '<i class="fa fa-mountain" alt="Long Run"></i>'
+        result += '<i class="fa fa-mountain" data-toggle="tooltip" data-placement="top" title="Long Run"></i>'
     elif value == 3 or value == 12:
-        result += '<i class="fa fa-circle-notch" alt="Workout"></i>'
+        result += '<i class="fa fa-circle-notch" data-toggle="tooltip" data-placement="top" title="Workout"></i>'
 
     if flagged:
-        result += '<i class="fa fa-flag" alt="Flagged"></i>'
+        result += '<i class="fa fa-flag" data-toggle="tooltip" data-placement="top" title="Flagged"></i>'
 
     if flagged_hr:
-        result += '<i class="fa fa-heartbeat" alt="Flagged HR"></i>'
+        result += '<i class="fa fa-heartbeat" data-toggle="tooltip" data-placement="top" title="HR Flagged!"></i>'
     
     if result:
         result = mark_safe('<p>{}</p>'.format(result))
