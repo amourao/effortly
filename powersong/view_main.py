@@ -142,6 +142,66 @@ def index(request):
     return render_to_response('top.html', result)
 
 
+def detailed(request):
+    result = {}
+
+    if 'demo' in request.session:
+        poweruser = PowerUser.objects.filter(id=1)[0]
+        result['demo'] = True
+    else:
+        if ((not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or (not 'spotify_token' in request.session)) and not 'strava_token' in request.session:
+            return render_to_response('home.html', result)
+
+        if not 'strava_token' in request.session:
+            return redirect(strava_get_auth_url())
+    
+        poweruser = get_poweruser(request.session['strava_token'])
+
+    if 'spotify_code' in request.session:
+        spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
+
+
+    if poweruser.listener_spotify:
+        request.session['spotify_code'] = poweruser.listener_spotify.spotify_code
+        request.session['spotify_token'] = poweruser.listener_spotify.spotify_token
+        request.session['spotify_refresh_token'] = poweruser.listener_spotify.spotify_refresh_token
+
+    if poweruser.listener:
+        request.session['lastfm_key'] = poweruser.listener.lastfm_token
+        request.session['lastfm_username'] = poweruser.listener.nickname
+    
+    request.session['strava_token'] = poweruser.athlete.strava_token
+    request.session['athlete_id'] = poweruser.athlete.athlete_id
+    
+    athlete_model = poweruser.athlete
+    result['athlete'] = athlete_model
+
+    listener_model = poweruser.listener
+    result['listener'] = listener_model
+
+    listenerspotify_model = poweruser.listener_spotify
+    result['listenerspotify'] = listenerspotify_model
+    # get athlete from db (if exists) or from Strava API
+    
+    # get athlete from db (if exists) or from lastfm API
+    result['athlete'] = athlete_model
+    request.session['athlete_id'] = athlete_model.athlete_id
+
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+    if activity_type == None:
+        if not 'activity_type' in request.session:
+            activity_type = athlete_model.athlete_type
+        else:
+            activity_type = request.session['activity_type']
+
+    request.session['activity_type'] = activity_type
+    result['activity_type'] = activity_type
+
+    
+    return render_to_response('detailed.html', result)
+
 def get_sync_id(request):
     if 'demo' in request.session:
         return None
