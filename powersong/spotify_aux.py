@@ -89,6 +89,7 @@ def spotify_get_auth_url():
 
 def spotify_to_lastfm(results):
     track_list = []
+    last_timestamp = None
     for track in results['items']:
         res = copy.deepcopy(TEMPLATE)
         res['spotify_id'] = track['track']['id']
@@ -100,17 +101,17 @@ def spotify_to_lastfm(results):
         
         current_timestamp = parse(track['played_at']).timestamp()
         duration = (track['track']['duration_ms']/1000)
-        res['date']['uts'] = str(current_timestamp).split('.')[0]
+        #res['date']['uts'] = str(current_timestamp).split('.')[0]
         res['album']['#text'] = track['track']['album']['name']
-        #if last_timestamp == None:
-        #    res['date']['uts'] = str(current_timestamp-duration).split('.')[0]
-        #else:
+        if last_timestamp == None:
+            res['date']['uts'] = str(current_timestamp-duration).split('.')[0]
+        else:
         #  if (current_timestamp-last_timestamp)>duration*1.5:
         #    res['date']['uts'] = str(last_timestamp).split('.')[0]
         #    last_timestamp = current_timestamp
         #  else:
-        #    res['date']['uts'] = str(current_timestamp-duration*1.5).split('.')[0]
-        #    last_timestamp = current_timestamp-duration*1.5
+           res['date']['uts'] = str(current_timestamp-duration).split('.')[0]
+           last_timestamp = current_timestamp-duration
         
         track_list.append(res)
     return track_list
@@ -120,9 +121,22 @@ def spotify_get_recent_tracks(token,athlete_id):
     sp = spotipy.Spotify(auth=token)
     results = sp.current_user_recently_played()    
     track_list = []
-    last_timestamp = None
 
-    with open("data/data_{}_{}.json".format(athlete_id,str(time.time())).split('.')[0], 'w') as outfile:
+    with open("data/data_{}_{}.json".format(athlete_id,str(time.time()).split('.')[0]), 'w') as outfile:
+        json.dump(results, outfile)
+
+    final_res = {}
+    final_res['recenttracks'] = {}
+    final_res['recenttracks']['track'] = spotify_to_lastfm(results)
+
+    return final_res
+
+def spotify_get_recent_tracks_before(token,athlete_id,before):
+    r = requests.get("https://api.spotify.com/v1/me/player/recently-played", params={'before': before, 'limit':50}, headers={'Authorization': 'Bearer  ' + token})
+    results = r.json()
+    track_list = []
+
+    with open("data/data_{}_{}.json".format(athlete_id,str(before).split('.')[0]), 'w') as outfile:
         json.dump(results, outfile)
 
     final_res = {}
