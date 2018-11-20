@@ -1,7 +1,18 @@
 {% block top_table %}
 
 <div class="container">
-    <ul class="list-group">    
+  <ul class="list-group">    
+    {% if header %}
+    <li class="list-group-item">
+      <div class="container">
+        <div class="row">
+          <div class="col-12 text-center">
+            {{ header }}
+          </div>
+        </div>
+      </div>
+    </li>
+    {% endif %}
     {% for activity in top %}
       <li class="list-group-item">
         <div class="container">
@@ -12,7 +23,7 @@
                 <p class="h5">{{ activity.ecount }} efforts</p>  
                 {% get_symbols activity.workout_type activity.flagged activity.flagged_hr %}
             </div>
-            <div class="col-md-8">
+            <div class="col-md-6">
             <div class="row">
                 <div class="col-6 col-md-4 text-right">
                     <span class="h4">{{ activity.avg_speed_pretty }} </span><span> {{ activity.avg_speed_pretty_units }} </span>
@@ -52,6 +63,9 @@
                 </div>
                 {% endif %}
             </div>
+            </div>
+            <div class="col-md-2">
+                <p class="h5">{{ activity.sort_value }}</p>  
             </div>
         </div>
         </div>

@@ -9,7 +9,7 @@ from django.http import JsonResponse
 
 from powersong.models import *
 from django.db.models import Avg,Sum,Max,Count
-from django.db.models import Q
+from django.db.models import Q,F
 
 from django.core import serializers
 
@@ -24,6 +24,128 @@ logger = logging.getLogger(__name__)
 
 
 from django.db.models.fields.related import ManyToManyField
+
+def top_activities(request):
+    data = {}
+
+    if not 'type' in request.GET:
+        data['error'] = 'Missing type'
+        return JsonResponse(data)
+
+    u_type  = request.GET['type']
+
+
+    field = None
+    if not 'field' in request.GET:
+        data['error'] = 'Missing field'
+        return JsonResponse(data)
+    elif 'field' in request.GET:
+        field = request.GET['field']
+
+    g_type  = 'avg'
+    if field in ['effort']:
+        g_type = 'count'
+
+    min_count = 3
+    if 'min_count' in request.GET:
+        min_count = int(request.GET['min_count']) 
+
+    dispfield = field
+    if 'dispfield' in request.GET:
+        dispfield = request.GET['dispfield']
+
+    header = False
+    if 'header' in request.GET:
+        header = True
+
+    page = 0
+    if 'page' in request.GET and request.GET['page']:
+        try:
+            page = int(request.GET['page'])
+        except:
+            pass
+
+    descending = -1
+    if 'ascending' in request.GET:
+        descending = 1
+    
+    n = 10
+    if 'n' in request.GET:
+        n = int(request.GET['n'])
+
+    units = None
+    if 'units' in request.GET:
+        units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
+
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+
+    if activity_type == None:
+        if not 'athlete_type' in request.session:
+            athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+            activity_type = athlete.athlete_type
+        else:
+            activity_type = request.session['activity_type']
+
+    request.session['activity_type'] = activity_type
+
+    workout_type = -1
+    if 'workout_type' in request.GET:
+        try:
+            workout_type = int(request.GET['workout_type'])
+        except:
+            pass
+
+    if activity_type == 0 and 'diff' in field and 'speed' in field:
+        field += "_s"
+
+    if activity_type == 0 and dispfield in speed:
+        dispfield += "_s"
+
+    poweruser = get_poweruser(request.session['strava_token'])
+
+    qs = Activity.objects
+
+    if activity_type != -1:
+        qs = qs.filter(act_type=activity_type)
+
+    if workout_type != -1:
+        if workout_type == 0:
+            qs = qs.filter((Q(workout_type=10) | Q(workout_type=0)))
+        elif workout_type == 1:
+            qs = qs.filter((Q(workout_type=11) | Q(workout_type=1)))
+        elif workout_type == 3:
+            qs = qs.filter((Q(workout_type=12) | Q(workout_type=3)))
+        else:
+            qs = qs.filter(workout_type=workout_type)
+
+    if 'hr' in field:
+        qs = qs.filter(flagged_hr=False).exclude(avg_hr__isnull=True)
+    
+    if field =='start_date_local':
+        qs = qs.filter(athlete__athlete_id = request.session['athlete_id']).annotate(sort_value=F(field),ecount=Count('effort')).exclude(sort_value__isnull=True).filter(ecount__gt=(min_count-1)).order_by(field)[::descending]
+    elif field == 'effort':
+        qs = qs.filter(athlete__athlete_id = request.session['athlete_id']).annotate(sort_value=Count('effort')).annotate(ecount=F('sort_value')).filter(ecount__gt=(min_count-1)).order_by('sort_value')[::descending]
+    elif g_type == 'avg':
+        qs = qs.filter(athlete__athlete_id = request.session['athlete_id']).annotate(sort_value=Avg(field),ecount=Count('effort')).exclude(sort_value__isnull=True).filter(ecount__gt=(min_count-1)).order_by(field)[::descending]
+    elif g_type == 'count':
+        qs = qs.filter(athlete__athlete_id = request.session['athlete_id']).annotate(sort_value=Count(field),ecount=Count('effort')).exclude(sort_value__isnull=True).filter(ecount__gt=(min_count-1)).order_by(field)[::descending]
+
+    total_length = len(qs)
+    qs = qs[(n*page):(n*(page+1))]
+
+    data['top'] = qs
+
+    if header:
+        data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
+
+    return render_to_response('top_table_detail_activity.html', data)
 
 
 def top_song_artist(request):
