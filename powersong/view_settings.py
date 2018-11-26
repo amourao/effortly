@@ -4,12 +4,72 @@ from django.http import JsonResponse
 
 from powersong.models import *
 from powersong.view_detail import activity
+from powersong.view_main import get_all_data, NonAuthenticatedException
+
+
+from powersong.strava_aux import strava_get_auth_url
+from powersong.lastfm_aux import lastfm_get_auth_url
+from powersong.spotify_aux import spotify_get_auth_url
+
 
 import logging
 import json
 
 logger = logging.getLogger(__name__)
 
+
+def setting(request):
+    if 'demo' in request.session:
+        return demo(request)
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+
+    if not poweruser.athlete:
+        result['strava_authorize_url'] = strava_get_auth_url()
+
+    if not poweruser.listener:
+        result['lastfm_authorize_url'] = lastfm_get_auth_url()
+
+    if not poweruser.listener_spotify:
+        result['spotify_authorize_url'] = spotify_get_auth_url()
+
+    return render_to_response('settings.html', result) 
+
+
+def remove_spotify(request):
+    if 'demo' in request.session:
+        return demo(request)
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+
+    if not poweruser.listener_spotify:
+        return redirect('/settings/')
+
+    poweruser.listener_spotify.delete()
+
+    return redirect('/settings/')
+
+def remove_lastfm(request):
+    if 'demo' in request.session:
+        return demo(request)
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+
+    if not poweruser.listener:
+        return redirect('/settings/')
+
+    poweruser.listener.delete()
+
+    return redirect('/settings/')
 
 def flag_activity(request,activity_id):
 

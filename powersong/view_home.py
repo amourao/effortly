@@ -10,6 +10,7 @@ from powersong.lastfm_aux import lastfm_get_auth_url
 from powersong.spotify_aux import spotify_get_auth_url
 
 from powersong.view_main import index as main_index
+from powersong.view_main import get_all_data, NonAuthenticatedException
 
 from powersong.models import get_poweruser, PowerUser
 
@@ -24,7 +25,7 @@ def index(request):
     
     result = {}
 
-    if 'demo' in request.session:
+    if 'demo' in request.session or 'demo' in request.GET:
         return demo(request)
     
     if not 'strava_token' in request.session:
@@ -51,20 +52,6 @@ def home(request):
 
 def about(request):
     return render_to_response('about.html', {})    
-
-def setting(request):
-
-    result = {}
-
-    if not 'strava_token' in request.session:
-        result['strava_authorize_url'] = strava_get_auth_url()
-
-    if not 'lastfm_token' in request.session or request.session['lastfm_token'] == None:
-        result['lastfm_authorize_url'] = lastfm_get_auth_url()
-
-    if not 'spotify_token' in request.session or request.session['spotify_token'] == None:
-        result['spotify_authorize_url'] = spotify_get_auth_url()
-    return render_to_response('settings.html', result) 
 
 def logout(request):
     request.session.flush()

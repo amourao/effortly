@@ -18,24 +18,32 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def index(request):
 
+class NonAuthenticatedException(Exception):
+    def __init__(self, message, destination=None):
+        self.message = message
+        self.destination = destination
+    def __str__(self):
+        return str(self.message) 
+
+def get_all_data(request):
     result = {}
 
-    if 'demo' in request.session:
+    if 'demo' in request.session or 'demo' in request.GET:
         poweruser = PowerUser.objects.filter(id=1)[0]
         result['demo'] = True
+        request.session['demo'] = True
     else:
         if ((not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or (not 'spotify_token' in request.session)) and not 'strava_token' in request.session:
-            return render_to_response('home.html', result)
+            raise NonAuthenticatedException("No lastfm or spotify session found", render_to_response('home.html', result))
 
         if not 'strava_token' in request.session:
-            return redirect(strava_get_auth_url())
+            raise NonAuthenticatedException("No strava session found", redirect(strava_get_auth_url()))
     
         poweruser = get_poweruser(request.session['strava_token'])
 
 
-    if 'puid' in request.GET and poweruser and (poweruser.athlete.athlete_id == "9363354" or 'superuser' in request.session):
+    if 'puid' in request.GET and poweruser and (poweruser.athlete.athlete_id == "9363354" or 'superuser' in request.session) and not 'demo' in request.session:
         request.session['superuser'] = True
         puid = int(request.GET['puid'])
         powerusers = PowerUser.objects.filter(id=puid)
@@ -49,18 +57,9 @@ def index(request):
             if username == None or key == None:
                 request.session['lastfm_token'] = None
                 del request.session['lastfm_token']
-                return redirect(lastfm_get_auth_url())
-            request.session['lastfm_key'] = key
-            request.session['lastfm_username'] = username
+                raise NonAuthenticatedException("lastfm auth error", redirect(lastfm_get_auth_url()))
 
         # check if stored lastfm session is valid
-        if 'lastfm_key' in request.session and 'lastfm_username' in request.session:
-            listener_model = lastfm_get_user_info(request.session['lastfm_username'],request.session['lastfm_key'])
-            if listener_model == None:
-                del request.session['lastfm_token']
-                del request.session['lastfm_key']
-                del request.session['lastfm_username']
-                return redirect(lastfm_get_auth_url())
         
         if not 'athlete_id' in request.session:
             athlete_model = strava_get_user_info(request.session['strava_token'])
@@ -72,17 +71,13 @@ def index(request):
 
         poweruser = PowerUser()
         poweruser.athlete = athlete_model
-        
-        if listener_model:
-            poweruser.listener = listener_model
-        
-        if listenerspotify_model:
-            poweruser.listener_spotify = listenerspotify_model
-        
         poweruser.save()
 
     if 'spotify_code' in request.session:
         spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
+
+    if 'lastfm_username' in request.session:
+        lastfm_get_user_info(request.session['lastfm_username'],request.session['lastfm_key'],poweruser.id)
 
 
     if poweruser.listener_spotify:
@@ -96,27 +91,33 @@ def index(request):
     
     request.session['strava_token'] = poweruser.athlete.strava_token
     request.session['athlete_id'] = poweruser.athlete.athlete_id
+
+    result['athlete'] = poweruser.athlete
+    result['listener'] = poweruser.listener
+    result['listenerspotify'] = poweruser.listener_spotify
+
+    return poweruser, result
+
+
+def index(request):
+
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
     
     athlete_model = poweruser.athlete
-    result['athlete'] = athlete_model
-
     listener_model = poweruser.listener
-    result['listener'] = listener_model
-
     listenerspotify_model = poweruser.listener_spotify
-    result['listenerspotify'] = listenerspotify_model
-    # get athlete from db (if exists) or from Strava API
     
     result['first_login'] = athlete_model.first_login
     if athlete_model.first_login:
         request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts(request.session['lastfm_username'],request.session['strava_token'],limit=9999)
         athlete_model.first_login = False
         athlete_model.save()
-
-    # get athlete from db (if exists) or from lastfm API
-    result['athlete'] = athlete_model
-    request.session['athlete_id'] = athlete_model.athlete_id
-    
+        result['athlete'] = athlete_model
+        request.session['athlete_id'] = athlete_model.athlete_id
     
     activity_type = None
     if 'activity_type' in request.GET:
@@ -143,49 +144,12 @@ def index(request):
 
 
 def detailed(request):
-    result = {}
 
-    if 'demo' in request.session:
-        poweruser = PowerUser.objects.filter(id=1)[0]
-        result['demo'] = True
-    else:
-        if ((not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or (not 'spotify_token' in request.session)) and not 'strava_token' in request.session:
-            return render_to_response('home.html', result)
-
-        if not 'strava_token' in request.session:
-            return redirect(strava_get_auth_url())
-    
-        poweruser = get_poweruser(request.session['strava_token'])
-
-    if 'spotify_code' in request.session:
-        spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
-
-
-    if poweruser.listener_spotify:
-        request.session['spotify_code'] = poweruser.listener_spotify.spotify_code
-        request.session['spotify_token'] = poweruser.listener_spotify.spotify_token
-        request.session['spotify_refresh_token'] = poweruser.listener_spotify.spotify_refresh_token
-
-    if poweruser.listener:
-        request.session['lastfm_key'] = poweruser.listener.lastfm_token
-        request.session['lastfm_username'] = poweruser.listener.nickname
-    
-    request.session['strava_token'] = poweruser.athlete.strava_token
-    request.session['athlete_id'] = poweruser.athlete.athlete_id
-    
-    athlete_model = poweruser.athlete
-    result['athlete'] = athlete_model
-
-    listener_model = poweruser.listener
-    result['listener'] = listener_model
-
-    listenerspotify_model = poweruser.listener_spotify
-    result['listenerspotify'] = listenerspotify_model
-    # get athlete from db (if exists) or from Strava API
-    
-    # get athlete from db (if exists) or from lastfm API
-    result['athlete'] = athlete_model
-    request.session['athlete_id'] = athlete_model.athlete_id
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
 
     activity_type = None
     if 'activity_type' in request.GET:
@@ -202,16 +166,9 @@ def detailed(request):
     
     return render_to_response('detailed.html', result)
 
-def get_sync_id(request):
-    if 'demo' in request.session:
-        return None
-
-    if not 'athlete_id' in request.session:
-        athlete_model = strava_get_user_info(request.session['strava_token'])
-    else:
-        athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
-        if athlete_model == None:
-            athlete_model = strava_get_user_info(request.session['strava_token'])
+def get_sync_id(request, poweruser):
+    
+    athlete_model = poweruser.athlete
 
     sync_id = None
 
@@ -227,10 +184,16 @@ def get_sync_id(request):
     return sync_id
 
 def gen_sync_response(request):
+    
     if 'demo' in request.session:
         return ""
- 
-    sync_id = get_sync_id(request)
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+
+    sync_id = get_sync_id(request, poweruser)
     spinner = ""
     if sync_id == None:
         response = "SYNC IDLE"
@@ -265,23 +228,16 @@ def sync_spotify(request):
 
 
 def sync(request):
+    
     if 'demo' in request.session:
         return ""
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
 
-    if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) and not 'strava_token' in request.session:
-        return redirect('home.html')
-
-    if not 'strava_token' in request.session:
-        return redirect(strava_get_auth_url())
-    
-    poweruser = get_poweruser(request.session['strava_token'])
-
-    request.session['lastfm_key'] = poweruser.listener.lastfm_token
-    request.session['lastfm_username'] = poweruser.listener.nickname
-    request.session['strava_token'] = poweruser.athlete.strava_token
-    request.session['athlete_id'] = poweruser.athlete.athlete_id
-
-    sync_id = get_sync_id(request)
+    sync_id = get_sync_id(request, poweruser)
 
     if sync_id == None or 'force' in request.GET:
         if 'lastfm_username' in request.session and 'strava_token' in request.session:
@@ -299,7 +255,7 @@ def resync_last_fm(request,activity_id):
         return ""
 
     if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) and not 'strava_token' in request.session:
-        return redirect('home.html')
+        return redirect(lastfm_get_auth_url())
 
     if not 'strava_token' in request.session:
         return redirect(strava_get_auth_url())
@@ -319,27 +275,26 @@ def resync_last_fm(request,activity_id):
 def resync_spotify(request,activity_id):
     if 'demo' in request.session:
         return ""
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
 
-    if (not 'spotify_token' in request.session) and not 'strava_token' in request.session:
-        return redirect('home.html')
-
-    if not 'strava_token' in request.session:
+    if (not 'spotify_token' in request.session):
         return redirect(strava_get_auth_url())
     
-    poweruser = get_poweruser(request.session['strava_token'])
-
-    listenerspotify_model = spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
+    spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
 
     request.session['strava_token'] = poweruser.athlete.strava_token
     request.session['spotify_token'] = poweruser.listener_spotify.spotify_token
     request.session['spotify_refresh_token'] = poweruser.listener_spotify.spotify_refresh_token
-    request.session['spotify_code'] = poweruser.listener_spotify.spotify_code
-    
+    request.session['spotify_code'] = poweruser.listener_spotify.spotify_code    
     request.session['athlete_id'] = poweruser.athlete.athlete_id
         
     resync_activity_spotify(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],request.session['strava_token'],activity_id,request.session['athlete_id'])
 
-    poweruser = get_poweruser(request.session['strava_token'])    
+    poweruser = get_poweruser(request.session['strava_token'])
     request.session['spotify_token'] = poweruser.listener_spotify.spotify_token
 
     #return render_to_response('blank.html', {'message':response})

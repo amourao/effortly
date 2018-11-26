@@ -1,15 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-
-{% if lastfm_authorize_url %}
-  <p><a class="btn btn-secondary color_lastfm" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
-{% else %}
-  <p><a class="btn btn-secondary color_lastfm" href="#" role="button">Remove last.fm authorization</a></p>
-{% endif %}        
-{% if spotify_authorize_url %}
-  <p><a class="btn btn-secondary color_spotify" href="{{ spotify_authorize_url }}" role="button">Authorize Spotify &raquo;</a></p>
-{% else %}
-  <p><a class="btn btn-secondary color_spotify" href="#" role="button">Remove Spotify authorization</a></p>
-{% endif %}        
-
+<div class="container top-box-padding">
+	<ul class="list-group">    
+		<li class="list-group-item">
+			<div class="container">
+				<div class="row">
+				{% if lastfm_authorize_url %}
+				  <p><a class="btn btn-secondary color_lastfm" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
+				{% else %}
+				  <p><a class="btn btn-secondary color_lastfm" href="/remove_lastfm" role="button">Remove last.fm authorization</a></p>
+				{% endif %} 
+				</div>
+				<div class="row">  
+				{% if spotify_authorize_url %}
+				  <p><a class="btn btn-secondary color_spotify" href="{{ spotify_authorize_url }}" role="button">Authorize Spotify &raquo;</a></p>
+				{% else %}
+				  <p><a class="btn btn-secondary color_spotify" href="/remove_spotify" role="button">Remove Spotify authorization</a></p>
+				{% endif %}        
+				</div>
+			</div>
+		</li>
+	</ul>
+</div>
 {% endblock %}

@@ -113,10 +113,14 @@
           <li class="nav-item" id="progress" style="display:flex"></li>
           <li class="nav-item" id="progress_spotify" style="display:flex"></li>
           <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
-          <li class="nav-item"> <a class="nav-link">{{ athlete.runs_count }} runs</a> </li>
-          <li class="nav-item"> <a class="nav-link">{{ athlete.rides_count }} rides</a> </li>
-          <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
-          <li class="nav-item"> <a class="nav-link">{{ listener.scrobble_count }} scrobbles</a> </li>
+          <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.runs_count }} runs</a> </li>
+          <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.rides_count }} rides</a> </li>
+          {% if listener %}
+            {% if listener.profile_image_url %}
+            <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
+            {% endif %}
+            <li class="nav-item"> <a class="nav-link" href="http://www.last.fm/user/{{ listener.nickname }}" target="_blank">{{ listener.scrobble_count }} scrobbles</a> </li>
+          {% endif %}
           {% if demo == None %}
           <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
           <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->

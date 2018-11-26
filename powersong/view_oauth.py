@@ -15,6 +15,7 @@ import requests
 from powersong.view_home import index
 from powersong.models import get_poweruser
 from powersong.spotify_aux import spotify_refresh_token
+from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
 
 import logging
 
@@ -33,12 +34,19 @@ def strava_oauth(request):
     return redirect(index)
 
 def lastfm_oauth(request):
+
     if not 'token' in request.GET:
         return redirect(index)
 
     token = request.GET['token']
 
     request.session['lastfm_token'] = token
+
+    username, key = lastfm_get_session_id(token)
+
+    request.session['lastfm_key'] = key
+    request.session['lastfm_username'] = username
+
     return redirect(index)
 
 def spotify_oauth(request):  

@@ -27,7 +27,7 @@ def lastfm_get_session_id(token):
         return None,None
     return (response['session']['name'], response['session']['key'])
 
-def lastfm_get_user_info(username,key):
+def lastfm_get_user_info(username,key,poweruser_id):
 
     listeners = Listener.objects.filter(nickname=username)
     logger.debug("Getting listener with username {}".format(username))
@@ -37,23 +37,26 @@ def lastfm_get_user_info(username,key):
         listener.lastfm_token = key
         listener.save()
         logger.debug("Listener {} found in DB".format(username))
-        return listener
+    else:
+        logger.debug("Listener {} not in DB, creating new.".format(username))
+        
+        method = 'user.getinfo'
+        url = settings.LASTFM_API_BASE.format(method,settings.LASTFM_API_KEY,username)
+        response = requests.get(url).json()
 
-    logger.debug("Listener {} not in DB, creating new.".format(username))
-    
-    method = 'user.getinfo'
-    url = settings.LASTFM_API_BASE.format(method,settings.LASTFM_API_KEY,username)
-    response = requests.get(url).json()
+        if not 'user' in response:
+            #invalid key, must get new
+            return None
 
-    if not 'user' in response:
-        #invalid key, must get new
-        return None
+        response = response['user']
+        listener = create_listener_from_dict(response,key)
+        listener.save()
 
-    response = response['user']
-
-    listener = create_listener_from_dict(response,key)
-    
-    listener.save()
+        powerusers = PowerUser.objects.filter(athlete_id=poweruser_id)
+        if powerusers:
+            poweruser = powerusers[0]
+            poweruser.listener = listener
+            poweruser.save()
 
     return listener
 
