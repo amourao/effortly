@@ -65,6 +65,12 @@ class Athlete(models.Model):
     strava_token = models.CharField(max_length=100)
 
 class ListenerSpotify(models.Model):
+    nickname = models.CharField(max_length=30,unique=True)
+    real_name = models.CharField(max_length=30)
+    profile_image_url = models.URLField(null=True)
+    url = models.URLField(null=True)
+    product = models.CharField(max_length=10,null=True)
+
     spotify_code = models.CharField(max_length=100,blank=True,null=True)
     spotify_token = models.CharField(max_length=100,blank=True,null=True)
     spotify_refresh_token = models.CharField(max_length=100,blank=True,null=True)

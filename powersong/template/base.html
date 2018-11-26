@@ -121,6 +121,11 @@
             {% endif %}
             <li class="nav-item"> <a class="nav-link" href="http://www.last.fm/user/{{ listener.nickname }}" target="_blank">{{ listener.scrobble_count }} scrobbles</a> </li>
           {% endif %}
+          {% if listenerspotify %}
+            {% if listenerspotify.profile_image_url %}
+            <li class="nav-item"> <a class="btn-margin-left" href="{{ listenerspotify.url }}"><img src="{{ listenerspotify.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="spotify profile picture"></a> </li>
+            {% endif %}
+          {% endif %}
           {% if demo == None %}
           <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
           <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->

@@ -56,7 +56,7 @@ TEMPLATE = {
 
 def spotify_get_user_info(code,token,refresh,athlete_id):
     listeners = ListenerSpotify.objects.filter(spotify_code=code)
-    #logger.debug("Getting ListenerSpotify with code {}".format(code))
+    logger.debug("Getting ListenerSpotify with code {}".format(code))
 
     if listeners:
         listener = listeners[0]
@@ -69,7 +69,23 @@ def spotify_get_user_info(code,token,refresh,athlete_id):
 
     logger.debug("ListenerSpotify {} not in DB, creating new for athlete_id {}.".format(code,athlete_id))
     
+    r = requests.get("https://api.spotify.com/v1/me", headers={'Authorization': 'Bearer  ' + token})
+        
+    out = r.json()
+    logger.debug(out)
+    
     listener = ListenerSpotify()
+
+    listener.nickname = out['id']
+    listener.real_name = out['display_name']
+
+    if 'images' in out and out['images'] and 'url' in out['images'][0]:
+        listener.profile_image_url = out['images'][0]['url']
+    
+    if 'external_urls' in out and out['external_urls'] and 'spotify' in out['external_urls']:
+        listener.url = out['external_urls']['spotify']
+    listener.product = out['product']
+
     listener.spotify_code = code
     listener.spotify_token = token
     listener.spotify_refresh_token = refresh
@@ -171,9 +187,6 @@ def spotify_sync_ids():
     
     return job_result.id, len(songs_to_sync)
 
-def spotify_refresh_token_endpoint(request):
-    poweruser = PowerUser.objects.all()[0]
-    
 
 def spotify_refresh_token(code,token,reftoken,athlete_id):
     logger.debug("Refreshing spotify token")

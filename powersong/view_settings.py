@@ -51,6 +51,13 @@ def remove_spotify(request):
     if not poweruser.listener_spotify:
         return redirect('/settings/')
 
+    if 'spotify_token' in request.session:
+        del request.session['spotify_token']
+    if 'spotify_code' in request.session:
+        del request.session['spotify_code']
+    if 'spotify_refresh_token' in request.session:
+        del request.session['spotify_refresh_token']
+
     poweruser.listener_spotify.delete()
 
     return redirect('/settings/')
@@ -66,6 +73,14 @@ def remove_lastfm(request):
 
     if not poweruser.listener:
         return redirect('/settings/')
+
+
+    if 'lastfm_token' in request.session:
+        del request.session['lastfm_token']
+    if 'lastfm_key' in request.session:
+        del request.session['lastfm_key']
+    if 'lastfm_username' in request.session:
+        del request.session['lastfm_username']
 
     poweruser.listener.delete()
 
