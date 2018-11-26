@@ -95,6 +95,19 @@ def get_all_data(request):
     result['listener'] = poweruser.listener
     result['listenerspotify'] = poweruser.listener_spotify
 
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+    if activity_type == None:
+        if not 'activity_type' in request.session:
+            activity_type = poweruser.athlete.athlete_type
+        else:
+            activity_type = request.session['activity_type']
+
+    request.session['activity_type'] = activity_type
+    result['activity_type'] = activity_type
+
+
     return poweruser, result
 
 
@@ -117,18 +130,6 @@ def index(request):
         athlete_model.save()
         result['athlete'] = athlete_model
         request.session['athlete_id'] = athlete_model.athlete_id
-    
-    activity_type = None
-    if 'activity_type' in request.GET:
-        activity_type = int(request.GET['activity_type'])
-    if activity_type == None:
-        if not 'activity_type' in request.session:
-            activity_type = athlete_model.athlete_type
-        else:
-            activity_type = request.session['activity_type']
-
-    request.session['activity_type'] = activity_type
-    result['activity_type'] = activity_type
 
     result['syncing'] = False
     if 'sync_id' in request.session:
@@ -149,20 +150,7 @@ def detailed(request):
     except NonAuthenticatedException as e:
         logger.debug(e.message)
         return (e.destination)    
-
-    activity_type = None
-    if 'activity_type' in request.GET:
-        activity_type = int(request.GET['activity_type'])
-    if activity_type == None:
-        if not 'activity_type' in request.session:
-            activity_type = athlete_model.athlete_type
-        else:
-            activity_type = request.session['activity_type']
-
-    request.session['activity_type'] = activity_type
-    result['activity_type'] = activity_type
-
-    
+    result['title'] = 'Detailed View'
     return render_to_response('detailed.html', result)
 
 def get_sync_id(request, poweruser):
@@ -298,3 +286,12 @@ def resync_spotify(request,activity_id):
 
     #return render_to_response('blank.html', {'message':response})
     return redirect("/activity/" + activity_id)
+
+def about(request):
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+    result['title'] = 'About'
+    return render_to_response('about.html', result)

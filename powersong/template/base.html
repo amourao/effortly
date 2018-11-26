@@ -13,7 +13,7 @@
     <link rel="shortcut icon" href="{% static "favicon.png" %}" />
     <link rel="apple-touch-icon" href="{% static "touch.png" %}" />
 
-    <title>{{ APPTITLE }}</title>
+    <title>{% if title %}{{ title }} | {% endif %}{{ APPTITLE }}</title>
     
     {% block head %}{% endblock %}
 
@@ -47,11 +47,7 @@
           load_async('#artists','/artists?activity_type={{ activity_type }}',true)
           load_async('#songs','/songs?activity_type={{ activity_type }}',true)
           load_async('#avg_diff_last_hr','/top/?type=avg&field=diff_last_hr&dispfield=diff_last_hr&activity_type={{ activity_type }}&min_count=3',true)
-          {% if activity_type == 0  %}
-          load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed_s&dispfield=diff_last_speed&activity_type={{ activity_type }}&min_count=3',true)
-          {% else %}
           load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed&dispfield=diff_last_speed&activity_type={{ activity_type }}&min_count=3',true)
-          {% endif %}
       }
 
       function sync() {
@@ -126,11 +122,18 @@
             <li class="nav-item"> <a class="btn-margin-left" href="{{ listenerspotify.url }}"><img src="{{ listenerspotify.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="spotify profile picture"></a> </li>
             {% endif %}
           {% endif %}
+          <li class="nav-item dropleft ml-2 my-auto">
+            <button class="btn btn-outline-info fa fa-cog" type="button" id="settingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+            <div class="dropdown-menu" aria-labelledby="settingsMenu">
           {% if demo == None %}
-          <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
+            <a class="dropdown-item" href="javascript:void(0)" onclick="sync()" role="button">Sync</a>
           <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->
           {% endif %}
-          <li class="nav-item"> <a class="btn btn-margin-left btn-outline-danger" href="/logout" role="button">Logout</a></li>
+            <a class="dropdown-item" href="/settings/" role="button">Settings</a>
+            <a class="dropdown-item" href="/about/" role="button">FAQ</a>
+            <a class="dropdown-item" href="/logout/" role="button">Logout</a>
+          </div>
+        </li>
         </ul>
       </div>
     </nav>

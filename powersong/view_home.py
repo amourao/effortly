@@ -49,10 +49,6 @@ def index(request):
 def home(request):
     return render_to_response('home.html', {'strava_authorize_url': "#", 'lastfm_authorize_url': "#", 'spotify_authorize_url': "#"})
 
-
-def about(request):
-    return render_to_response('about.html', {})    
-
 def logout(request):
     request.session.flush()
     return redirect('/')

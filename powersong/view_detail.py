@@ -91,6 +91,7 @@ def activity(request,activity_id):
     if render == 'json':
         return JsonResponse(data)
     else:
+        data['title'] = data['activity'].name
         return render_to_response('activity.html', data)
 
 @ensure_csrf_cookie
@@ -188,6 +189,7 @@ def song(request,song_id):
     if render == 'json':
         return JsonResponse(data)
     else:
+        data['title'] = data['song'].title + ' - ' + data['song'].artist_name
         return render_to_response('song.html', data)
 
 @ensure_csrf_cookie
@@ -271,6 +273,7 @@ def artist(request,artist_id):
     if render == 'json':
         return JsonResponse(data)
     else:
+        data['title'] = data['artist'].name
         return render_to_response('artist.html', data)
 
 

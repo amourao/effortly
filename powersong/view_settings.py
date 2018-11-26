@@ -36,6 +36,8 @@ def setting(request):
     if not poweruser.listener_spotify:
         result['spotify_authorize_url'] = spotify_get_auth_url()
 
+    result['title'] = 'Settings'
+
     return render_to_response('settings.html', result) 
 
 
