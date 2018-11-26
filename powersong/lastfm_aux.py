@@ -30,15 +30,15 @@ def lastfm_get_session_id(token):
 def lastfm_get_user_info(username,key,poweruser_id):
 
     listeners = Listener.objects.filter(nickname=username)
-    logger.debug("Getting listener with username {}".format(username))
+    #logger.debug("Getting listener with username {}".format(username))
 
     if listeners:
         listener = listeners[0]
         listener.lastfm_token = key
         listener.save()
-        logger.debug("Listener {} found in DB".format(username))
+        #logger.debug("Listener {} found in DB".format(username))
     else:
-        logger.debug("Listener {} not in DB, creating new.".format(username))
+        #logger.debug("Listener {} not in DB, creating new.".format(username))
         
         method = 'user.getinfo'
         url = settings.LASTFM_API_BASE.format(method,settings.LASTFM_API_KEY,username)

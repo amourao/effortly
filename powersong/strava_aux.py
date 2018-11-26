@@ -33,11 +33,11 @@ def strava_get_auth_url():
 
 def strava_get_user_info(access_token):
     athletes = Athlete.objects.filter(strava_token=access_token)
-    logger.debug("Getting athlete with token {}".format(access_token))
+    #logger.debug("Getting athlete with token {}".format(access_token))
 
     if athletes:
         athlete = athletes[0]
-        logger.debug("Athlete {} found with current token".format(athlete.athlete_id))
+        #logger.debug("Athlete {} found with current token".format(athlete.athlete_id))
         return athlete
 
     client = stravalib.client.Client()
@@ -46,13 +46,13 @@ def strava_get_user_info(access_token):
     
     athletes = Athlete.objects.filter(athlete_id=athlete_api.id)
     if athletes:
-        logger.debug("Athlete {} found with invalid token. Updating token.".format(athlete.athlete_id))
+        #logger.debug("Athlete {} found with invalid token. Updating token.".format(athlete.athlete_id))
         athlete = athletes[0]
         athlete.strava_token = access_token
         athlete.save()
         return athlete
 
-    logger.debug("Athlete {} not in database, creating new.".format(athlete_api.id))
+    #logger.debug("Athlete {} not in database, creating new.".format(athlete_api.id))
     athlete = create_athlete_from_dict(athlete_api)
     athlete.strava_token = access_token
     

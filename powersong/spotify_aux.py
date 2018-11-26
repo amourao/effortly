@@ -56,7 +56,7 @@ TEMPLATE = {
 
 def spotify_get_user_info(code,token,refresh,athlete_id):
     listeners = ListenerSpotify.objects.filter(spotify_code=code)
-    logger.debug("Getting ListenerSpotify with code {}".format(code))
+    #logger.debug("Getting ListenerSpotify with code {}".format(code))
 
     if listeners:
         listener = listeners[0]
@@ -67,12 +67,11 @@ def spotify_get_user_info(code,token,refresh,athlete_id):
         #logger.debug("ListenerSpotify {} found in DB".format(code))
         return listener
 
-    logger.debug("ListenerSpotify {} not in DB, creating new for athlete_id {}.".format(code,athlete_id))
+    #logger.debug("ListenerSpotify {} not in DB, creating new for athlete_id {}.".format(code,athlete_id))
     
     r = requests.get("https://api.spotify.com/v1/me", headers={'Authorization': 'Bearer  ' + token})
         
     out = r.json()
-    logger.debug(out)
     
     listener = ListenerSpotify()
 
