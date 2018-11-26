@@ -38,7 +38,7 @@
       }
 
       function update_all() {
-          {% if not demo %}
+          {% if demo == None %}
           load_async('#progress','/get_sync_progress/',true)
           {% endif %}
           load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}',true)
@@ -55,19 +55,19 @@
       }
 
       function sync() {
-        {% if not demo %}
+        {% if demo == None %}
           load_async('#progress','/sync/',true)
           {% endif%}
       }
 
       function sync_spotify() {
-        {% if not demo %}
+        {% if demo == None %}
           load_async('#progress_spotify','/sync_spotify/',true)
         {% endif %}
       }
 
       function progress() {
-        {% if not demo %}
+        {% if demo == None %}
           var sync = $('#progress').html(); 
           if (sync.indexOf("IN PROGRESS") != -1)
               load_async('#progress','/get_sync_progress/',true);
@@ -76,7 +76,7 @@
         {% endif %}
       }
 
-      {% if not demo %}
+      {% if demo == None %}
       window.setInterval(function(){progress();}, 10000);
       {% endif %}
 
@@ -117,7 +117,7 @@
           <li class="nav-item"> <a class="nav-link">{{ athlete.rides_count }} rides</a> </li>
           <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
           <li class="nav-item"> <a class="nav-link">{{ listener.scrobble_count }} scrobbles</a> </li>
-          {% if not demo %}
+          {% if demo == None %}
           <li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync()" role="button">Sync</a> </li>
           <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->
           {% endif %}

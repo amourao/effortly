@@ -17,6 +17,7 @@ from powersong.strava_aux import strava_get_user_info_by_id
 
 import logging
 import math
+from datetime import datetime, timedelta
 
 from django.forms.models import model_to_dict
 
@@ -127,6 +128,18 @@ def top_activities(request):
 
     if 'hr' in field:
         qs = qs.filter(flagged_hr=False).exclude(avg_hr__isnull=True)
+
+    if 'days' in request.GET:
+        try:
+            days = int(request.GET['days'])
+            if days != -1:
+                d = datetime.today() - timedelta(days=days)
+                comb = datetime.combine(d, datetime.min.time())
+                qs = qs.filter(start_date__gt=comb)
+        except:
+            pass
+
+        
     
     if field =='start_date_local':
         qs = qs.filter(athlete__athlete_id = request.session['athlete_id']).annotate(sort_value=F(field),ecount=Count('effort')).exclude(sort_value__isnull=True).filter(ecount__gt=(min_count-1)).order_by(field)[::descending]
@@ -281,6 +294,18 @@ def top_song_artist(request):
 
     qs = qs.exclude(song__original_song__in=flaggedsong_ids)
     qs = qs.exclude(song__original_song__artist__in=flaggedartist_ids)
+
+    if 'days' in request.GET:
+        try:
+            days = int(request.GET['days'])
+            if days != -1:
+                d = datetime.today() - timedelta(days=days)
+                comb = datetime.combine(d, datetime.min.time())
+                qs = qs.filter(activity__start_date__gt=comb)
+        except:
+            pass
+
+        
 
     agg_type = None
     if u_type == 'song':
@@ -480,6 +505,16 @@ def top(request):
 
     qs = qs.exclude(song__original_song__in=flaggedsong_ids)
     qs = qs.exclude(song__original_song__artist__in=flaggedartist_ids)
+
+    if 'days' in request.GET:
+        try:
+            days = int(request.GET['days'])
+            if days != -1:
+                d = datetime.today() - timedelta(days=days)
+                comb = datetime.combine(d, datetime.min.time())
+                qs = qs.filter(activity__start_date__gt=comb)
+        except:
+            pass
 
     if g_type == 'top':
         qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter,activity__athlete__athlete_id = request.session['athlete_id']).values('song__original_song','song__original_song__spotify_id','song__original_song__title','song__original_song__artist_name','song__original_song__url','song__original_song__image_url','song__original_song__artist__id','song__original_song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','start_time','duration','avg_hr','diff_last_speed','diff_avg_speed','diff_last_speed_s','diff_avg_speed_s').annotate(sort_value=Avg(field)).exclude(sort_value__isnull=True).order_by(field)[::descending]

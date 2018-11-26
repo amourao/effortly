@@ -135,7 +135,7 @@ def song(request,song_id):
     else:
         qs = Effort.objects
     
-    qs = qs.filter(((Q(song_id = song_id) | Q(song = data['song'])) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id','id','flagged','flagged_hr').order_by('activity__start_date_local')
+    qs = qs.filter((Q(song__original_song__id = song_id) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id','id','flagged','flagged_hr').order_by('activity__start_date_local')
 
     xdata, ydata = get_best_curve_fit(qs)
 
@@ -259,7 +259,7 @@ def artist(request,artist_id):
         
         data['effort_averages'] = effort_convert(avg_qs,units)
         data['effort_averages']['effort_count'] = effort_count
-        data['effort_averages']['song_count'] = qs.values('song').distinct().count()
+        data['effort_averages']['song_count'] = qs.values('song__original_song').distinct().count()
 
     qs = qs.annotate(t_count=Count('song')).values('song__original_song',"song__original_song__spotify_id",'song__original_song__title','song__original_song__artist_name','song__original_song__url','song__original_song__image_url','song__original_song__artist__id','song__original_song__artist__image_url','song__original_song__spotify_id').annotate(sort_value=Count('song')).annotate(diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time')).order_by('sort_value')[::-1]
     

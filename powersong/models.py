@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from datetime import datetime, date
 from django.db.models import Q
 
 from powersong.unit_conversion import *
@@ -116,6 +116,10 @@ class Activity(models.Model):
 
     flagged = models.BooleanField(default=False,blank=True)
     flagged_hr = models.BooleanField(default=False,blank=True)
+
+    @property
+    def age_in_days(self):
+        return (timestamp.now().date()-self.start_date_local.date()).days
 
     @property
     def avg_speed_pretty_units(self):
