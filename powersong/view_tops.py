@@ -1,5 +1,6 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
+from django.forms.models import model_to_dict
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -139,8 +140,6 @@ def top_activities(request):
         except:
             pass
 
-        
-    
     if field =='start_date_local':
         qs = qs.filter(athlete__athlete_id = request.session['athlete_id']).annotate(sort_value=F(field),ecount=Count('effort')).exclude(sort_value__isnull=True).filter(ecount__gt=(min_count-1)).order_by(field)[::descending]
     elif field == 'effort':
@@ -153,8 +152,14 @@ def top_activities(request):
     total_length = len(qs)
     qs = qs[(n*page):(n*(page+1))]
 
-    data['top'] = qs
-
+    data['top'] = []
+    for q in qs:
+        qa = model_to_dict(q)
+        qa['sort_value'] = q.sort_value
+        qa['sort_key'] = dispfield 
+        qa = effort_convert(qa,units)
+        data['top'].append((q,qa))
+    
     if header:
         data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
 
@@ -338,7 +343,7 @@ def top_song_artist(request):
     data['top'] = []
     for q in qs:
         if dispfield:
-            q['sort_key'] = dispfield    
+            q['sort_key'] = dispfield 
             if dispfield.startswith("diff"):
                 q["diff"] = True
                 q["signal"] = ""

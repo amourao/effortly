@@ -13,7 +13,7 @@
       </div>
     </li>
     {% endif %}
-    {% for activity in top %}
+    {% for activity,tops in top %}
       <li class="list-group-item">
         <div class="container">
           <div class="row">
@@ -64,8 +64,10 @@
                 {% endif %}
             </div>
             </div>
-            <div class="col-md-2">
-                <p class="h5">{{ activity.sort_value }}</p>  
+            <div class="col-md-2 text-right">
+              <span class="h5">
+              {% if tops.sort_value %} {{ tops.sort_value }} </span><span> {{ tops.sort_value_unit }} {% endif %}
+              </span>
             </div>
         </div>
         </div>

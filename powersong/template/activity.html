@@ -124,7 +124,7 @@
         <div class="container">
             <div class="row">
             	<div class="col-md-4">
-            		<a class="h4 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/">{{ activity.name}}</a>
+            		<a class="h4 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/" target="_blank">{{ activity.name}}</a>
             		<p class="h5">{{ activity.start_date_local }}</p>
                 {% get_symbols activity.workout_type activity.flagged activity.flagged_hr %}
             	</div>
@@ -188,7 +188,7 @@
               <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenu">
-                <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" class="dropdown-item" type="button">See on last.fm</a>
+                <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" target="_blank" class="dropdown-item" type="button">See on last.fm</a>
                 <a href="/resync_last_fm/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync last.fm</a>
                 <a href="/resync_spotify/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync Spotify</a>
                 <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>

@@ -15,8 +15,9 @@ speed_s  = ['activity__avg_speed_s','activity__max_speed_s','avg_speed_s','diff_
 distanceSmall = ['total_ascent','total_descent','distance','avg_distance']
 distanceBig = ['activity__distance','start_distance','avg_start_distance']
 temperature = ['activity__avg_temp']
-timeBig = ['start_time','duration','avg_duration']
+timeBig = ['start_time', 'elapsed_time','duration','avg_duration']
 timeSmall = []
+count = ['count','effort']
 
 heartrate = ['avg_avg_hr','avg_diff_avg_hr','avg_diff_last_hr','avg_hr','diff_avg_hr','diff_last_hr','activity__avg_hr','activity__max_hr']
 
@@ -24,7 +25,7 @@ cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_c
 
 watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
 
-common = {'timeBig':'','timeSmall':'','heartrate':'bpm','cadence':'spm','watts':'W'}
+common = {'timeBig':'','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W', 'count':'count'}
 metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
 imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
 
@@ -642,9 +643,7 @@ def strava_is_activity_to_ignore(act_id):
 
 
 def effort_convert(effort_dict, units):
-    if units == 0:
-        effort_dict = effort_to_metric(effort_dict)
-    elif units == 1:
+    if units == 1:
         effort_dict = effort_to_imperial(effort_dict)
     else:
         effort_dict = effort_to_metric(effort_dict)
@@ -661,6 +660,8 @@ def effort_commom(effort_dict):
     elif 'sort_key' in effort_dict and effort_dict['sort_key'] in watts and 'sort_value' in effort_dict:
         effort_dict['sort_value'] = "{}".format(int(effort_dict['sort_value']))
         effort_dict['sort_value_unit'] = common['watts']
+    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in count and 'sort_value' in effort_dict:
+        effort_dict['sort_value_unit'] = common['count']
     return effort_dict
 
 def effort_to_metric(effort_dict):
