@@ -7,29 +7,11 @@
 <script>
     var player = undefined
     var token = '{{ spotify_token }}';
-    var first_play = true
 
     var spotify_ids = []
     {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__original_song__spotify_id }}')
     {% endfor %}
 
-    window.onSpotifyWebPlaybackSDKReady = () => {
-        createPlayer()
-    }
-
-    function playList(){
-        if (first_play){
-            play({
-                playerInstance: player,
-                spotify_uri: spotify_ids,
-                position: 0
-            });
-            first_play = false
-        } else {
-            player.togglePlay()
-        }
-
-    }
 </script>  
 {% endif %}
 
@@ -159,7 +141,7 @@
                         {% if spotify_token %}
                     <p>
                         <button onclick="playList()" class="fa fa-play-circle"></button>
-                        <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
+                        <span id="nowPlaying" style="overflow-x: hidden;">Click to initialize player</span>
                     </p>
                     {% endif %}
                     </div>

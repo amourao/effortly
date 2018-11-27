@@ -9,13 +9,9 @@
 
     var spotify_ids = []
     var start_times = []
-    {% for effort in top %}spotify_ids.push('spotify:track:{{ effort.song__original_song__spotify_id }}')
-    start_times.push({{effort.start_time}})
-    {% endfor %}
-
-    window.onSpotifyWebPlaybackSDKReady = () => {
-        createPlayer()
-    }
+    spotify_ids.push('spotify:track:{{ song.spotify_id }}')
+    start_times.push(0)
+    
 </script>   
 {% endif %}
 <script>
@@ -226,8 +222,8 @@
                     <div class="col-10 text-left">
                         {% if spotify_token %}
                     <p>
-                        <button onclick="player.togglePlay()" class="fa fa-play-circle"></button>
-                        <span id="nowPlaying" style="overflow-x: hidden;">Initializing player</span>
+                        <button onclick="playList()" class="fa fa-play-circle"></button>
+                        <span id="nowPlaying" style="overflow-x: hidden;">Click to initialize player</span>
                     </p>
                     {% endif %}
                     </div>

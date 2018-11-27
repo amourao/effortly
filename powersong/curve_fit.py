@@ -21,16 +21,17 @@ def get_best_curve_fit(qs):
     if not qs:
         return np.array([]), np.array([])
     for q in qs:
-        data, time = convert_bytes_to_np(q['data'],q['time'])
-        data -= data[0]
+        if not q['flagged']:
+            data, time = convert_bytes_to_np(q['data'],q['time'])
+            data -= data[0]
 
-        dtime = [range(np.max(time))]
-        ddata = np.interp(dtime,time,data).reshape(-1)
-        
-        tmp_data.append(ddata)
+            dtime = [range(np.max(time))]
+            ddata = np.interp(dtime,time,data).reshape(-1)
+            
+            tmp_data.append(ddata)
 
-        if np.max(time) > max_time:
-            max_time = np.max(time)
+            if np.max(time) > max_time:
+                max_time = np.max(time)
 
     xdata = np.array([range(max_time)], dtype=np.uint16)
     ydata_count = np.zeros(shape=(max_time), dtype=np.uint16)
