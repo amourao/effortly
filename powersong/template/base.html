@@ -129,9 +129,13 @@
             <a class="dropdown-item" href="javascript:void(0)" onclick="sync()" role="button">Sync</a>
           <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->
           {% endif %}
-            <a class="dropdown-item" href="/settings/" role="button">Settings</a>
             <a class="dropdown-item" href="/about/" role="button">FAQ</a>
+            {% if demo == None %}
+            <a class="dropdown-item" href="/settings/" role="button">Settings</a>
             <a class="dropdown-item" href="/logout/" role="button">Logout</a>
+            {% else %}
+            <a class="dropdown-item" href="/logout/" role="button">Leave Demo</a>
+            {% endif %}
           </div>
         </li>
         </ul>

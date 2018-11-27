@@ -83,10 +83,10 @@ def get_all_data(request):
         request.session['lastfm_username'] = poweruser.listener.nickname
 
     if 'spotify_code' in request.session:
-        spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
+        result['listenerspotify'] =spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
 
     if 'lastfm_username' in request.session:
-        lastfm_get_user_info(request.session['lastfm_username'],request.session['lastfm_key'],poweruser.id)
+        result['listener'] = lastfm_get_user_info(request.session['lastfm_username'],request.session['lastfm_key'],poweruser.id)
     
     request.session['strava_token'] = poweruser.athlete.strava_token
     request.session['athlete_id'] = poweruser.athlete.athlete_id

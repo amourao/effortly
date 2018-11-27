@@ -136,7 +136,7 @@ def song(request,song_id):
     else:
         qs = Effort.objects
     
-    qs = qs.filter((Q(song__original_song__id = song_id) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id','id','flagged','flagged_hr').order_by('activity__start_date_local')
+    qs = qs.filter((Q(song__original_song__id = song_id) & Q(activity__athlete__athlete_id = request.session['athlete_id']))).values('song','song__title','song__artist_name','song__url','song__image_url','song__artist__id','song__artist__image_url','activity__activity_id','activity__name','activity__workout_type','activity__start_date_local','diff_last_hr','diff_avg_hr','avg_speed','start_distance','distance','duration','avg_hr','start_time','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','song__spotify_id','id','flagged','flagged_hr').order_by('-activity__start_date_local')
 
     xdata, ydata = get_best_curve_fit(qs)
 

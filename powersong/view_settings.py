@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from powersong.models import *
 from powersong.view_detail import activity
 from powersong.view_main import get_all_data, NonAuthenticatedException
+from powersong.view_home import demo
 
 
 from powersong.strava_aux import strava_get_auth_url
@@ -19,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 def setting(request):
-    if 'demo' in request.session:
-        return demo(request)
+    if 'demo' in request.session or 'demo' in request.GET:
+        return redirect('/')
     try:
         poweruser, result = get_all_data(request)
     except NonAuthenticatedException as e:
@@ -42,8 +43,8 @@ def setting(request):
 
 
 def remove_spotify(request):
-    if 'demo' in request.session:
-        return demo(request)
+    if 'demo' in request.session or 'demo' in request.GET:
+        return redirect('/')
     try:
         poweruser, result = get_all_data(request)
     except NonAuthenticatedException as e:
@@ -65,7 +66,7 @@ def remove_spotify(request):
     return redirect('/settings/')
 
 def remove_lastfm(request):
-    if 'demo' in request.session:
+    if 'demo' in request.session or 'demo' in request.GET:
         return demo(request)
     try:
         poweruser, result = get_all_data(request)
@@ -94,7 +95,7 @@ def flag_activity(request,activity_id):
         return redirect("/")
     
     if 'demo' in request.session:
-        return activity(requet, activity_id)
+        return activity(request, activity_id)
     else:
         poweruser = get_poweruser(request.session['strava_token'])
 
@@ -127,7 +128,7 @@ def flag_effort(request,effort_id):
         return redirect("/")
     
     if 'demo' in request.session:
-        return activity(requet, effort.activity.activity_id)
+        return activity(request, effort.activity.activity_id)
     else:
         poweruser = get_poweruser(request.session['strava_token'])
 
@@ -162,7 +163,7 @@ def flag_song(request,song_id):
     if not 'strava_token' in request.session and not 'demo' in request.session:
         return redirect("/")
     
-    if 'demo' in request.session:
+    if 'demo' in request.session or 'demo' in request.GET:
         return JsonResponse({})
     else:
         poweruser = get_poweruser(request.session['strava_token'])
@@ -192,7 +193,7 @@ def flag_artist(request,artist_id):
     if not 'strava_token' in request.session and not 'demo' in request.session:
         return redirect("/")
     
-    if 'demo' in request.session:
+    if 'demo' in request.session or 'demo' in request.GET:
         return JsonResponse({})
     else:
         poweruser = get_poweruser(request.session['strava_token'])
