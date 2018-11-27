@@ -67,8 +67,6 @@
           var sync = $('#progress').html(); 
           if (sync.indexOf("IN PROGRESS") != -1)
               load_async('#progress','/get_sync_progress/',true);
-          if (sync.indexOf("SUCCESS") != -1)
-              location.reload();
         {% endif %}
       }
 
@@ -108,6 +106,9 @@
         <ul class="navbar-nav ml-auto justify-content-end">
           <li class="nav-item" id="progress" style="display:flex"></li>
           <li class="nav-item" id="progress_spotify" style="display:flex"></li>
+          {% if not listener and not listenerspotify %}
+            <li class="nav-item"> <a role="button" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a> </li>
+          {% endif %}
           <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
           <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.runs_count }} runs</a> </li>
           <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.rides_count }} rides</a> </li>
@@ -148,7 +149,7 @@
     
     <div class="container text-center">
       <footer>
-        <p>&copy; André Mourão {% now "Y" %}</p>
+        <p>&copy; <a href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}</p>
       </footer>
     </div> <!-- /container -->
 

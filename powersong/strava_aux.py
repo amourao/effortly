@@ -91,7 +91,8 @@ def strava_get_sync_progress(task_id):
         else:
             return 'IN PROGRESS', 0, 1
 
-def sync_efforts(username,access_token,limit=None):
+
+def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
     client = stravalib.client.Client()
     client.access_token = access_token
 
@@ -113,7 +114,7 @@ def sync_efforts(username,access_token,limit=None):
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
             download_chain = chain(strava_download_activity.s(access_token,act_p),
-                                    lastfm_download_activity_tracks.s(username),
+                                    spotify_download_activity_tracks.s(code,token,reftoken,athlete.id),
                                     strava_activity_to_efforts.s()
                             )
             new_activities.append(download_chain)

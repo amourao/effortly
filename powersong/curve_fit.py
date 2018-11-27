@@ -23,7 +23,7 @@ def get_best_curve_fit(qs):
     for q in qs:
         if not q['flagged']:
             data, time = convert_bytes_to_np(q['data'],q['time'])
-            data -= data[0]
+            data -= np.mean(data)
 
             dtime = [range(np.max(time))]
             ddata = np.interp(dtime,time,data).reshape(-1)

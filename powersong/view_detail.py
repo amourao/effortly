@@ -52,6 +52,7 @@ def activity(request,activity_id):
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
+    data['listenerspotify'] = poweruser.listener_spotify
 
     activity = Activity.objects.filter(activity_id = activity_id)[0]
     
@@ -110,6 +111,7 @@ def song(request,song_id):
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
+    data['listenerspotify'] = poweruser.listener_spotify
     data['song'] = Song.objects.filter(id = song_id)[0]
     if data['song'].original_song:
         data['song'] = data['song'].original_song
@@ -209,6 +211,7 @@ def artist(request,artist_id):
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
+    data['listenerspotify'] = poweruser.listener_spotify
     data['artist'] = Artist.objects.filter(id = artist_id)[0]
 
     activity_type = None

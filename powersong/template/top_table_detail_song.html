@@ -121,7 +121,7 @@
                     <div class="col-12 text-right">
 
                           <div class="dropdown">
-                              <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <button class="btn btn-outline-info fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                               </button>
                               <div class="dropdown-menu" aria-labelledby="dropdownMenu">
                                 <button onclick="sendPost({{ effort.id }},'flag_effort','flagged',!{{ effort.flagged|lower  }})" class="dropdown-item" type="button">{% if effort.flagged %}Unflag{% else %}Flag{% endif %} effort</button>

@@ -140,7 +140,7 @@
                     <div class="col-10 text-left">
                         {% if spotify_token %}
                     <p>
-                        <button onclick="playList()" class="fa fa-play-circle"></button>
+                        <button onclick="playList()" type="button" class="btn btn-outline-success fa fa-play-circle"></button>
                         <span id="nowPlaying" style="overflow-x: hidden;">Click to initialize player</span>
                     </p>
                     {% endif %}
@@ -148,7 +148,7 @@
                     <div class="col-2 text-right">
                         
                     <div class="dropdown">
-                      <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <button class="btn btn-outline-info fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       </button>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenu">
                         <button onclick="sendPost({{ artist.id }},'flag_artist','flagged',!{{ flagged|lower }})" class="dropdown-item" type="button">{% if flagged %}Unflag{% else %}Flag{% endif %} artist</button>

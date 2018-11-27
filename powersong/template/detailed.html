@@ -87,7 +87,7 @@
           </div>
           <div class="col-md-1 px-1 col-xs-12">
             <div class="form-group">
-              <select class="selectpicker form-control" id="type_form_id" onchange="update(true)">
+              <select class="selectpicker form-control" data-style="btn-power" id="type_form_id" onchange="update(true)">
                   <option name="type_form" value="effort">Effort</option>
                   <option name="type_form" value="song">Song</option>
                   <option name="type_form" value="artist">Artist</option>
@@ -97,7 +97,7 @@
           </div>
           <div class="col-md-2 px-1 col-xs-12" id="field_form_id_div">
             <div class="form-group">
-              <select class="selectpicker form-control" id="field_form_id" onchange="update(true)">
+              <select class="selectpicker form-control" data-style="btn-power" id="field_form_id" onchange="update(true)">
                   <option name="field_form" value="avg_speed" selected>Avg. Speed</option>
                   <option name="field_form" value="diff_avg_speed">Diff. Avg. Speed</option>
                   <option name="field_form" value="diff_last_speed">Diff. Last Speed</option>
@@ -109,7 +109,7 @@
           </div>
           <div class="col-md-2 px-1 col-xs-12" id="field_alt_form_id_div">
             <div class="form-group">
-              <select class="selectpicker form-control" id="field_alt_form_id" onchange="update(true)">
+              <select class="selectpicker form-control" data-style="btn-power" id="field_alt_form_id" onchange="update(true)">
                   <option name="field_form" value="count" selected>Count</option>
                   <option name="field_form" value="avg_speed">Avg. Speed</option>
                   <option name="field_form" value="diff_avg_speed">Diff. Avg. Speed</option>
@@ -122,7 +122,7 @@
           </div>
           <div class="col-md-2 px-1 col-xs-12" id="field_alt_2_form_id_div">
             <div class="form-group">
-              <select class="selectpicker form-control" id="field_alt_2_form_id" onchange="update(true)">
+              <select class="selectpicker form-control" data-style="btn-power" id="field_alt_2_form_id" onchange="update(true)">
                   <option name="field_form" value="start_date_local" selected>Latest</option>
                   <option name="field_form" value="effort">Count</option>
                   <option name="field_form" value="elapsed_time">Duration</option>
@@ -134,7 +134,7 @@
           </div>
           <div class="col-md-2 px-1 col-xs-12">
             <div class="form-group">
-          <select class="selectpicker form-control" id="workout_type_form_id" onchange="update(true)">
+          <select class="selectpicker form-control" data-style="btn-power" id="workout_type_form_id" onchange="update(true)">
               <option name="workout_type_form" value="-1" selected>All Activities</option>
               <option name="workout_type_form" value="0">Regular</option>
               <option name="workout_type_form" value="1">Race</option>
@@ -145,7 +145,7 @@
         </div>
         <div class="col-md-2 px-1 col-xs-12" id="field_min_count_form_id">
           <div class="form-group">
-            <select class="selectpicker form-control" id="min_count_form_id" onchange="update(true)">
+            <select class="selectpicker form-control" data-style="btn-power" id="min_count_form_id" onchange="update(true)">
               <option name="min_count_form" value="0" selected>Any Efforts</option>
               <option name="min_count_form" value="1">Min. 1 Effort</option>
               <option name="min_count_form" value="3">Min. 3 Efforts</option>
@@ -156,7 +156,7 @@
         </div>
         <div class="col-md-2 px-1  col-xs-12">
           <div class="form-group">
-            <select class="selectpicker form-control" id="time_form_id" onchange="update(true)">
+            <select class="selectpicker form-control" data-style="btn-power" id="time_form_id" onchange="update(true)">
               <option name="time_form" value="-1" selected>All Time</option>
               <option name="time_form" value="7">Last 7 Days</option>
               <option name="time_form" value="30">Last 30 Days</option>
@@ -168,7 +168,7 @@
         </div>
         <div class="col-md-1 px-1 col-xs-12">
           <div class="form-group">
-            <select class="selectpicker form-control" id="asc_desc_form_id" onchange="update(true)">
+            <select class="selectpicker form-control" data-style="btn-power" id="asc_desc_form_id" onchange="update(true)">
               <option name="asc_desc_form" value="desc" selected> V </option>
               <option name="asc_desc_form" value="asc">/\</option>
             </select>
@@ -180,12 +180,12 @@
       </div>
       <div class="row">
         <div class="col-6">
-            <button onclick="previous()" class="btn btn-alert btn-sm">
+            <button onclick="previous()" type="button" class="btn btn-info btn-sm">
               <span class="glyphicon glyphicon-repeat"></span>Previous
             </button>
         </div>
         <div class="col-6 text-right">
-          <button onclick="next()" class="btn btn-alert btn-sm">
+          <button onclick="next()" type="button" class="btn btn-info btn-sm">
               <span class="glyphicon glyphicon-repeat"></span>Next
             </button>
           
@@ -194,12 +194,12 @@
           <div id='top'> </div>
         </div>
         <div class="col-6">
-            <button onclick="previous()" class="btn btn-alert btn-sm">
+            <button onclick="previous()" type="button" class="btn btn-info btn-sm">
               <span class="glyphicon glyphicon-repeat"></span>Previous
             </button>
         </div>
         <div class="col-6 text-right">
-          <button onclick="next()" class="btn btn-alert btn-sm">
+          <button onclick="next()" type="button" class="btn btn-info btn-sm">
               <span class="glyphicon glyphicon-repeat"></span>Next
             </button>
           

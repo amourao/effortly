@@ -20,7 +20,7 @@
 
   <script>
     //var color_base = ['002b36', '073642', '586e75', '657b83', '839496', '93a1a1', 'eee8d5', 'fdf6e3'];
-    var color_base = ['ff0000', '00ff00'];
+    var color_base = ['17a2b8', 'e31b23'];
 
     var color = Chart.helpers.color;
     var scatterChartData = {
@@ -157,9 +157,9 @@
         {% if demo == None %}
         <div class="row">
             <div class="col-10 text-left">
-                {% if spotify_token %}
+                {% if spotify_token and top %}
             <p>
-                <button onclick="playList()" class="fa fa-play-circle"></button>
+                <button onclick="playList()" type="button" class="btn btn-outline-success fa fa-play-circle"></button>
                 <span id="nowPlaying" style="overflow-x: hidden;">Click to initialize player</span>
             </p>
             {% endif %}
@@ -167,12 +167,12 @@
             <div class="col-2 text-right">
                 
             <div class="dropdown">
-              <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <button class="btn btn-outline-info fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenu">
-                <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" target="_blank" class="dropdown-item" type="button">See on last.fm</a>
-                <a href="/resync_last_fm/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync last.fm</a>
-                <a href="/resync_spotify/{{ activity.activity_id}}" class="dropdown-item" type="button">Resync Spotify</a>
+                <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" target="_blank" class="dropdown-item" type="button">See on last.fm</a>                
+                <button onclick="sendGet('/resync_last_fm/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync last.fm</button>
+                <button onclick="sendGet('/resync_spotify/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync Spotify</button>                
                 <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
 
                 <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="dropdown-item" type="button">{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR</button>
@@ -182,9 +182,11 @@
             </div>
         </div>
         {% endif %}
+        {% if top %}
         <div class="row">
             <canvas id="canvas"></canvas>
         </div> 
+        {% endif %}
       </div>
     </li>
     </ul>

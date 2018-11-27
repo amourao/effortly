@@ -20,8 +20,8 @@
         datasets: [
             {
             label: 'Average',
-            borderColor: color('#FF0000').alpha(1).rgbString(),
-            backgroundColor: color('#FF0000').alpha(1).rgbString(),
+            borderColor: color('#17a2b8').alpha(1).rgbString(),
+            backgroundColor: color('#17a2b8').alpha(1).rgbString(),
             showLine: true,
             pointRadius: 3,
             fill: false,
@@ -33,7 +33,7 @@
             {% for effort in top %}
             {
             label: '{{ effort.activity__name }}',
-            backgroundColor: color('#0000FF').alpha(0.2).rgbString(),
+            backgroundColor: color('#0000FF').alpha(0.5).rgbString(),
             data: [
                 {% decode_bytes_data data=effort.data time=effort.time as data_time %}
                 {% for data,time in data_time %}{x: {{ time }}, y: {{ data }}},{% endfor %}
@@ -222,7 +222,7 @@
                     <div class="col-10 text-left">
                         {% if spotify_token %}
                     <p>
-                        <button onclick="playList()" class="fa fa-play-circle"></button>
+                        <button onclick="playList()" type="button" class="btn btn-outline-success fa fa-play-circle"></button>
                         <span id="nowPlaying" style="overflow-x: hidden;">Click to initialize player</span>
                     </p>
                     {% endif %}
@@ -230,7 +230,7 @@
                     <div class="col-2 text-right">
                         
                     <div class="dropdown">
-                      <button class="btn fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <button class="btn btn-outline-info fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       </button>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenu">
                         <button onclick="sendPost({{ song.id }},'flag_song','flagged',!{{ flagged|lower }})" class="dropdown-item" type="button">{% if flagged %}Unflag{% else %}Flag{% endif %} song</button>
@@ -241,10 +241,11 @@
                 {% endif %}
 
 
-
+                {% if top %}
                 <div class="row">
                         <canvas id="canvas"></canvas>
                     </div> 
+                {% endif %}
             </div>
             </div>
         </li>
