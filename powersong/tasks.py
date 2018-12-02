@@ -24,7 +24,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
+########################## Strava API tasks ##########################
 
 def strava_nop():
     return None
@@ -73,16 +73,29 @@ def strava_download_activity(access_token,act):
     return (act_stream, stored_act.activity_id)
 
 @shared_task
-def strava_task(function,args):
+def strava_task(*args,**kwargs):
+    prev_args = []
+    new_args = []
+    if len(args) == 3:
+        prev_args,function,new_args = args
+    elif len(args) == 2:
+        function,new_args = args
+    if prev_args:
+        nargs = [tuple(prev_args)] + new_args
+    else:
+        nargs = new_args
     if function == 'strava_download_activity':
-        return strava_download_activity(*args)
+        return strava_download_activity(*nargs,**kwargs)
     elif function == 'strava_nop':
         return strava_nop()
     elif function == 'strava_op':
-        return strava_op(*args)
+        return strava_op(*nargs,**kwargs)
     return None
 
-@shared_task
+########################## END Strava API tasks ##########################
+
+########################## Last.fm API tasks ##########################
+
 def lastfm_download_activity_tracks(act_stream_stored_act,username):
     if act_stream_stored_act == None:
         return None
@@ -106,7 +119,121 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
     return act_stream, stored_act_id, lastfm_tracks
 
 
+def lastfm_download_track_info(artist_name,track_name):
+    method = 'track.getInfo'
+
+    url = settings.LASTFM_API_TRACK.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name),quote_plus(track_name))
+
+    response = requests.get(url).json()
+
+    if 'lfm' in response:
+        response = response['lfm']
+    track_json = response['track']
+
+    track = lastfm_get_track(artist_name,track_name)
+
+    if track == None:
+        track = Song()
+
+    image_url = None
+    if 'album' in track_json and 'image' in track_json['album']:
+        image_url = lastfm_get_largest_image(track_json['album']['image'])
+
+
+    if image_url != None:
+        r = requests.get(image_url)
+        if r.status_code != 404:
+            track.image_url = image_url
+        else:
+            r = requests.get(track.image_url)
+            if r.status_code == 404:
+                track.image_url = ''
+    else:
+        r = requests.get(track.image_url)
+        if r.status_code == 404:
+            track.image_url = ''
+
+    if 'mbid' in track_json and track_json['mbid'].strip() != "":
+        track.mbid = track_json['mbid']
+
+    track.duration = int(track_json['duration'])
+    track.listeners_count = int(track_json['listeners'])
+    track.plays_count = int(track_json['playcount'])
+    track.url =  track_json['url']
+    track.last_sync_date =  datetime.now()
+
+    track.save()
+
+
+def lastfm_download_artist_info(artist_name,mb_id=None):
+    method = 'artist.getInfo'
+    if mb_id:
+        url = settings.LASTFM_API_ARTIST_MB.format(method,settings.LASTFM_API_KEY,mb_id)
+    else:
+        url = settings.LASTFM_API_ARTIST.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name))
+
+    response = requests.get(url).json()
+
+    if 'lfm' in response:
+        response = response['lfm']
+    artist_json = response['artist']
+
+    artist = lastfm_get_artist(artist_name,mb_id)
+
+    if artist == None:
+        artist = Artist()
+
+    image_url = lastfm_get_largest_image(artist_json['image'])
+    
+    if image_url != None:
+        r = requests.get(image_url)
+        if r.status_code != 404:
+            artist.image_url = image_url
+        else:
+            r = requests.get(artist.image_url)
+            if r.status_code == 404:
+                artist.image_url = ''
+    else:
+        r = requests.get(artist.image_url)
+        if r.status_code == 404:
+            artist.image_url = ''
+
+
+    if 'mbid' in artist_json and artist_json['mbid'].strip() != "":
+        artist.mbid = artist_json['mbid']
+
+    artist.listeners_count = int(artist_json['stats']['listeners'])
+    artist.plays_count = int(artist_json['stats']['playcount'])
+    artist.url =  artist_json['url']
+    artist.last_sync_date =  datetime.now()
+
+    artist.save()
+
+
 @shared_task
+def lastfm_task(*args,**kwargs):
+    prev_args = []
+    new_args = []
+    if len(args) == 3:
+        prev_args,function,new_args = args
+    elif len(args) == 2:
+        function,new_args = args
+    if prev_args:
+        nargs = [tuple(prev_args)] + new_args
+    else:
+        nargs = new_args
+    if function == 'lastfm_download_activity_tracks':
+        return lastfm_download_activity_tracks(*nargs,**kwargs)
+    elif function == 'lastfm_download_track_info':
+        return lastfm_download_track_info(*nargs,**kwargs)
+    elif function == 'lastfm_download_artist_info':
+        return lastfm_download_artist_info(*nargs,**kwargs)
+    return None
+
+########################## END Last.fm API tasks ##########################
+
+########################## Spotify API tasks ##########################
+
 def spotify_get_spotify_ids(code,token,reftoken,song_id):
     try:
         song = Song.objects.filter(id=song_id)[0]
@@ -121,18 +248,17 @@ def spotify_get_spotify_ids(code,token,reftoken,song_id):
         try:
             results = sp.search(q=query, type="track", limit=20)
         except:
-            logger.debug("Refreshing spotify token")
-            r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'refresh_token', 'refresh_token': reftoken, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
-            out = r.json()
-            spotify_get_user_info(code,out['access_token'],reftoken,athlete_id)
+            token = spotify_refresh_token(code,token,reftoken,athlete_id)
+            sp = spotipy.Spotify(auth=token)
+            results = sp.search(q=query, type="track", limit=20)
 
         if not song.spotify_id and results['tracks'] and results['tracks']['items']:
             song.spotify_id = results['tracks']['items'][0]['id']
+            song.duration = results['tracks']['items'][0]['duration_ms']
             song.save()
     except:
         return
 
-@shared_task
 def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,athlete_id):
     if act_stream_stored_act == None:
         return None
@@ -148,7 +274,30 @@ def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,a
 
 
 @shared_task
-def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
+def spotify_task(*args,**kwargs):
+    prev_args = []
+    new_args = []
+    if len(args) == 3:
+        prev_args,function,new_args = args
+    elif len(args) == 2:
+        function,new_args = args
+    if prev_args:
+        nargs = [tuple(prev_args)] + new_args
+    else:
+        nargs = new_args
+    if function == 'spotify_download_activity_tracks':
+        return spotify_download_activity_tracks(*nargs,**kwargs)
+    elif function == 'spotify_get_spotify_ids':
+        return spotify_get_spotify_ids(*nargs,**kwargs)
+    return None
+
+
+########################## END Spotify API tasks ##########################
+
+########################## Internal tasks ##########################
+
+@shared_task
+def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     if act_stream_stored_act_id_lastfm_tracks == None:
         return False
     act_stream, stored_act_id, lastfm_tracks = act_stream_stored_act_id_lastfm_tracks
@@ -326,96 +475,10 @@ def strava_activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
     return True
 
-@shared_task
-def lastfm_download_track_info(artist_name,track_name):
-    method = 'track.getInfo'
 
-    url = settings.LASTFM_API_TRACK.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name),quote_plus(track_name))
+########################## END Internal tasks ##########################
 
-    response = requests.get(url).json()
-
-    if 'lfm' in response:
-        response = response['lfm']
-    track_json = response['track']
-
-    track = lastfm_get_track(artist_name,track_name)
-
-    if track == None:
-        track = Song()
-
-    image_url = None
-    if 'album' in track_json and 'image' in track_json['album']:
-        image_url = lastfm_get_largest_image(track_json['album']['image'])
-
-
-    if image_url != None:
-        r = requests.get(image_url)
-        if r.status_code != 404:
-            track.image_url = image_url
-        else:
-            r = requests.get(track.image_url)
-            if r.status_code == 404:
-                track.image_url = ''
-    else:
-        r = requests.get(track.image_url)
-        if r.status_code == 404:
-            track.image_url = ''
-
-    if 'mbid' in track_json and track_json['mbid'].strip() != "":
-        track.mbid = track_json['mbid']
-
-    track.duration = int(track_json['duration'])
-    track.listeners_count = int(track_json['listeners'])
-    track.plays_count = int(track_json['playcount'])
-    track.url =  track_json['url']
-    track.last_sync_date =  datetime.now()
-
-    track.save()
-
-@shared_task
-def lastfm_download_artist_info(artist_name,mb_id=None):
-    method = 'artist.getInfo'
-    if mb_id:
-        url = settings.LASTFM_API_ARTIST_MB.format(method,settings.LASTFM_API_KEY,mb_id)
-    else:
-        url = settings.LASTFM_API_ARTIST.format(method,settings.LASTFM_API_KEY,quote_plus(artist_name))
-
-    response = requests.get(url).json()
-
-    if 'lfm' in response:
-        response = response['lfm']
-    artist_json = response['artist']
-
-    artist = lastfm_get_artist(artist_name,mb_id)
-
-    if artist == None:
-        artist = Artist()
-
-    image_url = lastfm_get_largest_image(artist_json['image'])
-    
-    if image_url != None:
-        r = requests.get(image_url)
-        if r.status_code != 404:
-            artist.image_url = image_url
-        else:
-            r = requests.get(artist.image_url)
-            if r.status_code == 404:
-                artist.image_url = ''
-    else:
-        r = requests.get(artist.image_url)
-        if r.status_code == 404:
-            artist.image_url = ''
-
-
-    if 'mbid' in artist_json and artist_json['mbid'].strip() != "":
-        artist.mbid = artist_json['mbid']
-
-    artist.listeners_count = int(artist_json['stats']['listeners'])
-    artist.plays_count = int(artist_json['stats']['playcount'])
-    artist.url =  artist_json['url']
-    artist.last_sync_date =  datetime.now()
-
-    artist.save()
+########################## Aux code ##########################
 
 def strava_get_start_timestamp(st):
     return int(time.mktime(st.timetuple()))
@@ -632,3 +695,5 @@ def get_diff_set(stream, start, end, key, ignore_moving = False):
         last_key_val = key_value
 
     return np.array(data,np.float16),np.array(time,np.uint16)
+
+########################## END Aux code ##########################

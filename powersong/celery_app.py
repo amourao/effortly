@@ -17,10 +17,8 @@ app.add_defaults({
 app.autodiscover_tasks()
 
 app.control.rate_limit('powersong.tasks.strava_task', '40/m')
-app.control.rate_limit('powersong.tasks.lastfm_download_activity_tracks', '250/m')
-app.control.rate_limit('powersong.tasks.lastfm_download_track_info', '250/m')
-app.control.rate_limit('powersong.tasks.lastfm_download_artist_info', '250/m')
-app.control.rate_limit('powersong.tasks.spotify_get_spotify_ids', '250/m')
+app.control.rate_limit('powersong.tasks.lastfm_task', '250/m')
+app.control.rate_limit('powersong.tasks.spotify_task', '250/m')
 
 @app.task(bind=True)
 def debug_task(self):

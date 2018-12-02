@@ -174,7 +174,7 @@ def spotify_sync_ids():
     songs_to_sync = []
     for song in songs:
         #if song.last_sync_date == None or song.last_sync_date == "":
-        songs_to_sync.append(spotify_get_spotify_ids.s(code,token,reftoken,song.id))
+        songs_to_sync.append(spotify_task.s('spotify_get_spotify_ids',(code,token,reftoken,song.id)))
 
     if len(songs_to_sync) > 1:
         promise = group(*songs_to_sync)
