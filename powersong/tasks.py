@@ -24,7 +24,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@shared_task
+
+
+def strava_nop():
+    return None
+
+def strava_op(access_token):
+    client = stravalib.client.Client()
+    client.access_token = access_token
+    athlete_api = client.get_athlete()
+    return None
+
+def strava_generate_nops(count):
+    new_activities = [strava_task.s('strava_nop',()) for i in range(count)]
+    promise = group(*new_activities)
+    job_result = promise.delay()
+
 def strava_download_activity(access_token,act):
     client = stravalib.client.Client()
     client.access_token = access_token
@@ -57,6 +72,15 @@ def strava_download_activity(access_token,act):
         return None
     return (act_stream, stored_act.activity_id)
 
+@shared_task
+def strava_task(function,args):
+    if function == 'strava_download_activity':
+        return strava_download_activity(*args)
+    elif function == 'strava_nop':
+        return strava_nop()
+    elif function == 'strava_op':
+        return strava_op(*args)
+    return None
 
 @shared_task
 def lastfm_download_activity_tracks(act_stream_stored_act,username):

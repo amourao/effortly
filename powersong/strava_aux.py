@@ -3,9 +3,7 @@ import stravalib.client
 from django.conf import settings
 
 from datetime import datetime,timedelta
-from powersong.tasks import spotify_download_activity_tracks,strava_download_activity,lastfm_download_activity_tracks,strava_activity_to_efforts
-
-
+from powersong.tasks import strava_task,spotify_download_activity_tracks,strava_download_activity,lastfm_download_activity_tracks,strava_activity_to_efforts,strava_generate_nops
 
 import copy
 import time
@@ -110,14 +108,19 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
 
     all_activities = client.get_activities(limit=limit)
     new_activities = []
+    activity_count = 0
     for act in all_activities:
+        activity_count += 1
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_download_activity.s(access_token,act_p),
+            download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
                                     spotify_download_activity_tracks.s(code,token,reftoken,athlete.id),
                                     strava_activity_to_efforts.s()
                             )
             new_activities.append(download_chain)
+
+    strava_generate_nops(2+math.ceil(activity_count/200))
+
     if len(new_activities) == 0:
         return "", 0
 
@@ -150,14 +153,19 @@ def sync_efforts_lastfm(token,access_token,limit=None):
 
     all_activities = client.get_activities(limit=limit)
     new_activities = []
+    activity_count = 0
     for act in all_activities:
+        activity_count += 1
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_download_activity.s(access_token,act_p),
+            download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
                                     lastfm_download_activity_tracks.s(token),
                                     strava_activity_to_efforts.s()
                             )
             new_activities.append(download_chain)
+
+    strava_generate_nops(2+math.ceil(activity_count/200))
+
     if len(new_activities) == 0:
         return "", 0
 
@@ -185,7 +193,7 @@ def resync_activity(username,access_token,activity_id,athlete_id):
     efforts_to_delete.delete()
     act_p = {}
     act_p['id'] = activity_id
-    download_chain = chain(strava_download_activity.s(access_token,act_p),
+    download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
                             lastfm_download_activity_tracks.s(username),
                             strava_activity_to_efforts.s()
                     )
@@ -206,12 +214,12 @@ def resync_activity_spotify(code,token,reftoken,access_token,activity_id,athlete
     efforts_to_delete.delete()
     act_p = {}
     act_p['id'] = activity_id
-    download_chain = chain(strava_download_activity.s(access_token,act_p),
+    download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
                             spotify_download_activity_tracks.s(code,token,reftoken,activity.athlete.id),
                             strava_activity_to_efforts.s()
                     )
     job_result = download_chain.delay()
-    
+
     return job_result.id, 1
 
 
@@ -236,6 +244,7 @@ def strava_parse_base_activity(act):
     actFinal['embed_token'] = act.embed_token
     actFinal['end_latlng'] = act.end_latlng
     
+    actFinal['flagged'] = act.flagged
     actFinal['gear'] = act.gear
     actFinal['gear_id'] = act.gear_id
     
