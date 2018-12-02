@@ -11,7 +11,7 @@ from powersong.strava_aux import strava_get_auth_url,strava_get_user_info, strav
 from powersong.spotify_aux import spotify_get_user_info
 from powersong.view_detail import get_scrobble_details
 
-from powersong.models import get_poweruser, PowerUser
+from powersong.models import get_poweruser, PowerUser, Athlete
 
 import logging
 
@@ -149,6 +149,17 @@ def detailed(request):
         return (e.destination)    
     result['title'] = 'Detailed View'
     return render_to_response('detailed.html', result)
+
+def global_top(request):
+
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+    result['title'] = 'Global Top'
+    result['countries'] = Athlete.objects.all().values_list('country',flat=True).distinct()
+    return render_to_response('global_top.html', result)
 
 def get_sync_id(request, poweruser):
     

@@ -18,6 +18,7 @@ temperature = ['activity__avg_temp']
 timeBig = ['start_time', 'elapsed_time','duration','avg_duration']
 timeSmall = []
 count = ['count','effort']
+count_users = ['count_users']
 
 heartrate = ['avg_avg_hr','avg_diff_avg_hr','avg_diff_last_hr','avg_hr','diff_avg_hr','diff_last_hr','activity__avg_hr','activity__max_hr']
 
@@ -25,7 +26,7 @@ cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_c
 
 watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
 
-common = {'timeBig':'','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W', 'count':'count'}
+common = {'timeBig':'','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W', 'count':'count', 'count_users':'listener(s)'}
 metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
 imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
 
@@ -668,6 +669,8 @@ def effort_commom(effort_dict):
         effort_dict['sort_value_unit'] = common['watts']
     elif 'sort_key' in effort_dict and effort_dict['sort_key'] in count and 'sort_value' in effort_dict:
         effort_dict['sort_value_unit'] = common['count']
+    elif 'sort_key' in effort_dict and effort_dict['sort_key'] in count_users and 'sort_value' in effort_dict:
+        effort_dict['sort_value_unit'] = common['count_users']
     return effort_dict
 
 def effort_to_metric(effort_dict):

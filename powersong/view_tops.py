@@ -166,6 +166,232 @@ def top_activities(request):
     return render_to_response('top_table_detail_activity.html', data)
 
 
+def top_global_song_artist(request):
+    data = {}
+
+    if not 'type' in request.GET:
+        data['error'] = 'Missing type'
+        return JsonResponse(data)
+
+    u_type  = request.GET['type']
+
+
+    field = None
+    if not 'field' in request.GET:
+        data['error'] = 'Missing field'
+        return JsonResponse(data)
+    elif 'field' in request.GET:
+        field = request.GET['field']
+
+    g_type  = 'avg'
+    if field in ['count','count_users']:
+        g_type = 'count'
+
+    min_count = 1
+    if 'min_count' in request.GET:
+        min_count = int(request.GET['min_count']) 
+
+    dispfield = field
+    if 'dispfield' in request.GET:
+        dispfield = request.GET['dispfield']
+
+    header = False
+    if 'header' in request.GET:
+        header = True
+
+    page = 0
+    if 'page' in request.GET and request.GET['page']:
+        try:
+            page = int(request.GET['page'])
+        except:
+            pass
+
+    descending = -1
+    if 'ascending' in request.GET:
+        descending = 1
+    
+    n = 10
+    if 'n' in request.GET:
+        n = int(request.GET['n'])
+
+    units = None
+    if 'units' in request.GET:
+        units = request.GET['units']
+    if not units:
+        athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+        units = athlete.measurement_preference
+    else:
+        units = 0
+
+    activity_type = None
+    if 'activity_type' in request.GET:
+        activity_type = int(request.GET['activity_type'])
+
+    country = 'All'
+    if 'country' in request.GET:
+        country = request.GET['country']
+
+    if activity_type == None:
+        if not 'athlete_type' in request.session:
+            athlete = strava_get_user_info_by_id(request.session['athlete_id'])
+            activity_type = athlete.athlete_type
+        else:
+            activity_type = request.session['activity_type']
+
+    request.session['activity_type'] = activity_type
+
+    workout_type = -1
+    if 'workout_type' in request.GET:
+        try:
+            workout_type = int(request.GET['workout_type'])
+        except:
+            pass
+
+    if activity_type == 0 and 'diff' in field and 'speed' in field:
+        field += "_s"
+
+    if activity_type == 0 and dispfield in speed:
+        dispfield += "_s"
+     
+    #data = Effort.objects.only('song__original_song__title','song__original_song__artist__name','activity__start_date','idx_in_activity','start_time','duration','start_distance','distance','avg_speed','act_avg_speed','avg_hr','total_ascent','total_descent',field).order_by('activity__start_date')[::1]
+
+    #results = []
+    #for effort in data:
+    #    results.append(to_dict(effort))
+
+    #if latest:
+    #    return JsonResponse(serializers.serialize("json", results),safe=False)
+    max_speed_filter = 27 # bike max speed in meters per second
+    if activity_type == 0:
+        max_speed_filter = 8 # bike max speed in meters per second
+
+    min_speed_filter = 2
+
+    time_filter = 60
+
+    distance_filter = 100
+
+    diff_filter_min = 0.5
+    diff_filter_max = 1.5
+
+    qs = Effort.objects
+
+    if activity_type != -1:
+        qs = qs.filter(act_type=activity_type)
+
+    if country != 'All':
+        qs = qs.filter(activity__athlete__country=country)
+
+    if workout_type != -1:
+        if workout_type == 0:
+            qs = qs.filter((Q(activity__workout_type=10) | Q(activity__workout_type=0)))
+        elif workout_type == 1:
+            qs = qs.filter((Q(activity__workout_type=11) | Q(activity__workout_type=1)))
+        elif workout_type == 3:
+            qs = qs.filter((Q(activity__workout_type=12) | Q(activity__workout_type=3)))
+        else:
+            qs = qs.filter(activity__workout_type=workout_type)
+
+    if 'hr' in field:
+        qs = qs.filter(activity__flagged_hr=False,flagged_hr=False).exclude(avg_hr__isnull=True)
+        if 'diff_last' in field:
+            qs = qs.exclude(diff_last_hr__isnull=True)
+        if 'diff_avg' in field:
+            qs = qs.exclude(diff_avg_hr__isnull=True)
+
+    if 'days' in request.GET:
+        try:
+            days = int(request.GET['days'])
+            if days != -1:
+                d = datetime.today() - timedelta(days=days)
+                comb = datetime.combine(d, datetime.min.time())
+                qs = qs.filter(activity__start_date__gt=comb)
+        except:
+            pass
+
+        
+    distinct = False
+    agg_type = None
+    if u_type == 'song':
+        agg_type = 'song__original_song'
+    elif u_type == 'artist':
+        agg_type = 'song__original_song__artist_id'
+    
+    if field == 'count_users':
+        agg_type = 'activity__athlete__athlete_id'
+        distinct = True
+
+    order_by_key = 'sort_value'
+    if descending == -1:
+        order_by_key = '-sort_value'
+
+
+
+    if g_type == 'count':
+        if u_type == 'song':
+            if field == 'count_users':    
+                qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter).values('song__original_song','song__original_song__spotify_id','song__original_song__title','song__original_song__artist_name','song__original_song__url','song__original_song__image_url','song__original_song__artist__id','song__original_song__artist__image_url').annotate(sort_value=Count(agg_type,distinct=distinct)).filter(sort_value__gt=(min_count-1)).annotate(diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,'song__original_song__title')
+            else:
+                qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter).values('song__original_song','song__original_song__spotify_id','song__original_song__title','song__original_song__artist_name','song__original_song__url','song__original_song__image_url','song__original_song__artist__id','song__original_song__artist__image_url').annotate(t_count=Count(agg_type)).filter(t_count__gt=(min_count-1)).annotate(sort_value=Count(agg_type,distinct=distinct),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,'song__original_song__title')
+        elif u_type == 'artist':
+            if field == 'count_users':  
+                qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter).values('song__original_song__artist_name','song__original_song__artist__id','song__original_song__artist__image_url').annotate(sort_value=Count(agg_type,distinct=distinct)).filter(sort_value__gt=(min_count-1)).annotate(diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,'song__original_song__artist_name')
+            else:
+                qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter).values('song__original_song__artist_name','song__original_song__artist__id','song__original_song__artist__image_url').annotate(t_count=Count(agg_type)).filter(t_count__gt=(min_count-1)).annotate(sort_value=Count(agg_type,distinct=distinct),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,'song__original_song__artist_name')
+    elif g_type == 'avg':
+        if u_type == 'song':
+            qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter).values('song__original_song','song__original_song__spotify_id','song__original_song__title','song__original_song__artist_name','song__original_song__url','song__original_song__image_url','song__original_song__artist__id','song__original_song__artist__image_url').annotate(t_count=Count(agg_type)).filter(t_count__gt=(min_count-1)).annotate(sort_value=Avg(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,'song__original_song__title')
+        elif u_type == 'artist':
+            qs = qs.filter(activity__flagged=False,flagged=False,distance__gt=distance_filter,duration__gt=time_filter,avg_speed__gt=min_speed_filter,avg_speed__lt=max_speed_filter).values('song__original_song__artist_name','song__original_song__artist__id','song__original_song__artist__image_url').annotate(t_count=Count(agg_type)).filter(t_count__gt=(min_count-1)).annotate(sort_value=Avg(field),diff_last_hr=Avg('diff_last_hr'),diff_avg_hr=Avg('diff_avg_hr'),avg_hr=Avg('avg_hr'),avg_speed=Avg('avg_speed'),start_distance=Avg('start_distance'),distance=Avg('distance'),duration=Avg('duration'),start_time=Avg('start_time'),diff_last_speed=Avg('diff_last_speed'),diff_avg_speed=Avg('diff_avg_speed'),diff_last_speed_s=Avg('diff_last_speed_s'),diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,'song__original_song__artist_name')
+
+    total_length = len(qs)
+    qs = qs[(n*page):(n*(page+1))]
+
+    if header:
+        data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
+
+    render = 'html'
+    if 'render' in request.GET:
+        render = int(request.GET['render'])
+    
+    data['activity_type'] = activity_type
+    data['top'] = []
+    for q in qs:
+        if dispfield:
+            q['sort_key'] = dispfield 
+            if dispfield.startswith("diff"):
+                q["diff"] = True
+                q["signal"] = ""
+                if 'sort_value' in q:
+                    if q['sort_value'] < 0:
+                        if 'speed' in q['sort_key']:
+                            q["diff"] = "slower"
+                        else:
+                            q["diff"] = "fewer"
+                    else:
+                        if 'speed' in q['sort_key']:
+                            q["diff"] = "faster"
+                        else:
+                            q["diff"] = "more"
+
+
+                        q["signal"] = "+"
+                
+                if "last" in dispfield:
+                    q["last"] = True
+                elif "avg" in dispfield:
+                    q["average"] = True        
+        if g_type == 'avg':
+            q["average"] = True    
+        data['top'].append(effort_convert(q,units))
+
+    if render == 'json':
+        return JsonResponse(data)
+    else:
+        return render_to_response('top_table_effort.html', data)
+
+
+
 def top_song_artist(request):
     data = {}
 

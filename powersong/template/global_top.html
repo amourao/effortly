@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script>
+  function update(query_changed) {
+
+      type = type_form_id.value
+
+      if (query_changed){
+          $('#page')[0].value = 0
+      }
+      page = parseInt($('#page')[0].value) 
+
+      asc_desc = asc_desc_form_id.value
+      time = time_form_id.value
+      field = field_form_id.value
+      country = country_form_id.value
+
+      url = `/top_global/?type=${type}&field=${field}&country=${country}&dispfield=${field}&page=${page}&activity_type={{ activity_type }}&header&days=${time}`
+
+      if (asc_desc == 'asc'){
+          url += '&ascending=1'
+      }
+
+      load_async('#top',url,true)
+  }
+
+  function next() {
+      page = parseInt($('#page')[0].value)
+      page += 1
+      $('#page')[0].value = page
+      update(false)
+  }
+
+  function previous() {
+      page = parseInt($('#page')[0].value)
+      page -= 1
+
+      if(page < 0)
+        page = 0
+
+      $('#page')[0].value = page
+      update(false)
+  }
+
+</script>
+
+
+<div class="site-wrapper">
+    <div class="container">
+      <div class="row">
+          <input type="text" id="page" style="display:none" value="0">
+          <div class="col-md-1 col-xs-0">
+          </div>
+          <div class="col-md-1 px-1 col-xs-12">
+            <div class="form-group">
+              <select class="selectpicker form-control" data-style="btn-power" id="type_form_id" onchange="update(true)">
+                  <option name="type_form" value="song">Song</option>
+                  <option name="type_form" value="artist">Artist</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2 px-1 col-xs-12" id="field_form_id_div">
+            <div class="form-group">
+              <select class="selectpicker form-control" data-style="btn-power" id="field_form_id" onchange="update(true)">
+                <option name="field_form" value="count_users" selected>Listener Count</option>
+                  <option name="field_form" value="count">Scrobble Count</option>
+                  <option name="field_form" value="avg_speed">Avg. Speed</option>
+                  <option name="field_form" value="diff_avg_speed">Δ avg. Speed</option>
+                  <option name="field_form" value="diff_last_speed">Δ last Speed</option>
+                  <option name="field_form" value="avg_hr">Avg. HR</option>
+                  <option name="field_form" value="diff_avg_hr">Δ avg. HR</option>
+                  <option name="field_form" value="diff_last_hr">Δ last HR</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3 px-1 col-xs-12" id="country_form_id_div">
+            <div class="form-group">
+              <select class="selectpicker form-control" data-style="btn-power" id="country_form_id" onchange="update(true)">
+                  <option name="field_form" value="All" selected>All Countries</option>
+                  {% for country in countries %}
+                  {% if country %}
+                  <option name="field_form" value="{{ country }}">{{ country }}</option>
+                  {% endif %}
+                  {% endfor %}
+              </select>
+            </div>
+          </div>
+        <div class="col-md-2 px-1  col-xs-12">
+          <div class="form-group">
+            <select class="selectpicker form-control" data-style="btn-power" id="time_form_id" onchange="update(true)">
+              <option name="time_form" value="-1" selected>All Time</option>
+              <option name="time_form" value="7">Last 7 Days</option>
+              <option name="time_form" value="30">Last 30 Days</option>
+              <option name="time_form" value="90">Last 90 Days</option>
+              <option name="time_form" value="180">Last 180 Days</option>
+              <option name="time_form" value="365">Last 365 Days</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-1 px-1 col-xs-12">
+          <div class="form-group">
+            <select class="selectpicker form-control" data-style="btn-power" id="asc_desc_form_id" onchange="update(true)">
+              <option name="asc_desc_form" value="desc" selected> V </option>
+              <option name="asc_desc_form" value="asc">/\</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-1 col-xs-0">
+        </div>
+        
+      </div>
+      <div class="row">
+        <div class="col-6">
+            <button onclick="previous()" type="button" class="btn btn-info btn-sm">
+              <span class="glyphicon glyphicon-repeat"></span>Previous
+            </button>
+        </div>
+        <div class="col-6 text-right">
+          <button onclick="next()" type="button" class="btn btn-info btn-sm">
+              <span class="glyphicon glyphicon-repeat"></span>Next
+            </button>
+          
+        </div>
+        <div class="col-12 mt-3">
+          <div id='top'> </div>
+        </div>
+        <div class="col-6">
+            <button onclick="previous()" type="button" class="btn btn-info btn-sm">
+              <span class="glyphicon glyphicon-repeat"></span>Previous
+            </button>
+        </div>
+        <div class="col-6 text-right">
+          <button onclick="next()" type="button" class="btn btn-info btn-sm">
+              <span class="glyphicon glyphicon-repeat"></span>Next
+            </button>
+          
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+
+    update(true)
+
+</script>
+
+{% endblock %}
+
+      
