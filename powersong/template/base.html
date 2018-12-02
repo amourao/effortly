@@ -2,7 +2,17 @@
 {% load power_extra %}
 <!doctype html>
 <html>
-  <head>
+  <head>  
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-130169276-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-130169276-1');
+    </script>
+
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0 minimal-ui"/>
@@ -109,8 +119,11 @@
         <ul class="navbar-nav ml-auto justify-content-end">
           <li class="nav-item" id="progress" style="display:flex"></li>
           <li class="nav-item" id="progress_spotify" style="display:flex"></li>
-          {% if not listener and not listenerspotify %}
+          {% if not demo and not listener and not listenerspotify %}
             <li class="nav-item"> <a role="button" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a> </li>
+          {% endif %}
+          {% if demo %}
+            <li class="nav-item"> <a role="button" class="btn btn-danger" href="/logout/">Create account</a> </li>
           {% endif %}
           <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
           <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.runs_count }} runs</a> </li>
