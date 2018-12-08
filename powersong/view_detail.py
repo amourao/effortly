@@ -54,7 +54,12 @@ def activity(request,activity_id):
     data['listener'] = poweruser.listener
     data['listenerspotify'] = poweruser.listener_spotify
 
-    activity = Activity.objects.filter(activity_id = activity_id)[0]
+    activities = Activity.objects.filter(activity_id = activity_id)
+
+    if not activities:
+        return render_to_response('access_denied.html', data)
+
+    activitiy = activities[0]
     
     if activity.athlete_id != poweruser.athlete.id:
         return render_to_response('access_denied.html', data)
@@ -112,7 +117,12 @@ def song(request,song_id):
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
     data['listenerspotify'] = poweruser.listener_spotify
-    data['song'] = Song.objects.filter(id = song_id)[0]
+
+    songs = Song.objects.filter(id = song_id)
+    if not songs:
+        return render_to_response('access_denied.html', data)
+
+    data['song'] = songs[0]
     if data['song'].original_song:
         data['song'] = data['song'].original_song
         song_id = data['song'].id
@@ -212,7 +222,12 @@ def artist(request,artist_id):
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
     data['listenerspotify'] = poweruser.listener_spotify
-    data['artist'] = Artist.objects.filter(id = artist_id)[0]
+
+    artists = Artist.objects.filter(id = artist_id)
+    if not artists:
+        return render_to_response('access_denied.html', data)
+    
+    data['artist'] = artists[0]
 
     activity_type = None
     if 'activity_type' in request.GET:

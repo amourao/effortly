@@ -102,7 +102,6 @@ ENV/
 
 db.sqlite3
 powersong/local.py
-powersong/static/
 powersong/staticfiles/
 powersong/migrations/
 

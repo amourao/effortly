@@ -8,18 +8,18 @@
 				{% if lastfm_authorize_url %}
 				  <p><a class="btn btn-lastfm" href="{{ lastfm_authorize_url }}" role="button">Connect with <img class="logo_footer" src="/static/logo/lastfm_logo_white_text.png"></a></p>
 				{% else %}
-				  <p><a class="btn btn-lastfm" href="/remove_lastfm" role="button">Disconnect  <img class="ml-1 logo_footer" src="/static/logo/lastfm_logo_white_text.png"></a></p>
+				  <p><a class="btn btn-lastfm" href="/remove_lastfm/" role="button">Disconnect  <img class="ml-1 logo_footer" src="/static/logo/lastfm_logo_white_text.png"></a></p>
 				{% endif %} 
 				</div>
 				<div class="row">  
 				{% if spotify_authorize_url %}
 				  <p><a class="btn btn-spotify" href="{{ spotify_authorize_url }}" role="button">Connect with <img class="logo_footer_40" src="/static/logo/spotify/Spotify_Logo_RGB_White.png"></a></p>
 				{% else %}
-				  <p><a class="btn btn-spotify" href="/remove_spotify" role="button">Disconnect <img class="logo_footer" src="/static/logo/spotify/Spotify_Logo_RGB_White.png"></a></p>
+				  <p><a class="btn btn-spotify" href="/remove_spotify/" role="button">Disconnect <img class="logo_footer" src="/static/logo/spotify/Spotify_Logo_RGB_White.png"></a></p>
 				{% endif %}        
 				</div>
 				<div class="row">  
-				<p><a class="btn btn-danger" href="/delete_account" role="button">Delete account</a></p>
+				<p><a class="btn btn-danger" href="/delete_account/" role="button">Delete account</a></p>
 				</div>  
 			</div>
 		</li>

@@ -1,6 +1,6 @@
 {% with "Power Song" as APPTITLE %}
 <!doctype html>
-<html>
+<html class="background_image0">
     <head>
         <meta charset="utf-8"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -16,9 +16,9 @@
         
         {% block head %}{% endblock %}
     </head>
-    <body class="background_image0 h-100">
+    <body>
 
-    <div class="site-wrapper text-center">
+    <div class="site-wrapper text-center content-100">
 
       <div class="site-wrapper-inner">
 
@@ -43,28 +43,28 @@
 
           </div>
 
-          <div class="container mastfoot text-center text-white">
-            <footer>
-              <div class="row mb-2">
-                <div class="col-5">
-                  <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
-                </div>
-                <div class="col-2 text-center my-auto">
-                  &copy; <a class="mylead-link" href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
-                </div>
-                <div class="col-5 text-right">
-                  <img class="logo_footer" src="/static/logo/powered.png">
-                </div>
-              </div>
-            </footer>
           </div>
-
-        </div>
-
-      </div>
 
     </div>
 
+    </div>
+
+    <footer class="footer">
+      <div class="container text-white">
+        <div class="row">
+          <div class="col-12 col-xl-5">
+            <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
+          </div>
+          <div class="col-12 col-xl-2 text-center my-auto">
+            &copy; <a class="mylead-link" href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
+          </div>
+          <div class="col-12 col-xl-5 text-right">
+            <img class="logo_footer" src="/static/logo/powered1.png">
+            <img class="logo_footer" src="/static/logo/powered2.png">
+          </div>
+        </div>
+      </div>
+    </footer>
 
      <!-- Bootstrap core JavaScript
     ================================================== -->

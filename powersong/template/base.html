@@ -1,7 +1,12 @@
 {% with "Power Song" as APPTITLE %}
 {% load power_extra %}
 <!doctype html>
-<html>
+{% if activity_type != -1 %}
+<html class="background_image{{ activity_type }}">
+{% else %}
+<html class="background_image">
+{% endif %}
+
   <head>  
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-130169276-1"></script>
@@ -86,11 +91,7 @@
 
     </script>
   </head>
-  {% if activity_type != -1 %}
-  <body class="background_image{{ activity_type }}">
-  {% else %}
-  <body class="background_image">
-  {% endif %}
+  <body>
   
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
@@ -155,26 +156,26 @@
       </div>
     </nav>
 
+    <div class="content-100">
     {% block content %}{% endblock %}  
-          
-    <hr>
-    <div class="container">
-    <div class="text-white">
-            <footer>
-              <div class="row mb-2">
-                <div class="col-5">
-                  <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
-                </div>
-                <div class="col-2 text-center my-auto">
-                  &copy; <a class="mylead-link" href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
-                </div>
-                <div class="col-5 text-right">
-                  <img class="logo_footer" src="/static/logo/powered.png">
-                </div>
-              </div>
-            </footer>
-          </div>
     </div>
+
+    <footer class="footer">
+      <div class="container text-white">
+        <div class="row">
+          <div class="col-12 col-xl-5">
+            <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
+          </div>
+          <div class="col-12 col-xl-2 text-center my-auto">
+            &copy; <a class="mylead-link" href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
+          </div>
+          <div class="col-12 col-xl-5 text-right">
+            <img class="logo_footer" src="/static/logo/powered1.png">
+            <img class="logo_footer" src="/static/logo/powered2.png">
+          </div>
+        </div>
+      </div>
+    </footer>
 
      <!-- Bootstrap core JavaScript
     ================================================== -->

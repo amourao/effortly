@@ -1,0 +1,301 @@
+/*
+ * Globals
+ */
+
+
+.logo_footer {
+  height: 30px;
+}
+
+.logo_footer_40 {
+  height: 40px;
+}
+
+.btn-strava:hover {
+    border-color: white;
+}
+
+.btn-strava {
+  color: white;
+  background-color: #fc4d03;
+}
+
+.btn-lastfm:hover {
+  border-color: white;
+}
+
+.btn-lastfm {
+  background-color: #e31b23;
+  color: white;
+}
+
+.btn-spotify:hover {
+  border-color: white;
+}
+
+
+.btn-spotify {
+  background-color: #1DB954;
+  color: white;
+}
+
+
+.text_color_strava {
+  color: #fc4d03;
+}
+
+.text_color_lastfm {
+  color: #e31b23;
+}
+
+.text_color_spotify {
+  color: #1DB954;
+}
+
+
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px; /* Set the fixed height of the footer here */
+  line-height: 60px; /* Vertically center the text there */
+}
+
+.background_image {
+  background:url('/static/running_cycling.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.background_image0 {
+  background:url('/static/running1.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.background_image1 {
+  background:url('/static/cycling1.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+
+.text_shadow {
+  text-shadow: black 0.1em 0.1em 0.2em;
+}
+
+/* Links */
+a,
+a:focus,
+a:hover {
+  color: #fff;
+}
+
+/* Custom default button */
+.btn-secondary {
+  color: white;
+  text-shadow: none; /* Prevent inheritance from `body` */
+  border: .05rem solid #fff;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  color: #333;
+}
+
+/*
+ * Base structure
+ */
+
+body {
+  background: none;
+  color: #fff;
+  font-family: 'Open Sans', sans-serif;
+  min-height: 100%;
+}
+
+/* Extra markup and styles for table-esque vertical and horizontal centering */
+.site-wrapper {
+  display: table;
+  width: 100%;
+  height: 100%; /* For at least Firefox */
+  min-height: 100%;
+  -webkit-box-shadow: inset 0 0 0rem rgba(0,0,0,.5);
+          box-shadow: inset 0 0 0rem rgba(0,0,0,.5);
+}
+.site-wrapper-inner {
+  display: table-cell;
+  vertical-align: top;
+}
+.cover-container {
+  margin-right: auto;
+  margin-left: auto;
+  text-shadow: 0 .05rem .1rem rgba(0,0,0,.5);
+}
+
+/* Padding for spacing */
+.inner_spacing {
+  padding: 2rem;
+}
+
+/*
+ * Cover
+ */
+
+.cover {
+  padding: 0 1.5rem;
+}
+.cover .btn-lg {
+  padding: .75rem 1.25rem;
+  font-weight: bold;
+}
+
+
+/*
+ * Footer
+ */
+
+.mastfoot {
+  color: rgba(255,255,255,.5);
+}
+
+
+/*
+ * Affix and center
+ */
+
+@media (min-width: 40em) {
+  /* Pull out the header and footer */
+
+  .mastfoot {
+    position: fixed;
+    bottom: 0;
+  }
+  /* Start the vertical centering */
+  .site-wrapper-inner {
+    vertical-align: middle;
+  }
+  /* Handle the widths */
+  .masthead,
+  .mastfoot,
+  .cover-container {
+    width: 100%; /* Must be percentage or pixels for horizontal alignment */
+  }
+}
+
+@media (min-width: 62em) {
+  .masthead,
+  .mastfoot,
+  .cover-container {
+    width: 70rem;
+  }
+}
+
+.margins-top-bottom {
+  margin-top: 25px;
+  margin-bottom: 50px;
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+.mylead {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.mylead-overflow {
+}
+
+.mylead-link {
+  text-decoration: underline;
+}
+
+.cover-heading {
+  font-size: 4rem;
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 600;
+}
+
+.h2 {
+  font-family: 'Titillium Web', sans-serif;
+  font-weight: 600;
+}
+
+.green_arrow {
+  font-size:18px;
+  color: #5b9279;
+}
+
+.red_arrow {
+  font-size:18px;
+  color: #e31b23;
+}
+
+.blue_arrow {
+  font-size:18px;
+  color: #0f8b8d;
+}
+
+body {
+  padding-top: 70px;
+  margin-bottom: 60px;
+}
+
+.btn-margin-left {
+    margin-left: 5px;
+}
+.btn-margin-right {
+    margin-right: 5px;
+}
+
+.list-group-item {
+  background-color: #333c;
+  border: 1px solid #0f8b8d;
+}
+
+.gray-background {
+  background-color: #333c;
+}
+
+.top-box-padding {
+  padding-bottom: 50px;
+  padding-top: 25px;
+}
+
+.col-no-side-padding {
+  padding-right: 0px;
+  padding-left: 0px;  
+}
+
+.fix-image-caption-overlay {
+  top: unset; 
+  background-color: #333d;
+}
+
+.filter-option {
+  font-size: 0.9rem;
+}
+
+.fix-dropdown-menu {
+  top: unset !important;
+  right: 0 !important;
+}
+
+.btn-power {
+    color: white;
+    text-shadow: none;
+    color: #fff;
+    background-color: #343a40;
+    border: 1px solid #0f8b8d;
+}
+
+.btn-power-blue {
+    color: white;
+    text-shadow: none;
+    color: #17a2b8;
+    background-color: #343a40;
+    border: 1px solid #0f8b8d;
+}
