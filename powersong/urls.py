@@ -6,7 +6,7 @@ from powersong.view_home import index, home, logout, demo
 from powersong.view_tops import top, top_song_artist, top_activities, top_global_song_artist
 from powersong.view_detail import activity, song, artist, artists, songs
 from powersong.view_main import about, get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify, detailed, global_top
-from powersong.view_settings import setting, flag_activity, flag_artist, flag_song, flag_effort, remove_spotify, remove_lastfm
+from powersong.view_settings import setting, flag_activity, flag_artist, flag_song, flag_effort, remove_spotify, remove_lastfm, delete_account
 
 from django.conf import settings
 from django.conf.urls import include
@@ -56,7 +56,8 @@ urlpatterns = [
     url(r'^spotify_oauth_callback/', spotify_oauth),
 
     url(r'^remove_lastfm/', remove_lastfm),
-    url(r'^remove_spotify/', remove_spotify),    
+    url(r'^remove_spotify/', remove_spotify), 
+    url(r'^delete_account/', delete_account), 
     
     url(r'^admin/', admin.site.urls),
 

@@ -41,6 +41,25 @@ def setting(request):
 
     return render_to_response('settings.html', result) 
 
+def delete_account(request):
+    if 'demo' in request.session or 'demo' in request.GET:
+        return redirect('/')
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)    
+
+    if poweruser.athlete:
+        poweruser.athlete.delete()
+    if poweruser.listener:
+        poweruser.listener.delete()
+    if poweruser.listener_spotify:
+        poweruser.listener_spotify.delete()
+    poweruser.delete()
+    return redirect('/logout/')
+
+
 
 def remove_spotify(request):
     if 'demo' in request.session or 'demo' in request.GET:
