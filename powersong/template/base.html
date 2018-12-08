@@ -101,7 +101,7 @@
 
       <div class="navbar-collapse collapse" id="collapsingNavbar3">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown dropright">
             <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% if activity_type == 0 %}Running{% elif activity_type == 1 %}Cycling{% else %}All{% endif %}</a>
             <div class="dropdown-menu" aria-labelledby="dropdown01">
               <a class="dropdown-item" href="?activity_type=0">Running</a>
@@ -120,10 +120,10 @@
           <li class="nav-item" id="progress" style="display:flex"></li>
           <li class="nav-item" id="progress_spotify" style="display:flex"></li>
           {% if not demo and not listener and not listenerspotify %}
-            <li class="nav-item"> <a role="button" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a> </li>
+            <li class="nav-item"> <a role="button margin-left" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a> </li>
           {% endif %}
           {% if demo %}
-            <li class="nav-item"> <a role="button" class="btn btn-danger" href="/logout/">Create account</a> </li>
+            <li class="nav-item"> <a role="button margin-left" class="btn btn-danger" href="/logout/">Create account</a> </li>
           {% endif %}
           <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
           <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.runs_count }} runs</a> </li>
@@ -166,12 +166,23 @@
     {% block content %}{% endblock %}  
           
     <hr>
-    
-    <div class="container text-center">
-      <footer>
-        <p>&copy; <a href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}</p>
-      </footer>
-    </div> <!-- /container -->
+    <div class="container">
+    <div class="text-white">
+            <footer>
+              <div class="row mb-2">
+                <div class="col-5">
+                  <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
+                </div>
+                <div class="col-2 text-center my-auto">
+                  &copy; <a href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
+                </div>
+                <div class="col-5 text-right">
+                  <img class="logo_footer" src="/static/logo/powered.png">
+                </div>
+              </div>
+            </footer>
+          </div>
+    </div>
 
      <!-- Bootstrap core JavaScript
     ================================================== -->

@@ -28,23 +28,14 @@
             <h1 class="cover-heading">Find your true Power Songs!</h1>
             <h2 class="lead">Want to know which songs make your heart beat faster?</h2>
             <h2 class="lead">The ones that give that real extra push?</h2>
-            <h2><a class="btn btn-secondary btn-info" href="/demo/" role="button">See demo</a></h2>
-            <p>Or get started!</p>
+            <h2><a class="btn btn-primary btn-info my-2" href="/demo/" role="button">See a live demo with real data</a></h2>
+            <span>or get started!</span>
               <div class="row">
                 <div class="col-md-12">
                  {% if strava_authorize_url %}
-                    <p><a class="btn btn-secondary color_strava" href="{{ strava_authorize_url }}" role="button">Authorize Strava &raquo;</a></p>
-                {% else %}
-                    {% if lastfm_authorize_url %}
-                      <p><a class="btn btn-secondary color_lastfm" href="{{ lastfm_authorize_url }}" role="button">Authorize last.fm &raquo;</a></p>
+                      <a class="btn my-2" href="{{ strava_authorize_url }}" role="button"> <img src="/static/logo/connect_strava/btn_strava_connectwith_orange.png"></a>
                   {% else %}
-                      <p><a class="btn btn-secondary disabled" href="#" role="button">last.fm authorized</a></p>
-                  {% endif %}        
-                  {% if spotify_authorize_url %}
-                      <p><a class="btn btn-secondary color_spotify" href="{{ spotify_authorize_url }}" role="button">Authorize Spotify &raquo;</a></p>
-                  {% else %}
-                      <p><a class="btn btn-secondary disabled" href="#" role="button">Spotify authorized</a></p>
-                  {% endif %}        
+                      <a class="btn btn-secondary disabled" href="#" role="button">Strava authorized</a>
                 {% endif %}
                 </div>
 
@@ -52,10 +43,20 @@
 
           </div>
 
-          <div class="mastfoot">
-            <div class="inner_spacing">
-              <p><a href="https://andremourao.com">&copy;  André Mourão 2018</a> </p>
-            </div>
+          <div class="container mastfoot text-center text-white">
+            <footer>
+              <div class="row mb-2">
+                <div class="col-5">
+                  <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
+                </div>
+                <div class="col-2 text-center my-auto">
+                  &copy; <a href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
+                </div>
+                <div class="col-5 text-right">
+                  <img class="logo_footer" src="/static/logo/powered.png">
+                </div>
+              </div>
+            </footer>
           </div>
 
         </div>
@@ -63,7 +64,6 @@
       </div>
 
     </div>
-
 
 
      <!-- Bootstrap core JavaScript
