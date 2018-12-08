@@ -52,11 +52,11 @@ def lastfm_get_user_info(username,key,poweruser_id):
         listener = create_listener_from_dict(response,key)
         listener.save()
 
-        powerusers = PowerUser.objects.filter(athlete_id=poweruser_id)
-        if powerusers:
-            poweruser = powerusers[0]
-            poweruser.listener = listener
-            poweruser.save()
+    powerusers = PowerUser.objects.filter(athlete_id=poweruser_id)
+    if powerusers:
+        poweruser = powerusers[0]
+        poweruser.listener = listener
+        poweruser.save()
 
     return listener
 

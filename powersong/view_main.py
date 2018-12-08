@@ -35,15 +35,10 @@ def get_all_data(request):
         result['demo'] = True
         request.session['demo'] = True
     else:
-        if ((not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or (not 'spotify_token' in request.session)) and not 'strava_token' in request.session:
-            raise NonAuthenticatedException("No lastfm or spotify session found", render_to_response('home.html', result))
-
         if not 'strava_token' in request.session:
             raise NonAuthenticatedException("No strava session found", redirect(strava_get_auth_url()))
     
         poweruser = get_poweruser(request.session['strava_token'])
-        puid = poweruser.id
-
 
     if 'puid' in request.GET and poweruser and (poweruser.athlete.athlete_id == "9363354" or 'superuser' in request.session) and not 'demo' in request.session:
         request.session['superuser'] = True
@@ -54,23 +49,16 @@ def get_all_data(request):
     if poweruser == None:
         # exchange lastfm_key per token on first run
         # if invalid, go back to home for reauthorization
-        if not 'lastfm_key' in request.session and not 'spotify_token' in request.session:
-            username, key = lastfm_get_session_id(request.session['lastfm_token'])
-            if username == None or key == None:
-                request.session['lastfm_token'] = None
-                del request.session['lastfm_token']
-                raise NonAuthenticatedException("lastfm auth error", redirect(lastfm_get_auth_url()))
-
         # check if stored lastfm session is valid
         
         if not 'athlete_id' in request.session:
             athlete_model = strava_get_user_info(request.session['strava_token'])
         else:
             athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
+        
         if athlete_model == None:
             athlete_model = strava_get_user_info(request.session['strava_token'])
         
-
         poweruser = PowerUser()
         poweruser.athlete = athlete_model
         poweruser.save()
@@ -86,11 +74,12 @@ def get_all_data(request):
         request.session['lastfm_username'] = poweruser.listener.nickname
 
     if 'spotify_code' in request.session:
-        result['listenerspotify'] = spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.id)
+        result['listenerspotify'] = spotify_get_user_info(request.session['spotify_code'],request.session['spotify_token'],request.session['spotify_refresh_token'],poweruser.athlete.id)
 
     if 'lastfm_username' in request.session:
-        result['listener'] = lastfm_get_user_info(request.session['lastfm_username'],request.session['lastfm_key'],poweruser.id)
+        result['listener'] = lastfm_get_user_info(request.session['lastfm_username'],request.session['lastfm_key'],poweruser.athlete.id)
     
+    puid = poweruser.id
     powerusers = PowerUser.objects.filter(id=puid)
     poweruser = powerusers[0]
 

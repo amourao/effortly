@@ -15,9 +15,11 @@
         {% elif count_s%}
         <p class="h2">Found <span class="text_color_lastfm">{{ count_s }} scrobbles</span> over <span class="text_color_strava">{{ count_a }} {% if activity_type == 0 %}runs{% elif activity_type == 1 %}rides{% elif activity_type == -1 %}activities{% endif %}.</span></p>
         <p class="h2">Are you ready to <span class="text_color_lastfm">rock?</span></p>
-        {% else%}
-        <p class="h2">Unfortunately, it looks like you don't have any scrobbles while {% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% elif activity_type == -1 %}on activity{% endif %}.</p>
-        <p class="h2">You can still get some <a href="/detailed/">activity statistics</a> or <a href="/global/">global top song and artists</a> to get inspired when creating your next running playlist</p>
+        {% elif not demo and not listener and not listenerspotify %}
+        <p class="h2">Associate your last.fm or Spotify account before you can sync activities.</p>
+        <a role="button" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a>
+        {% else %}
+        <p class="h2">Press the sync button on the top bar to get your activities and songs.</p>
         {% endif %}
       </div>
     </div>

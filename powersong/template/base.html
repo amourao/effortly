@@ -139,13 +139,17 @@
             <li class="nav-item"> <a class="btn-margin-left" href="{{ listenerspotify.url }}"><img src="{{ listenerspotify.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="spotify profile picture"></a> </li>
             {% endif %}
           {% endif %}
+
+          {% if demo == None %}
+          {% if listener or listenerspotify %}
+            <li class="nav-item dropleft ml-2 my-auto">
+              <a class="btn btn-outline-danger" href="javascript:void(0)" onclick="sync()" role="button">Sync</a>
+            </li>
+          {% endif %}
+          {% endif %}
           <li class="nav-item dropleft ml-2 my-auto">
             <button class="btn btn-outline-info fa fa-cog" type="button" id="settingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
             <div class="dropdown-menu fix-dropdown-menu" aria-labelledby="settingsMenu">
-          {% if demo == None %}
-            <a class="dropdown-item" href="javascript:void(0)" onclick="sync()" role="button">Sync</a>
-          <!--<li class="nav-item"> <a class="btn btn-margin-left btn-outline-info " href="javascript:void(0)" onclick="sync_spotify()" role="button">Sync Spotify</a> </li>-->
-          {% endif %}
             <a class="dropdown-item" href="/about/" role="button">FAQ</a>
             {% if demo == None %}
             <a class="dropdown-item" href="/settings/" role="button">Settings</a>

@@ -30,18 +30,12 @@ def index(request):
     
     if not 'strava_token' in request.session:
         result['strava_authorize_url'] = strava_get_auth_url()
+        return render_to_response('home.html', result)
     elif get_poweruser(request.session['strava_token']) != None:
         return main_index(request)
 
-    if (not 'lastfm_token' in request.session and not 'lastfm_key' in request.session) or (request.session['lastfm_token'] == None and request.session['lastfm_key'] == None):
-        result['lastfm_authorize_url'] = lastfm_get_auth_url()
 
-    if not 'spotify_token' in request.session or request.session['spotify_token'] == None:
-        result['spotify_authorize_url'] = spotify_get_auth_url()
-
-    #if "lastfm_token" in request.session and "strava_token" in request.session:
-    #    result
-    if not "lastfm_token" in request.session or not "strava_token" in request.session:
+    if not "strava_token" in request.session:
         return render_to_response('home.html', result)
     else:
         return main_index(request)
