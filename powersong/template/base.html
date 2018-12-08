@@ -125,21 +125,13 @@
           {% if demo %}
             <li class="nav-item"> <a role="button margin-left" class="btn btn-danger" href="/logout/">Create account</a> </li>
           {% endif %}
-          <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </li>
-          <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.runs_count }} runs</a> </li>
-          <li class="nav-item"> <a class="nav-link" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}" target="_blank">{{ athlete.rides_count }} rides</a> </li>
+          <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img onerror="img_error(this);" src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture" title="{{ athlete.runs_count }} runs and {{ athlete.rides_count }} rides"></a> </li>
           {% if listener %}
-            {% if listener.profile_image_url %}
-            <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture"></a> </li>
-            {% endif %}
-            <li class="nav-item"> <a class="nav-link" href="http://www.last.fm/user/{{ listener.nickname }}" target="_blank">{{ listener.scrobble_count }} scrobbles</a> </li>
+            <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img onerror="img_error(this);" src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture" title="{{ listener.scrobble_count }} scrobbles"></a> </li>
           {% endif %}
           {% if listenerspotify %}
-            {% if listenerspotify.profile_image_url %}
-            <li class="nav-item"> <a class="btn-margin-left" href="{{ listenerspotify.url }}"><img src="{{ listenerspotify.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="spotify profile picture"></a> </li>
-            {% endif %}
+            <li class="nav-item"> <a class="btn-margin-left" href="{{ listenerspotify.url }}"><img onerror="img_error(this);" src="{{ listenerspotify.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="spotify profile picture"></a> </li>
           {% endif %}
-
           {% if demo == None %}
           {% if listener or listenerspotify %}
             <li class="nav-item dropleft ml-2 my-auto">
@@ -174,7 +166,7 @@
                   <img class="logo_footer" src="/static/logo/powered_strava/api_logo_pwrdBy_strava_horiz_light.png">
                 </div>
                 <div class="col-2 text-center my-auto">
-                  &copy; <a href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
+                  &copy; <a class="mylead-link" href="mailto:admin@powersong.run">PowerSong</a> {% now "Y" %}
                 </div>
                 <div class="col-5 text-right">
                   <img class="logo_footer" src="/static/logo/powered.png">
