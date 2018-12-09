@@ -25,8 +25,14 @@ import logging, time
 logger = logging.getLogger(__name__)
 
 
+def unpack_chain(nodes):                                 
+    while nodes.parent:
+        yield nodes.parent
+        nodes = nodes.parent
+    yield nodes
+
 @shared_task
-def a():
+def a(*args):
     time.sleep(5)
     t = (datetime.now().timestamp())
     name = "{}_{}".format(t,'a')
@@ -114,6 +120,7 @@ def strava_task(*args,**kwargs):
     else:
         nargs = new_args
     if function == 'strava_download_activity':
+        nargs = new_args
         return strava_download_activity(*nargs,**kwargs)
     elif function == 'strava_nop':
         return strava_nop()
