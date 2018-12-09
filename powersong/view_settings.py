@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, redirect
 from django.conf import settings
 from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from powersong.models import *
 from powersong.view_detail import activity
@@ -18,7 +19,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
-
+@ensure_csrf_cookie
 def setting(request):
     if 'demo' in request.session or 'demo' in request.GET:
         return redirect('/')
@@ -42,6 +43,8 @@ def setting(request):
     return render_to_response('settings.html', result) 
 
 def delete_account(request):
+    if request.method != 'DELETE':
+        return JsonResponse({})
     if 'demo' in request.session or 'demo' in request.GET:
         return redirect('/')
     try:
@@ -57,7 +60,7 @@ def delete_account(request):
     if poweruser.listener_spotify:
         poweruser.listener_spotify.delete()
     poweruser.delete()
-    return redirect('/logout/')
+    return JsonResponse({})
 
 
 

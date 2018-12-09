@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
+<script type="text/javascript">
+
+function deleteAccount(){
+	var r = confirm("Are you sure you want to delete your account?");
+	if (r == true) {
+		$.ajax({
+		    type: "DELETE",
+		    url: "/delete_account",
+		    success: function(msg){
+				window.location.href = "/logout";
+		    }
+		});
+	}
+}
+
+</script>
 <div class="container top-box-padding">
 	<ul class="list-group">    
 		<li class="list-group-item">
@@ -19,7 +35,7 @@
 				{% endif %}        
 				</div>
 				<div class="row">  
-				<p><a class="btn btn-danger" href="/delete_account/" role="button">Delete account</a></p>
+				<p><a class="btn btn-danger" href="#" onclick="deleteAccount()" role="button">Delete account</a></p>
 				</div>  
 			</div>
 		</li>
