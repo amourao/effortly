@@ -19,10 +19,39 @@ from urllib.error import HTTPError
 
 from urllib.parse import quote_plus
 
-import logging
+import logging, time
 
 
 logger = logging.getLogger(__name__)
+
+
+@shared_task
+def a():
+    time.sleep(5)
+    t = (datetime.now().timestamp())
+    name = "{}_{}".format(t,'a')
+    with open(name, 'w') as f:
+        i = 0
+    return
+
+@shared_task
+def b(args):
+    time.sleep(10)
+    t = (datetime.now().timestamp())
+    name = "{}_{}".format(t,'b')
+    with open(name, 'w') as f:
+        i = 0
+    return
+
+@shared_task
+def c(args):
+    time.sleep(2)
+    t = (datetime.now().timestamp())
+    name = "{}_{}".format(t,'c')
+    with open(name, 'w') as f:
+        i = 0
+    return
+    
 
 ########################## Strava API tasks ##########################
 

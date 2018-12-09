@@ -30,8 +30,8 @@ def get_all_data(request):
     result = {}
 
     if 'demo' in request.session or 'demo' in request.GET:
-        puid = 1
-        poweruser = PowerUser.objects.filter(id=1)[0]
+        poweruser = PowerUser.objects.filter(athlete__athlete_id=9363354)[0]
+        puid = poweruser.id
         result['demo'] = True
         request.session['demo'] = True
     else:
