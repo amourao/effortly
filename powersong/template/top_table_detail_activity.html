@@ -19,7 +19,7 @@
           <div class="row">
             <div class="col-md-4">
                 <a class="h4 mylead-link" href="/activity/{{ activity.activity_id}}/">{{ activity.name}}</a>
-                <p><a class="h5 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/" target="_blank">View on Strava</a></p>
+                <p><a class="h6 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/" target="_blank">View on Strava</a></p>
                 <p class="h5">{{ activity.start_date_local }}</p>
                 <p class="h5">{{ activity.ecount }} efforts</p>  
                 {% get_symbols activity.workout_type activity.flagged activity.flagged_hr %}

@@ -40,17 +40,17 @@ def get_symbols(value,flagged,flagged_hr):
     result = ''
         
     if value == 1 or value == 11:
-        result += '<i class="fa fa-flag-checkered" data-toggle="tooltip" data-placement="top" title="Race"></i>'
+        result += '<i class="fa fa-flag-checkered mr-2" data-toggle="tooltip" data-placement="top" title="Race"></i>'
     elif value == 2:
-        result += '<i class="fa fa-mountain" data-toggle="tooltip" data-placement="top" title="Long Run"></i>'
+        result += '<i class="fa fa-mountain mr-2" data-toggle="tooltip" data-placement="top" title="Long Run"></i>'
     elif value == 3 or value == 12:
-        result += '<i class="fa fa-circle-notch" data-toggle="tooltip" data-placement="top" title="Workout"></i>'
+        result += '<i class="fa fa-circle-notch mr-2" data-toggle="tooltip" data-placement="top" title="Workout"></i>'
 
     if flagged:
-        result += '<i class="fa fa-flag" data-toggle="tooltip" data-placement="top" title="Flagged"></i>'
+        result += '<i class="fa fa-flag mr-2" data-toggle="tooltip" data-placement="top" title="Flagged"></i>'
 
     if flagged_hr:
-        result += '<i class="fa fa-heartbeat" data-toggle="tooltip" data-placement="top" title="HR Flagged!"></i>'
+        result += '<i class="fa fa-heartbeat mr-2" data-toggle="tooltip" data-placement="top" title="HR Flagged!"></i>'
     
     if result:
         result = mark_safe('<p>{}</p>'.format(result))
