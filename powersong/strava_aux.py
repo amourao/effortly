@@ -3,7 +3,7 @@ import stravalib.client
 from django.conf import settings
 
 from datetime import datetime,timedelta
-from powersong.tasks import strava_task,spotify_task,lastfm_task,activity_to_efforts,strava_generate_nops
+from powersong.tasks import strava_task,spotify_task,lastfm_task,activity_to_efforts,strava_generate_nops,count_finished
 
 import copy
 import time
@@ -66,28 +66,19 @@ def strava_get_user_info_by_id(athlete_id):
 
     return None
 
-def strava_get_sync_progress(task_id):
-    if task_id == "":
+def strava_get_sync_progress(task_id,total_count):
+    if task_id == "" or not total_count:
         return 'SUCCESS', 0, 0
     try:
-        res = current_app.GroupResult.restore(task_id)
-        if res.ready() == True:
-            return 'SUCCESS', res.completed_count(), len(res)
-        elif res.waiting():
-            return 'IN PROGRESS', res.completed_count(), len(res)
+        res = current_app.AsyncResult(task_id)
+        pending, success, failure, total = count_finished(res)
+        if total == total_count:
+            return 'SUCCESS', success, total
         else:
-            return 'FAILED', res.completed_count(), len(res)
-    except Exception as e:
-        logger.debug(e)
-        results = current_app.AsyncResult(task_id) 
-        if results is None:
-            return 'FAILED', 0, 0
-        elif results.state == 'FAILURE':
-            return 'FAILED', 0, 1
-        elif results.ready():
-            return 'SUCCESS', 1, 1
-        else:
-            return 'IN PROGRESS', 0, 1
+            return 'IN PROGRESS', success, total_count
+    except:
+        return 'FAILED', 0, 0
+
 
 
 def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
@@ -113,7 +104,7 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
         activity_count += 1
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
+            download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
                                     spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete.id)),
                                     activity_to_efforts.s()
                             )
@@ -125,13 +116,19 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
         return "", 0
 
     if len(new_activities) > 1:
-        promise = group(*new_activities)
+        promise = chain(new_activities)
         job_result = promise.delay()
-        job_result.save()
     else:
         promise = new_activities[0]
         job_result = promise.delay()
+
+    while True:
+        if job_result.parent:
+            job_result = job_result.parent
+        else:
+            break
     
+    logger.debug(job_result.id)
     return job_result.id, len(new_activities)
 
 
@@ -158,7 +155,7 @@ def sync_efforts_lastfm(token,access_token,limit=None):
         activity_count += 1
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
+            download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
                                     lastfm_task.s('lastfm_download_activity_tracks',(token,)),
                                     activity_to_efforts.s()
                             )
@@ -170,13 +167,19 @@ def sync_efforts_lastfm(token,access_token,limit=None):
         return "", 0
 
     if len(new_activities) > 1:
-        promise = group(*new_activities)
+        promise = chain(new_activities)
         job_result = promise.delay()
-        job_result.save()
     else:
         promise = new_activities[0]
         job_result = promise.delay()
     
+    while True:
+        if job_result.parent:
+            job_result = job_result.parent
+        else:
+            break
+    
+    logger.debug(job_result.id)
     return job_result.id, len(new_activities)
 
 
@@ -193,7 +196,7 @@ def resync_activity(token,access_token,activity_id,athlete_id):
     efforts_to_delete.delete()
     act_p = {}
     act_p['id'] = activity_id
-    download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
+    download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
                             lastfm_task.s('lastfm_download_activity_tracks',(token,)),
                             activity_to_efforts.s()
                     )
@@ -214,7 +217,7 @@ def resync_activity_spotify(code,token,reftoken,access_token,activity_id,athlete
     efforts_to_delete.delete()
     act_p = {}
     act_p['id'] = activity_id
-    download_chain = chain(strava_task.s('strava_download_activity',(access_token,act_p)),
+    download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
                             spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete_id)),
                             activity_to_efforts.s()
                     )

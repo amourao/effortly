@@ -121,7 +121,7 @@ def index(request):
     result['syncing'] = False
     if 'sync_id' in request.session:
         if request.session['sync_id'] != None:
-            status,finished,count = strava_get_sync_progress(request.session['sync_id'])
+            status,finished,count = strava_get_sync_progress(request.session['sync_id'],request.session['sync_todo_total'])
             if count > 0 and status != 'SUCCESS':
                 result['syncing'] = True
 
@@ -161,12 +161,14 @@ def get_sync_id(request, poweruser):
         sync_id = request.session['sync_id']
         if sync_id != "":
             athlete_model.last_celery_task_id = sync_id
+            athlete_model.last_celery_task_count = request.session['sync_todo_total']
             athlete_model.save()
     elif athlete_model.last_celery_task_id != None:
         sync_id = athlete_model.last_celery_task_id
         request.session['sync_id'] = str(sync_id)
+        request.session['sync_todo_total'] = athlete_model.last_celery_task_count
 
-    return sync_id
+    return request.session['sync_id'], request.session['sync_todo_total']
 
 def gen_sync_response(request):
     
@@ -178,20 +180,22 @@ def gen_sync_response(request):
         logger.debug(e.message)
         return (e.destination)    
 
-    sync_id = get_sync_id(request, poweruser)
+    sync_id, count = get_sync_id(request, poweruser)
     spinner = ""
     if sync_id == None:
         response = "SYNC IDLE"
         request.session['sync_id'] = None
     else:
-        status,finished,count = strava_get_sync_progress(request.session['sync_id'])
+        status,finished,count = strava_get_sync_progress(request.session['sync_id'],request.session['sync_todo_total'])
         if count == 0:
             response = "NOTHING TO SYNC"
             request.session['sync_id'] = None
+            request.session['sync_todo_total'] = 0
         else:
             response = "SYNC {}: {} of {}".format(status,finished,count)
             if status == 'SUCCESS':
                 request.session['sync_id'] = None
+                request.session['sync_todo_total'] = 0
             else:
                 spinner = '<li class="nav-item"><img src="/static/spinner_dark.gif" width="40" height="40"></li>'
 
@@ -203,6 +207,7 @@ def gen_sync_response(request):
             athlete_model = strava_get_user_info(request.session['strava_token'])
 
     athlete_model.last_celery_task_id = request.session['sync_id']
+    athlete_model.last_celery_task_count = count
     athlete_model.save()
 
     return HttpResponse('{}<li class="nav-item"><a class="nav-link">{}</a></li>'.format(spinner,response))  
@@ -224,7 +229,7 @@ def sync(request):
         return gen_sync_response(request)  
 
 def sync_spotify(request,poweruser):
-    sync_id = get_sync_id(request, poweruser)
+    sync_id, count = get_sync_id(request, poweruser)
 
     if sync_id == None or 'force' in request.GET:
         if 'spotify_token' in request.session and 'strava_token' in request.session:
@@ -237,11 +242,11 @@ def sync_spotify(request,poweruser):
 
 
 def sync_lastfm(request,poweruser):
-    sync_id = get_sync_id(request, poweruser)
+    sync_id, count = get_sync_id(request, poweruser)
 
     if sync_id == None or 'force' in request.GET:
         if 'lastfm_username' in request.session and 'strava_token' in request.session:
-            request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts_lastfm(request.session['lastfm_username'],request.session['strava_token'],limit=9999)        
+            request.session['sync_id'],request.session['sync_todo_total'] = sync_efforts_lastfm(request.session['lastfm_username'],request.session['strava_token'],limit=9999)
     
     return gen_sync_response(request)
 

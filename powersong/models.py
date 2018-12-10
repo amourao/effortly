@@ -63,6 +63,8 @@ class Athlete(models.Model):
     updated_strava_at = models.DateTimeField()
 
     last_celery_task_id = models.UUIDField(blank=True,null=True)
+    last_celery_task_count = models.IntegerField(blank=True,null=True)
+
     strava_token = models.CharField(max_length=100)
 
 class ListenerSpotify(models.Model):
