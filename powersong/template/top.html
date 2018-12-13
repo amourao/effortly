@@ -3,10 +3,10 @@
 
 {% block top_table %}{% endblock %} 
 
-<div class="site-wrapper text-center" style="height: 90vh;">
-  <div class="site-wrapper-inner">
-    <div class="cover-container">
-      <div class="inner_spacing cover">
+<div class="site-wrapper text-center px-0 mx-0" style="height: 90vh;">
+  <div class="site-wrapper-inner px-0 mx-0">
+    <div class="cover-container px-0 mx-0">
+      <div class="inner_spacing cover px-0 mx-0">
         <h1 class="cover-heading">Welcome {{ athlete.first_name }}!</h1>
         {% if first_login != None %}
         <p class="h2">This is your first time here.</p>
@@ -31,7 +31,7 @@
 <div class="site-wrapper">
   <div class="site-wrapper-inner">
     <div class="container-fluid gray-background margins-top-bottom"> 
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12 text-center">
           <p class="h2">Let's start by checking the <span class="text_color_lastfm">artists and songs</span> you listen to while <span class="text_color_strava">{% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% else %}on activity{% endif %}</span></p>
           <p class="mylead">(click on the artist or song names to check the matching activities)</p>
@@ -39,26 +39,22 @@
       </div>
     </div>
   
-    <div class="cover-container">
-      <div class="row">
+    <div class="container-fluid px-0 mx-0">
+      <div class="row px-0 mx-0">
       
-        <div class="col-md-1"></div>
-
-        <div class="col-md-5 col-no-side-padding">
+        <div class="col-md-6 px-0 mx-0">
           <div id='artists'></div>
         </div>
 
-        <div class="col-md-5 col-no-side-padding">
+        <div class="col-md-6 px-0 mx-0">
           <div id='songs'></div>
         </div>
         
-        <div class="col-md-1"></div>
-
       </div>
     </div>
     
     <div class="container-fluid gray-background margins-top-bottom">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12 text-center">
           <p class="h2">Those are some wicked <span class="text_color_lastfm">tunes!</span> But how <span class="text_color_strava">fast</span> do they make you go?</p>
           <p class="mylead">(click on the activity name to see what other songs you've listened to)</p>
@@ -67,7 +63,7 @@
     </div>
 
     <div class="cover-container">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12">
           <div id='top'> </div>
         </div>
@@ -75,7 +71,7 @@
     </div>
 
     <div class="container-fluid gray-background margins-top-bottom">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12 text-center">
           <p class="h2">What about the ones that made your heart <span class="text_color_lastfm">beat</span> <span class="text_color_strava">faster?</span></p>
         </div>
@@ -83,7 +79,7 @@
     </div>
 
     <div class="cover-container">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12">
           <div id='top-hr'> </div>
         </div>
@@ -91,7 +87,7 @@
     </div>
 
     <div class="container-fluid gray-background margins-top-bottom">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12 text-center">
           <p class="h2">Those are some impressive <span class="text_color_strava">performances</span>... but they could have been <span class="text_color_lastfm">flukes.</span></p>
           <p class="mylead">Maybe you're being chased by a pack of <span class="text_color_strava">rabid dogs</span>, running away from <span class="text_color_strava">fast zombies</span>, rolling down <span class="text_color_strava">Mt. Everest</span>, or just hitched a ride on a nearby <span class="text_color_strava">scooter</span>.</p>
@@ -102,7 +98,7 @@
     </div>
 
     <div class="cover-container">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12">
           <div id='avg'> </div>
         </div>
@@ -110,7 +106,7 @@
     </div>
 
     <div class="container-fluid gray-background margins-top-bottom">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12 text-center">
           <p class="mylead">...<span class="text_color_strava">accelerate</span></p>
         </div>
@@ -118,7 +114,7 @@
     </div>
 
     <div class="cover-container">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12">
           <div id='avg_diff_last_speed'> </div>
         </div>
@@ -126,7 +122,7 @@
     </div>
 
     <div class="container-fluid gray-background margins-top-bottom">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12 text-center">
           <p class="mylead">...your heart <span class="text_color_strava">pump</span> harder</p>
         </div>
@@ -134,7 +130,7 @@
     </div>
 
     <div class="cover-container">
-      <div class="row">
+      <div class="row mx-0">
         <div class="col-md-12">
           <div id='avg_diff_last_hr'> </div>
         </div>
