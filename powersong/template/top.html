@@ -8,7 +8,7 @@
     <div class="cover-container">
       <div class="inner_spacing cover">
         <h1 class="cover-heading">Welcome {{ athlete.first_name }}!</h1>
-        {% if first_login %}
+        {% if first_login != None %}
         <p class="h2">This is your first time here.</p>
         <p class="h2">Strava tells me your main activity type is {{ athlete.get_activity_type_display }}.</p>
         <p class="h2">You can change that on the top bar.</p>
