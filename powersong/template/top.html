@@ -3,9 +3,9 @@
 
 {% block top_table %}{% endblock %} 
 
-<div class="site-wrapper text-center px-0 mx-0" style="height: 90vh;">
-  <div class="site-wrapper-inner px-0 mx-0">
-    <div class="cover-container px-0 mx-0">
+<div class="site-wrapper text-center" style="height: 90vh;">
+  <div class="site-wrapper-inner">
+    <div class="cover-container">
       <div class="inner_spacing cover px-0 mx-0">
         <h1 class="cover-heading">Welcome {{ athlete.first_name }}!</h1>
         {% if first_login != None %}
@@ -39,8 +39,8 @@
       </div>
     </div>
   
-    <div class="container-fluid px-0 mx-0">
-      <div class="row px-0 mx-0">
+    <div class="cover-container">
+      <div class="row mx-0">
       
         <div class="col-md-6 px-0 mx-0">
           <div id='artists'></div>
