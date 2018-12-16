@@ -80,7 +80,7 @@
                   <option name="field_form" value="All" selected>All Countries</option>
                   {% for country in countries %}
                   {% if country %}
-                  <option name="field_form" value="{{ country }}">{{ country }}</option>
+                  <option name="field_form" value="{{ country|urlencode:"" }}">{{ country }}</option>
                   {% endif %}
                   {% endfor %}
               </select>
