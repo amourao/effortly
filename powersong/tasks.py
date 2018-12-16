@@ -1,6 +1,8 @@
 import stravalib.client
 
-from celery import shared_task
+from celery import shared_task, chain, group
+from celery.result import AsyncResult,GroupResult
+from celery import current_app
 from datetime import datetime,timedelta
 
 import time, json
@@ -14,8 +16,7 @@ from django.conf import settings
 import requests
 
 from powersong.models import *
-from powersong.spotify_aux import *
-from powersong.strava_aux import *
+from powersong.spotify_aux import spotify_get_recent_tracks, spotify_refresh_token, spotify_get_recent_tracks_before
 from urllib.error import HTTPError
 
 from urllib.parse import quote_plus
@@ -73,6 +74,12 @@ def c(args):
         i = 0
     return
     
+
+@shared_task
+def clear_sync_id(athlete_id):
+    athlete = Athlete.objects.filter(id=athlete_id)[0]
+    athlete.last_celery_task_id = "00000000-0000-0000-0000-000000000000"
+    athlete.save()
 
 ########################## Strava API tasks ##########################
 
@@ -323,17 +330,22 @@ def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,a
 
     (act_stream,stored_act_id) = act_stream_stored_act
 
+    poweruser = Athlete.objects.filter(id=athlete_id)[0].poweruser_set.all()[0]
+    code = poweruser.listener_spotify.spotify_code
+    token = poweruser.listener_spotify.spotify_token
+    reftoken = poweruser.listener_spotify.spotify_refresh_token
+
     stored_act = strava_get_activity_by_id(stored_act_id)
 
     start = strava_get_start_timestamp(stored_act.start_date-timedelta(seconds=600))
     end = strava_get_start_timestamp(stored_act.start_date+timedelta(seconds=int(stored_act.elapsed_time)))
 
     try:
-        spotify_tracks = spotify_get_recent_tracks(token,athlete_id,start,end)
+        spotify_tracks = spotify_get_recent_tracks_before(token,athlete_id,start,end)
     except:
         token = spotify_refresh_token(code,token,reftoken,athlete_id)
-        spotify_tracks = spotify_get_recent_tracks(token,athlete_id,start,end)
-        
+        spotify_tracks = spotify_get_recent_tracks_before(token,athlete_id,start,end)
+
     return act_stream, stored_act_id, spotify_tracks
 
 
@@ -870,16 +882,18 @@ def strava_parse_base_activity(act):
 ########################## END Aux code ##########################
 
 @shared_task
-def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
+def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None):
+    athlete = strava_get_user_info(access_token)
+    athlete.last_celery_task_count = -1
+    athlete.save()
+
     client = stravalib.client.Client()
     client.access_token = access_token
-
-    athlete = strava_get_user_info(access_token)
 
     athlete_api = client.get_athlete()
     stats = athlete_api.stats
 
-    all_activities = client.get_activities(limit=limit)
+    all_activities = client.get_activities(limit=limit,after=after)
     new_activities = []
     activity_count = 0
     for act in all_activities:
@@ -894,18 +908,11 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
 
     strava_generate_nops(2+math.ceil(activity_count/200))
 
+    act_count = len(new_activities)
     if len(new_activities) == 0:
         job_result_id = "00000000-0000-0000-0000-000000000000"
-    elif len(new_activities) == 1:
-        promise = new_activities[0]
-        job_result = promise.delay()
-        while True:
-            if job_result.parent:
-                job_result = job_result.parent
-            else:
-                break
-        job_result_id = job_result.id
     else:
+        new_activities.append(clear_sync_id.si(athlete.id))
         promise = chain(new_activities)
         job_result = promise.delay()
         while True:
@@ -922,8 +929,9 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
     athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
     athlete.updated_strava_at = athlete_api.updated_at
     athlete.last_celery_task_id = str(job_result_id)
-    athlete.last_celery_task_count = len(new_activities)
+    athlete.last_celery_task_count = act_count
     athlete.save()
+
 
     #logger.debug(athlete.last_celery_task_id)
     #logger.debug(athlete.last_celery_task_count)
@@ -932,14 +940,18 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None):
 
 
 @shared_task
-def sync_efforts_lastfm(token,access_token,limit=None):
+def sync_efforts_lastfm(token,access_token,limit=None,after=None):
+    athlete = strava_get_user_info(access_token)
+    athlete.last_celery_task_count = -1
+    athlete.save()
+
     client = stravalib.client.Client()
     client.access_token = access_token
 
     athlete_api = client.get_athlete()
     stats = athlete_api.stats
 
-    all_activities = client.get_activities(limit=limit)
+    all_activities = client.get_activities(limit=limit,after=after)
     new_activities = []
     activity_count = 0
     for act in all_activities:
@@ -954,18 +966,11 @@ def sync_efforts_lastfm(token,access_token,limit=None):
 
     strava_generate_nops(2+math.ceil(activity_count/200))
 
+    act_count = len(new_activities)
     if len(new_activities) == 0:
         job_result_id = "00000000-0000-0000-0000-000000000000"
-    elif len(new_activities) == 1:
-        promise = new_activities[0]
-        job_result = promise.delay()
-        while True:
-            if job_result.parent:
-                job_result = job_result.parent
-            else:
-                break
-        job_result_id = job_result.id
     else:
+        new_activities.append(clear_sync_id.si(athlete.id))
         promise = chain(new_activities)
         job_result = promise.delay()
         while True:
@@ -982,10 +987,19 @@ def sync_efforts_lastfm(token,access_token,limit=None):
     athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
     athlete.updated_strava_at = athlete_api.updated_at
     athlete.last_celery_task_id = str(job_result_id)
-    athlete.last_celery_task_count = len(new_activities)
+    athlete.last_celery_task_count = act_count
     athlete.save()
 
     #logger.debug(athlete.last_celery_task_id)
     #logger.debug(athlete.last_celery_task_count)
     
     return job_result_id, len(new_activities)
+
+########################## Strava API tasks ##########################
+
+@shared_task
+def refresh_all():
+    last_hour = datetime.now()-timedelta(seconds=3600)
+    for poweruser in PowerUser.objects.all():
+        if poweruser.athlete and poweruser.listener_spotify and not poweruser.listener:
+            sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code ,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,poweruser.athlete.strava_token,after=last_hour)

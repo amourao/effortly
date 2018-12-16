@@ -144,35 +144,31 @@ def global_top(request):
         logger.debug(e.message)
         return (e.destination)    
     result['title'] = 'Global Top'
-    result['countries'] = Athlete.objects.all().values_list('country',flat=True).distinct()
+    result['countries'] = Athlete.objects.all().values_list('country',flat=True).distinct().order_by('country')
     return render_to_response('global_top.html', result)
 
 def get_sync_id(request, poweruser):
     
-    athlete_model = poweruser.athlete
+    athlete_model = poweruser.athlete  
 
-    sync_id = None
-
-    if 'sync_id' in request.session and request.session['sync_id'] != None:
-        sync_id = request.session['sync_id']
-        #logger.debug('get_sync_id_a')
-        #logger.debug(sync_id)
-        #logger.debug(request.session['sync_todo_total'])
-        athlete_model.last_celery_task_id = sync_id
-        athlete_model.last_celery_task_count = request.session['sync_todo_total']
+    if athlete_model.last_celery_task_id == None:
+        request.session['sync_id'] = sync_id = None
+        request.session['sync_todo_total'] = sync_todo_total = athlete_model.last_celery_task_count
+    elif str(athlete_model.last_celery_task_id) == "00000000-0000-0000-0000-000000000000":
+        request.session['sync_id'] = None
+        request.session['sync_todo_total'] = 0
+        sync_id = str(athlete_model.last_celery_task_id)
+        sync_todo_total = athlete_model.last_celery_task_count
+        athlete_model.last_celery_task_id = None
+        athlete_model.last_celery_task_count = 0
         athlete_model.save()
-        #logger.debug('get_sync_id_b')
-        #logger.debug(athlete_model.last_celery_task_id)
-        #logger.debug(athlete_model.last_celery_task_count)
     else:
-        sync_id = athlete_model.last_celery_task_id
-        request.session['sync_id'] = sync_id
-        request.session['sync_todo_total'] = athlete_model.last_celery_task_count
+        request.session['sync_id'] = sync_id = str(athlete_model.last_celery_task_id)
+        request.session['sync_todo_total'] = sync_todo_total = athlete_model.last_celery_task_count
 
-    #logger.debug('get_sync_id_c')
-    #logger.debug(request.session['sync_id'])
-    #logger.debug(request.session['sync_todo_total'])
-    return request.session['sync_id'], request.session['sync_todo_total']
+
+        
+    return sync_id, sync_todo_total
 
 def gen_sync_response(request):
     
@@ -184,36 +180,24 @@ def gen_sync_response(request):
         logger.debug(e.message)
         return (e.destination)    
 
-    
     sync_id, count = get_sync_id(request, poweruser)
-    request.session['sync_id'] = sync_id
-    request.session['sync_todo_total'] = count
+
+    logger.debug(sync_id)
+    logger.debug(count)
+
     spinner = ""
     if sync_id == None and count != -1:
         response = "SYNC IDLE"
-        request.session['sync_id'] = None
+    elif sync_id == "00000000-0000-0000-0000-000000000000" and count == 0:
+        response = "NOTHING TO SYNC"
     else:
-        if request.session['sync_todo_total'] == -1:
-            request.session['sync_id'] = poweruser.athlete.last_celery_task_id
-            request.session['sync_todo_total'] = poweruser.athlete.last_celery_task_count
-
-        #logger.debug('get_sync_response')
-        #logger.debug(request.session['sync_id'])
-        #logger.debug(request.session['sync_todo_total'])
-
-        status,finished,count = strava_get_sync_progress(request.session['sync_id'],request.session['sync_todo_total'])
-        if count == 0:
-            response = "NOTHING TO SYNC"
-            request.session['sync_id'] = None
-            request.session['sync_todo_total'] = 0
-        elif count == -1:
+        status,finished,count = strava_get_sync_progress(sync_id,count)
+        if count == -1:
             spinner = '<li class="nav-item"><img src="/static/spinner_dark.gif" width="40" height="40"></li>'
             response = status
         else:
             response = "SYNC {}: {} of {}".format(status,finished,count)
-            if status == 'SUCCESS':
-                request.session['sync_id'] = None
-            else:
+            if status != 'SUCCESS':
                 spinner = '<li class="nav-item"><img src="/static/spinner_dark.gif" width="40" height="40"></li>'
 
     if not 'athlete_id' in request.session:
@@ -222,10 +206,6 @@ def gen_sync_response(request):
         athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
         if athlete_model == None:
             athlete_model = strava_get_user_info(request.session['strava_token'])
-
-    athlete_model.last_celery_task_id = request.session['sync_id']
-    athlete_model.last_celery_task_count = request.session['sync_todo_total']
-    athlete_model.save()
 
     return HttpResponse('{}<li class="nav-item"><a class="nav-link">{}</a></li>'.format(spinner,response))  
 
@@ -241,13 +221,24 @@ def sync(request):
 
     if poweruser.listener:
         return sync_lastfm(request,poweruser)
-    else:
+    elif poweruser.listener_spotify:
         return sync_spotify(request,poweruser)
+    else:
+        return HttpResponse('{}<li class="nav-item"><a class="nav-link">{}</a></li>'.format("","NO LISTENER TO SYNC"))  
 
 def sync_spotify(request,poweruser):
+    #logger.debug('########## sync ##########')
+    if 'demo' in request.session:
+        return ""
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)
+
     sync_id, count = get_sync_id(request, poweruser)
 
-    if (sync_id == None and count != -1) or 'force' in request.GET:
+    if (sync_id == None and count != -1) or (sync_id == "00000000-0000-0000-0000-000000000000") or 'force' in request.GET:
         if 'spotify_token' in request.session and 'strava_token' in request.session:
             token = request.session['spotify_token']
             reftoken = request.session['spotify_refresh_token']
@@ -259,19 +250,24 @@ def sync_spotify(request,poweruser):
             athlete.last_celery_task_id = None
             athlete.last_celery_task_count = -1
             athlete.save()
-            sync_efforts_spotify.delay(code,token,reftoken,request.session['strava_token'],limit=9999)        
+            sync_efforts_spotify.delay(code,token,reftoken,request.session['strava_token'])
     
     return gen_sync_response(request)
 
 
 def sync_lastfm(request,poweruser):
+    #logger.debug('########## sync ##########')
+    if 'demo' in request.session:
+        return ""
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)
+
     sync_id, count = get_sync_id(request, poweruser)
-
-    #logger.debug('sync_lastfm')
-    #logger.debug(request.session['sync_id'])
-    #logger.debug(request.session['sync_todo_total'])
-
-    if (sync_id == None and count != -1) or 'force' in request.GET:
+   
+    if (sync_id == None and count != -1) or (sync_id == "00000000-0000-0000-0000-000000000000") or 'force' in request.GET:
         if 'lastfm_username' in request.session and 'strava_token' in request.session:
             request.session['sync_id'] = None
             request.session['sync_todo_total'] = -1
@@ -279,7 +275,7 @@ def sync_lastfm(request,poweruser):
             athlete.last_celery_task_id = None
             athlete.last_celery_task_count = -1
             athlete.save()
-            sync_efforts_lastfm.delay(request.session['lastfm_username'],request.session['strava_token'],limit=9999)
+            sync_efforts_lastfm.delay(request.session['lastfm_username'],request.session['strava_token'])
     
     return gen_sync_response(request)
 

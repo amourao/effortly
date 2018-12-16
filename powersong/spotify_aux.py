@@ -15,6 +15,8 @@ from celery import chain, group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
 
+import os.path
+
 
 import spotipy
 
@@ -136,13 +138,33 @@ def spotify_to_lastfm(results,start,end):
     return track_list
 
 
+def spotify_get_recent_tracks_before(token,athlete_id,start,end):
+    ending = end + (10*60*1000)
+    path = "data/data_{}_{}.json".format(athlete_id,str(ending).split('.')[0])
+
+    if os.path.isfile(path):
+        with open(path) as f:
+            results = json.load(f)
+    else:
+        r = requests.get("https://api.spotify.com/v1/me/player/recently-played", params={'before': ending, 'limit':50}, headers={'Authorization': 'Bearer  ' + token})
+        results = r.json()
+        with open(path,'w') as outfile:
+            json.dump(results, outfile)
+
+    final_res = {}
+    final_res['recenttracks'] = {}
+    final_res['recenttracks']['track'] = spotify_to_lastfm(results,start,end)
+
+    return final_res
+
 def spotify_get_recent_tracks(token,athlete_id,start,end):
     sp = spotipy.Spotify(auth=token)
     results = sp.current_user_recently_played()    
     track_list = []
 
-    with open("data/data_{}_{}.json".format(athlete_id,str(time.time()).split('.')[0]), 'w') as outfile:
-        json.dump(results, outfile)
+    if 'items' in results and results['items']:
+        with open("data/data_{}_{}.json".format(athlete_id,str(time.time()).split('.')[0]), 'w') as outfile:
+            json.dump(results, outfile)
 
     final_res = {}
     final_res['recenttracks'] = {}

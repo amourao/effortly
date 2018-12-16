@@ -2,7 +2,7 @@ from django.conf import settings
 from hashlib import md5
 
 from powersong.models import *
-from powersong.tasks import lastfm_download_artist_info,lastfm_download_track_info
+from powersong.tasks import lastfm_task
 
 from celery import chain, group
 from celery.result import AsyncResult,GroupResult

@@ -80,7 +80,7 @@
       function progress() {
         {% if demo == None %}
           var sync = $('#progress').html(); 
-          if (sync.indexOf("IN PROGRESS") != -1 || sync.indexOf("GETTING NEW ACTIVITIES") != -1)
+          if (sync.indexOf("IN PROGRESS") != -1 || sync.indexOf("CHECKING FOR NEW ACTIVITIES") != -1)
               load_async('#progress','/get_sync_progress/',true);
         {% endif %}
       }

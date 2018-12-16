@@ -42,9 +42,9 @@ def strava_get_user_info_by_id(athlete_id):
 
 def strava_get_sync_progress(task_id,total_count):
     if task_id == "00000000-0000-0000-0000-000000000000":
-        return 'SUCCESS', 0, 0
+        return 'SUCCESS', total_count, total_count
     if total_count == -1:
-        return 'GETTING NEW ACTIVITIES', 0, -1
+        return 'CHECKING FOR NEW ACTIVITIES', 0, -1
     try:
         res = current_app.AsyncResult(task_id)
         pending, success, failure, total = count_finished(res)
@@ -93,7 +93,7 @@ def resync_activity_spotify(code,token,reftoken,access_token,activity_id,athlete
     act_p = {}
     act_p['id'] = activity_id
     download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
-                            spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete_id)),
+                            spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,activity.athlete.id)),
                             activity_to_efforts.s()
                     )
     job_result = download_chain.delay()
