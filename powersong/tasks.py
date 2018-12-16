@@ -198,12 +198,14 @@ def lastfm_download_track_info(artist_name,track_name):
             track.image_url = image_url
         else:
             r = requests.get(track.image_url)
-            if r.status_code == 404:
+            if track.image_url == None or r.status_code == 404:
                 track.image_url = ''
-    else:
+    elif track.image_url:
         r = requests.get(track.image_url)
-        if r.status_code == 404:
+        if track.image_url == None or r.status_code == 404:
             track.image_url = ''
+    else:
+        track.image_url = ''
 
     if 'mbid' in track_json and track_json['mbid'].strip() != "":
         track.mbid = track_json['mbid']
@@ -243,12 +245,14 @@ def lastfm_download_artist_info(artist_name,mb_id=None):
             artist.image_url = image_url
         else:
             r = requests.get(artist.image_url)
-            if r.status_code == 404:
+            if artist.image_url == None or r.status_code == 404:
                 artist.image_url = ''
-    else:
+    elif artist.image_url:
         r = requests.get(artist.image_url)
         if r.status_code == 404:
             artist.image_url = ''
+    else:
+        artist.image_url = ''
 
 
     if 'mbid' in artist_json and artist_json['mbid'].strip() != "":
