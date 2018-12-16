@@ -58,11 +58,11 @@
           {% endif %}
           load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}',true)
           load_async('#top-hr','/top/?type=top&field=avg_hr&dispfield=avg_hr&activity_type={{ activity_type }}',true)
-          load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}&min_count=3',true)
+          load_async('#avg','/top/?type=avg&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}&min_count=1',true)
           load_async('#artists','/artists?activity_type={{ activity_type }}',true)
           load_async('#songs','/songs?activity_type={{ activity_type }}',true)
-          load_async('#avg_diff_last_hr','/top/?type=avg&field=diff_last_hr&dispfield=diff_last_hr&activity_type={{ activity_type }}&min_count=3',true)
-          load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed&dispfield=diff_last_speed&activity_type={{ activity_type }}&min_count=3',true)
+          load_async('#avg_diff_last_hr','/top/?type=avg&field=diff_last_hr&dispfield=diff_last_hr&activity_type={{ activity_type }}&min_count=1',true)
+          load_async('#avg_diff_last_speed','/top/?type=avg&field=diff_last_speed&dispfield=diff_last_speed&activity_type={{ activity_type }}&min_count=1',true)
       }
 
       function sync() {
