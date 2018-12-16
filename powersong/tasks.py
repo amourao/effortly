@@ -448,10 +448,10 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
             #(effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_speed_in_interval(act_stream,start,end)
             (effort_avg_speed, effort_start_dist, effort_end_dist) = get_avg_moving_speed_in_interval(act_stream,start,end)
-            (effort_avg_hr, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'heartrate')
-            (effort_avg_watts, effort_start_dist, effort_end_dist) = get_avg_in_interval(act_stream,start,end,'watts')
+            (effort_avg_hr, effort_start_dist_t, effort_end_dist_t) = get_avg_in_interval(act_stream,start,end,'heartrate')
+            (effort_avg_watts, effort_start_dist_t, effort_end_dist_t) = get_avg_in_interval(act_stream,start,end,'watts')
             (effort_avg_cadence, effort_start_cadence, effort_end_cadence) = get_avg_in_interval(act_stream,start,end,'cadence')
-            (effort_total_ascent, effort_total_descent, effort_start_dist, effort_end_dist) = get_ascent_in_interval(act_stream,start,end,'altitude')
+            (effort_total_ascent, effort_total_descent, effort_start_dist_t, effort_end_dist_t) = get_ascent_in_interval(act_stream,start,end,'altitude')
 
             (data_vel,time_vel) = get_diff_set(act_stream,start,end,'velocity_smooth')
 
