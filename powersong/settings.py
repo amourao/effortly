@@ -215,8 +215,16 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_IMPORTS = ['powersong.tasks']
 CELERY_BEAT_SCHEDULE = {
- 'refresh-spotify-every-hour': {
+    'refresh-spotify-every-hour': {
        'task': 'powersong.tasks.refresh_all',
-       'schedule': 3600.0
+       'schedule': 60*60.0
+    },
+    'get_artist_info': {
+       'task': 'powersong.lastfm_aux.lastfm_sync_artists',
+       'schedule': 24*60*60.0
+    },
+    'get_track_info': {
+       'task': 'powersong.lastfm_aux.lastfm_sync_tracks',
+       'schedule': 24*60*60.0
     }
 }

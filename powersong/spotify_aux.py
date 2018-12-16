@@ -148,6 +148,8 @@ def spotify_get_recent_tracks_before(token,athlete_id,start,end):
     else:
         r = requests.get("https://api.spotify.com/v1/me/player/recently-played", params={'before': ending, 'limit':50}, headers={'Authorization': 'Bearer  ' + token})
         results = r.json()
+        if 'error' in results:
+            raise Exception('')
         with open(path,'w') as outfile:
             json.dump(results, outfile)
 

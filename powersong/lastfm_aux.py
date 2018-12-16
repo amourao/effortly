@@ -7,6 +7,7 @@ from powersong.tasks import lastfm_task
 from celery import chain, group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
+from celery import shared_task
 
 import requests
 
@@ -64,6 +65,7 @@ def lastfm_get_sig(api_key,method,token,secret):
     return md5('api_key{}method{}token{}{}'.format(api_key,method,token,secret).encode()).hexdigest()
 
 
+@shared_task
 def lastfm_sync_artists():
 
     artists = Artist.objects.all()
@@ -82,6 +84,7 @@ def lastfm_sync_artists():
     
     return job_result.id, len(artists_to_sync)
 
+@shared_task
 def lastfm_sync_tracks():
 
     songs = Song.objects.all()

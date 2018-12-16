@@ -330,7 +330,7 @@ def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,a
 
     (act_stream,stored_act_id) = act_stream_stored_act
 
-    poweruser = Athlete.objects.filter(id=athlete_id)[0].poweruser_set.all()[0]
+    poweruser = Athlete.objects.filter(athlete_id=athlete_id)[0].poweruser_set.all()[0]
     code = poweruser.listener_spotify.spotify_code
     token = poweruser.listener_spotify.spotify_token
     reftoken = poweruser.listener_spotify.spotify_refresh_token
@@ -901,7 +901,7 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None)
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
             download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
-                                    spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete.id)),
+                                    spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete.athlete_id)),
                                     activity_to_efforts.s()
                             )
             new_activities.append(download_chain)
