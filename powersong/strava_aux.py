@@ -93,7 +93,7 @@ def resync_activity_spotify(code,token,reftoken,access_token,activity_id,athlete
     act_p = {}
     act_p['id'] = activity_id
     download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
-                            spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete_id)),
+                            spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete_id,True)),
                             activity_to_efforts.s()
                     )
     job_result = download_chain.delay()

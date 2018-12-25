@@ -138,11 +138,11 @@ def spotify_to_lastfm(results,start,end):
     return track_list
 
 
-def spotify_get_recent_tracks_before(token,athlete_id,start,end):
-    ending = end + (10*60*1000)
+def spotify_get_recent_tracks_before(token,athlete_id,start,end,force=False):
+    ending = (end + (10*60)) * 1000
     path = "data/data_{}_{}.json".format(athlete_id,str(ending).split('.')[0])
 
-    if os.path.isfile(path):
+    if os.path.isfile(path) and not force:
         with open(path) as f:
             results = json.load(f)
     else:

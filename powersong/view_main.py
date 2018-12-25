@@ -250,7 +250,7 @@ def sync_spotify(request,poweruser):
             athlete.last_celery_task_id = None
             athlete.last_celery_task_count = -1
             athlete.save()
-            sync_efforts_spotify.delay(code,token,reftoken,request.session['strava_token'])
+            sync_efforts_spotify.delay(code,token,reftoken,request.session['strava_token'],force=('force' in request.GET))
     
     return gen_sync_response(request)
 
@@ -275,7 +275,7 @@ def sync_lastfm(request,poweruser):
             athlete.last_celery_task_id = None
             athlete.last_celery_task_count = -1
             athlete.save()
-            sync_efforts_lastfm.delay(request.session['lastfm_username'],request.session['strava_token'])
+            sync_efforts_lastfm.delay(request.session['lastfm_username'],request.session['strava_token'],force=('force' in request.GET))
     
     return gen_sync_response(request)
 

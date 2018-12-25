@@ -71,6 +71,12 @@
           {% endif%}
       }
 
+      function sync_force() {
+        {% if demo == None %}
+          load_async('#progress','/sync/?force',true)
+          {% endif%}
+      }
+
       function sync_spotify() {
         {% if demo == None %}
           load_async('#progress_spotify','/sync_spotify/',true)
