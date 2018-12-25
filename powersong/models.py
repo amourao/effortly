@@ -533,7 +533,7 @@ def create_song_from_dict(song_api):
         
     return song
 
-def create_activity_from_dict(activity_api):
+def create_activity_from_dict(activity_api,dry_run=False):
     activities = Activity.objects.filter(activity_id=activity_api['id'])
 
     if activities:
@@ -606,7 +606,8 @@ def create_activity_from_dict(activity_api):
         if activity_api['max_watts']:
             activity.max_watts = int(activity_api['max_watts'])
 
-    activity.save()
+    if not dry_run:
+        activity.save()
     return activity
 
 
