@@ -21,6 +21,7 @@ function deleteAccount(){
 		<li class="list-group-item">
 			<div class="container">
 				<div class="row">
+              	
 				{% if lastfm_authorize_url %}
 				  <p><a class="btn btn-lastfm" href="{{ lastfm_authorize_url }}" role="button">Connect with <img class="logo_footer" src="/static/logo/lastfm_logo_white_text.png"></a></p>
 				{% else %}
@@ -35,7 +36,10 @@ function deleteAccount(){
 				{% endif %}        
 				</div>
 				<div class="row">  
-				<p><a class="btn btn-danger" href="#" onclick="deleteAccount()" role="button">Delete account</a></p>
+					<p><a class="btn btn-info" href="javascript:void(0)" onclick="sync_force()" role="button">Force Sync</a></p>
+				</div>
+				<div class="row">
+					<p><a class="btn btn-danger" href="#" onclick="deleteAccount()" role="button">Delete account</a></p>
 				</div>  
 			</div>
 		</li>
