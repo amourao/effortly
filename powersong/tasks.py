@@ -421,7 +421,7 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
             start = int(song_api['date']['uts']) - act_start_timestamp
 
             # multiple similar scrobbles protection
-            while (idx+1) < len(songs) and song_api['url'] == songs[idx+1]['url']: # if the next song is the same, do not create new song
+            while (idx+1) < len(songs) and ((song_api['url'] == songs[idx+1]['url']) or (int(song_api['date']['uts']) == int(songs[idx+1]['date']['uts']))): # if the next song is the same, do not create new song
                 song_api = songs[idx+1]
                 idx+=1
                          
