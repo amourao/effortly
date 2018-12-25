@@ -72,7 +72,7 @@ def metersPerSecondToMinPerKm(mps):
     if mps == None:
         return None
     if mps == 0:
-        return secondsPerMeterToMinPerMi(0)
+        return secondsPerMeterToMinPerKm(0)
     return secondsPerMeterToMinPerKm(1.0/mps)
 
 def secondsPerMeterToMinPerKm(spm):
