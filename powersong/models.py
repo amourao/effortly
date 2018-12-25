@@ -151,7 +151,7 @@ class Activity(models.Model):
         elif (self.athlete.measurement_preference == 1) and (self.act_type == 0):
             return secondsPerMeterToMinPerMi(invertTimeDistance(self.avg_speed))
         else:
-            return metersPerSecondToMiH(invertTimeDistance(self.avg_speed))
+            return metersPerSecondToMiH(self.avg_speed)
 
     @property
     def distance_big_pretty_units(self):
