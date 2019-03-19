@@ -53,7 +53,7 @@
       }
 
       function update_all() {
-          {% if demo == None %}
+          {% if demo == None and viewer == None %}
           load_async('#progress','/get_sync_progress/',true)
           {% endif %}
           load_async('#top','/top/?type=top&field=avg_speed&dispfield=avg_speed&activity_type={{ activity_type }}',true)
@@ -66,32 +66,32 @@
       }
 
       function sync() {
-        {% if demo == None %}
+        {% if demo == None and viewer == None %}
           load_async('#progress','/sync/',true)
           {% endif%}
       }
 
       function sync_force() {
-        {% if demo == None %}
+        {% if demo == None and viewer == None %}
           load_async('#progress','/sync/?force',true)
           {% endif%}
       }
 
       function sync_spotify() {
-        {% if demo == None %}
+        {% if demo == None and viewer == None %}
           load_async('#progress_spotify','/sync_spotify/',true)
         {% endif %}
       }
 
       function progress() {
-        {% if demo == None %}
+        {% if demo == None and viewer == None %}
           var sync = $('#progress').html(); 
           if (sync.indexOf("IN PROGRESS") != -1 || sync.indexOf("CHECKING FOR NEW ACTIVITIES") != -1)
               load_async('#progress','/get_sync_progress/',true);
         {% endif %}
       }
 
-      {% if demo == None %}
+      {% if demo == None and viewer == None %}
       window.setInterval(function(){progress();}, 10000);
       {% endif %}
 
@@ -103,11 +103,11 @@
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <a href="/" class="navbar-brand"><img src="/static/logo.png" style="height: 35px"></a>
 
       <div class="navbar-collapse collapse" id="collapsingNavbar3">
         <ul class="navbar-nav mr-auto">
+          {% if viewer == None %}
           <li class="nav-item dropdown dropright">
             <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% if activity_type == 0 %}Running{% elif activity_type == 1 %}Cycling{% else %}All{% endif %}</a>
             <div class="dropdown-menu" aria-labelledby="dropdown01">
@@ -143,7 +143,8 @@
           {% if not demo and not listener and not listenerspotify %}
             <li class="nav-item dropleft ml-2 my-auto"> <a role="button margin-left" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a> </li>
           {% endif %}
-          {% if demo == None %}
+          {% endif %}
+          {% if demo == None and viewer == None %}
           <li class="nav-item dropleft ml-2 my-auto">
             <button class="btn btn-outline-info fa fa-cog" type="button" id="settingsMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
             <div class="dropdown-menu fix-dropdown-menu" aria-labelledby="settingsMenu">

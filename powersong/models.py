@@ -191,6 +191,26 @@ class Activity(models.Model):
         else:
             return metersToMiles(self.distance)
 
+    @property
+    def footer_message(self):
+        if self.athlete.share_activity_songs:
+            return "Find out more detailed information at https://effortly.run/activity/{}\n".format(self.activity_id)
+        else:
+            return "- by https://effortly.run\n"
+
+    @property
+    def activity_share_message(self):
+        if self.effort_set.all():
+            text = "Songs listened during activity:\n"
+            for e in self.effort_set.all():
+                text += "{} - {}: {} {}\n".format(e.song.artist_name,e.song.title,e.avg_speed_pretty,e.avg_speed_pretty_units)
+            text += "##########################\n"
+            text += self.footer_message
+        else:
+            text = "No songs found.\n - by https://effortly.run\n"
+        return text
+
+
 class Listener(models.Model):
     nickname = models.CharField(max_length=30,unique=True)
     real_name = models.CharField(max_length=30,null=True)
@@ -389,10 +409,6 @@ class Effort(models.Model):
     @property
     def start_time_pretty(self):
         return secondsToMinutesSecs(self.start_time)
-
-
-#https://docs.djangoproject.com/en/1.11/topics/db/queries/#lookups-that-span-relationships
-
 
 def get_poweruser(strava_token):
     powerusers = PowerUser.objects.filter(athlete__strava_token=strava_token)
@@ -775,7 +791,7 @@ def effort_to_imperial(effort_dict):
 
     for key in distanceSmall:
         if key in new_effort_dict and new_effort_dict[key] != None:
-            new_effort_dict[key + "_pretty"] = metersToFeet(effort_dict[key])      
+            new_effort_dict[key + "_pretty"] = metersToFeet(effort_dict[key])
         if 'sort_key' in effort_dict and effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersToFeet(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = imperial_legends['distanceSmall']

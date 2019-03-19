@@ -38,7 +38,6 @@ def get_all_data(request):
     else:
         if not 'strava_token' in request.session:
             raise NonAuthenticatedException("No strava session found", redirect(strava_get_auth_url()))
-    
         poweruser = get_poweruser(request.session['strava_token'])
 
     if 'puid' in request.GET and poweruser and (poweruser.athlete.athlete_id == "9363354" or 'superuser' in request.session) and not 'demo' in request.session:
@@ -339,7 +338,7 @@ def about(request):
     try:
         poweruser, result = get_all_data(request)
     except NonAuthenticatedException as e:
-        logger.debug(e.message)
-        return (e.destination)    
+        result = {}
+        result['viewer'] = True
     result['title'] = 'About'
     return render_to_response('about.html', result)
