@@ -46,7 +46,7 @@ class Athlete(models.Model):
 
     first_login = models.BooleanField()
 
-    email = models.EmailField()
+    email = models.EmailField(blank=True,null=True)
 
     date_preference = models.CharField(max_length=10)
     measurement_preference = models.PositiveSmallIntegerField()
