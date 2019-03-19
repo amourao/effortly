@@ -27,8 +27,8 @@ cadence = ['avg_cadence','diff_avg_cadence','diff_last_cadence','activity__avg_c
 watts = ['avg_watts','diff_avg_watts','diff_last_watts','activity__avg_watts','activity__max_watts']
 
 common = {'timeBig':'','timeSmall':'sec','heartrate':'bpm','cadence':'spm','watts':'W', 'count':'count', 'count_users':'listener(s)'}
-metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'} 
-imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}  
+metric_legends   = {'speed': 'km/h','speed_s': '/km','distanceSmall': 'm','distanceBig': 'km', 'temperature': 'ºC'}
+imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','distanceBig': 'mi', 'temperature': 'ºF'}
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,6 @@ class Athlete(models.Model):
     country = models.CharField(max_length=50,null=True)
     athlete_type = models.PositiveSmallIntegerField(choices=ATHELETE_TYPE)
     last_sync_date = models.DateTimeField(blank=True,null=True)
-    
     activity_count = models.IntegerField()
     runs_count = models.IntegerField()
     rides_count = models.IntegerField()
@@ -66,6 +65,9 @@ class Athlete(models.Model):
     last_celery_task_count = models.IntegerField(blank=True,null=True)
 
     strava_token = models.CharField(max_length=100)
+    strava_edit_token = models.CharField(max_length=100,blank=True,null=True)
+    share_activity_songs = models.BooleanField(default=False)
+    share_activity_link = models.BooleanField(default=False)
 
 class ListenerSpotify(models.Model):
     nickname = models.CharField(max_length=30,unique=True)
@@ -80,7 +82,7 @@ class ListenerSpotify(models.Model):
 
 class ActivitiesToIgnore(models.Model):
     activity_id = models.CharField(max_length=16,unique=True)
-    
+
 class Activity(models.Model):
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
 
@@ -110,12 +112,12 @@ class Activity(models.Model):
     avg_cadence = models.FloatField(blank=True,null=True) #:    float RPM
 
     avg_temp = models.FloatField(blank=True,null=True) #:   float celsius
-    
+
     avg_hr = models.FloatField(blank=True,null=True)
     max_hr = models.IntegerField(blank=True,null=True)
 
     last_sync_date = models.DateTimeField(null=True)
-    
+
     avg_watts = models.FloatField(blank=True,null=True)
     max_watts = models.IntegerField(blank=True,null=True)
 
@@ -159,7 +161,7 @@ class Activity(models.Model):
             return metric_legends['distanceBig']
         elif (self.athlete.measurement_preference == 1):
             return imperial_legends['distanceBig']
-    
+
     @property
     def distance_small_pretty_units(self):
         if (self.athlete.measurement_preference == 0):
@@ -231,7 +233,7 @@ class Artist(models.Model):
     tags = models.ManyToManyField(Tags)
 
 class Song(models.Model):
-    title = models.CharField(max_length=100)    
+    title = models.CharField(max_length=100)
     artist_name = models.CharField(max_length=100)
     album_name = models.CharField(max_length=100,blank=True,null=True)
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
@@ -245,7 +247,7 @@ class Song(models.Model):
     url = models.URLField(blank=True,null=True)
 
     mb_id = models.UUIDField(blank=True,null=True)
-    spotify_id = models.CharField(max_length=22,blank=True,null=True)    
+    spotify_id = models.CharField(max_length=22,blank=True,null=True)
     tags = models.ManyToManyField(Tags)
 
     original_song = models.ForeignKey("self",blank=True,null=True)
@@ -281,7 +283,7 @@ class Effort(models.Model):
 
     diff_last_speed_s = models.FloatField(blank=True,null=True) #s/m
     diff_avg_speed_s = models.FloatField() #s/m
-    
+
     avg_hr = models.FloatField(blank=True,null=True)
     diff_avg_hr = models.FloatField(blank=True,null=True)
     diff_last_hr = models.FloatField(blank=True,null=True)
@@ -365,7 +367,7 @@ class Effort(models.Model):
             return metric_legends['distanceBig']
         elif (self.activity.athlete.measurement_preference == 1):
             return imperial_legends['distanceBig']
-    
+
     @property
     def distance_small_pretty_units(self):
         if (self.activity.athlete.measurement_preference == 0):
@@ -436,7 +438,6 @@ def create_athlete_from_dict(athlete_api):
 
     athlete.country = athlete_api.country
 
-    
     stats = athlete_api.stats
 
     athlete.activity_count = stats.all_ride_totals.count
@@ -452,7 +453,7 @@ def create_listener_from_dict(listener_api,key):
     listener = Listener()
 
     listener.nickname = listener_api['name']
-    
+
     if 'realname' in listener_api:
         listener.real_name = listener_api['realname']
 
@@ -492,7 +493,7 @@ def create_song_from_dict(song_api):
         return song
 
     song = Song()
-    
+
     song.title = song_api['name']
     song.url = song_api['url']
     song.artist_name = song_api['artist']['name']
@@ -530,7 +531,7 @@ def create_song_from_dict(song_api):
 
     song.original_song = song
     song.save()
-        
+
     return song
 
 def create_activity_from_dict(activity_api,dry_run=False):
@@ -538,7 +539,7 @@ def create_activity_from_dict(activity_api,dry_run=False):
 
     if activities:
         return activities[0]
-    
+
     activity = Activity()
     if activity_api['type'] == 'Ride':
         activity.act_type = 1
@@ -546,7 +547,7 @@ def create_activity_from_dict(activity_api,dry_run=False):
         activity.act_type = 0
     else:
         return None
-    
+
     athletes = Athlete.objects.filter(athlete_id=activity_api['athlete_id'])
 
     athlete = None
@@ -554,7 +555,7 @@ def create_activity_from_dict(activity_api,dry_run=False):
          athlete = athletes[0]
     else:
         return None
-    
+
     activity.athlete = athlete
     activity.activity_id = activity_api['id']
 
@@ -564,8 +565,6 @@ def create_activity_from_dict(activity_api,dry_run=False):
     activity.distance = float(activity_api['total_distance'])
     activity.moving_time = int(activity_api['moving_time'])
     activity.elapsed_time = int(activity_api['elapsed_time'])
-
-    
 
     activity.start_date = activity_api['start_date']
     activity.start_date_local = activity_api['start_date_local']
@@ -585,7 +584,7 @@ def create_activity_from_dict(activity_api,dry_run=False):
         activity.calories = int(activity_api['calories'])
     if activity_api['suffer_score']:
         activity.suffer_score = int(activity_api['suffer_score'])
-    
+
     if activity_api['average_cadence']:
         activity.avg_cadence = float(activity_api['average_cadence'])
 
@@ -622,7 +621,6 @@ def lastfm_get_artist(name,mbid=None):
 
 
 def lastfm_get_track(artist,name):
-    
     songs = Song.objects.filter(title=name,artist_name=artist)
 
     if songs:
@@ -636,7 +634,7 @@ def lastfm_get_track(artist,name):
 def strava_get_activity_by_id(act_id):
     if strava_is_activity_to_ignore(act_id):
         return None
-        
+
     activities = Activity.objects.filter(activity_id=act_id)
 
     if activities:
@@ -699,14 +697,14 @@ def effort_to_metric(effort_dict):
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsPerMeterToMinPerKm(new_effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = metric_legends['speed_s']
-    
+
     for key in speed:
         if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key + "_pretty"] = metersPerSecondToKmH(effort_dict[key])
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = metersPerSecondToKmH(effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = metric_legends['speed']
-            
+
     for key in timeBig:
         if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key + "_pretty"] = secondsToMinutesSecs(effort_dict[key])
@@ -753,7 +751,7 @@ def effort_to_imperial(effort_dict):
         if 'sort_key' in new_effort_dict and new_effort_dict['sort_key'] == key:
             new_effort_dict['sort_value'] = secondsPerMeterToMinPerMi(new_effort_dict['sort_value'])
             new_effort_dict['sort_value_unit'] = imperial_legends['speed_s']
-    
+
     for key in speed:
         if key in new_effort_dict and new_effort_dict[key] != None:
             new_effort_dict[key + "_pretty"] = metersPerSecondToMiH(effort_dict[key])
