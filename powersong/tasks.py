@@ -1033,4 +1033,8 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
 def refresh_all(force=False):
     for poweruser in PowerUser.objects.all():
         if poweruser.athlete and (poweruser.listener_spotify or poweruser.listener):
-            sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,poweruser.athlete.strava_token,force=force)
+            if poweruser.listener:
+                sync_efforts_lastfm.delay(poweruser.listener.nickname,poweruser.listener.lastfm_token,force=force)
+            else:
+                sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,poweruser.athlete.strava_token,force=force)
+            
