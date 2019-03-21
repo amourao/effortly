@@ -1,15 +1,16 @@
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, render
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from powersong.models import *
+from powersong.forms import SettingForm
 from powersong.view_detail import activity
 from powersong.view_main import get_all_data, NonAuthenticatedException
 from powersong.view_home import demo
 
 
-from powersong.strava_aux import strava_get_auth_url
+from powersong.strava_aux import strava_get_auth_edit_url
 from powersong.lastfm_aux import lastfm_get_auth_url
 from powersong.spotify_aux import spotify_get_auth_url
 
@@ -29,8 +30,13 @@ def setting(request):
         logger.debug(e.message)
         return (e.destination)    
 
-    if not poweruser.athlete:
-        result['strava_authorize_url'] = strava_get_auth_url()
+    if request.method == "POST":
+        athlete = poweruser.athlete
+        f = SettingForm(request.POST, instance=athlete)
+        f.save()
+    
+    if poweruser.athlete and not poweruser.athlete.strava_edit_token:
+        result['strava_authorize_url'] = strava_get_auth_edit_url()
 
     if not poweruser.listener:
         result['lastfm_authorize_url'] = lastfm_get_auth_url()
@@ -39,8 +45,9 @@ def setting(request):
         result['spotify_authorize_url'] = spotify_get_auth_url()
 
     result['title'] = 'Settings'
+    result['form'] = SettingForm(instance=poweruser.athlete)
 
-    return render_to_response('settings.html', result) 
+    return render(request, 'settings.html', result) 
 
 def delete_account(request):
     if request.method != 'DELETE':

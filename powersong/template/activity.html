@@ -177,6 +177,9 @@
                 {% endif %}
                 {% if listenerspotify %}
                 <button onclick="sendGet('/resync_spotify/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync Spotify</button>
+                {% endif %} 
+                {% if athlete.share_activity_link  %}
+                <button onclick="sendGet('/send_song_info_to_strava/{{ activity.activity_id}}')" class="dropdown-item" type="button">Send song info to Strava</button>
                 {% endif %}             
                 <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
 

@@ -1,11 +1,11 @@
 from django.conf.urls import url
 from django.contrib import admin
 
-from powersong.view_oauth import strava_oauth, lastfm_oauth, spotify_oauth, spotify_refresh_token_endpoint
+from powersong.view_oauth import strava_oauth,strava_edit_oauth, lastfm_oauth, spotify_oauth, spotify_refresh_token_endpoint
 from powersong.view_home import index, home, logout, demo
 from powersong.view_tops import top, top_song_artist, top_activities, top_global_song_artist
 from powersong.view_detail import activity, song, artist, artists, songs
-from powersong.view_main import about, get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify, detailed, global_top
+from powersong.view_main import about, get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify, detailed, global_top, send_song_info_to_strava
 from powersong.view_settings import setting, flag_activity, flag_artist, flag_song, flag_effort, remove_spotify, remove_lastfm, delete_account
 
 from django.conf import settings
@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^songs/', songs),
     
     url(r'^activity/(?P<activity_id>.*)/', activity),
-    url(r'^flag_activity/(?P<activity_id>.*)/', flag_activity),
+    url(r'^flag_activity/(?P<activity_id>.*)/', flag_activity),   
     url(r'^flag_effort/(?P<effort_id>.*)/', flag_effort),
     
 
@@ -47,9 +47,11 @@ urlpatterns = [
 
     url(r'^resync_last_fm/(?P<activity_id>.*)/', resync_last_fm),
     url(r'^resync_spotify/(?P<activity_id>.*)/', resync_spotify),
+    url(r'^send_song_info_to_strava/(?P<activity_id>.*)/', send_song_info_to_strava),
 
 
     url(r'^strava_oauth_callback/', strava_oauth),
+    url(r'^strava_oauth_callback_edit/', strava_edit_oauth),
     url(r'^strava_oauth_refresh/', spotify_refresh_token_endpoint),
 
     url(r'^lastfm_oauth_callback/', lastfm_oauth),

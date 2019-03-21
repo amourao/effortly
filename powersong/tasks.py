@@ -45,34 +45,7 @@ def count_finished(job_result):
         elif t.status == 'PENDING':
            pending += 1
         i += 1
-    return int(pending/3), int(success/3), int(failure/3), int(i/3)
-
-@shared_task
-def a(*args):
-    time.sleep(5)
-    t = (datetime.now().timestamp())
-    name = "{}_{}".format(t,'a')
-    with open(name, 'w') as f:
-        i = 0
-    return
-
-@shared_task
-def b(args):
-    time.sleep(10)
-    t = (datetime.now().timestamp())
-    name = "{}_{}".format(t,'b')
-    with open(name, 'w') as f:
-        i = 0
-    return
-
-@shared_task
-def c(args):
-    time.sleep(2)
-    t = (datetime.now().timestamp())
-    name = "{}_{}".format(t,'c')
-    with open(name, 'w') as f:
-        i = 0
-    return
+    return int(pending/4), int(success/4), int(failure/4), int(i/4)
     
 
 @shared_task
@@ -96,6 +69,34 @@ def strava_generate_nops(count):
     new_activities = [strava_task.s('strava_nop',()) for i in range(count)]
     promise = group(*new_activities)
     job_result = promise.delay()
+
+def strava_send_song_activities(act_id_s):
+    if len(act_id_s) != 1 or act_id_s[0] == None:
+        return (None,)
+
+    act_id = act_id_s[0]
+    act = Activity.objects.filter(activity_id=act_id)
+
+    if not act:
+        return (None,)
+    
+    act = act[0]    
+
+    if not act.athlete.share_activity_songs:
+        return (None,)
+
+    access_token = act.athlete.strava_token
+
+    client = stravalib.client.Client()
+    client.access_token = access_token
+    
+    activity = client.get_activity(act_id)
+    description = activity.description
+    description = act.activity_share_message + '\n' + description
+
+    client.update_activity(act_id, description=description.strip())
+    return (None,)
+
 
 def strava_download_activity(access_token,act):
     client = stravalib.client.Client()
@@ -145,6 +146,8 @@ def strava_task(*args,**kwargs):
 
     if function == 'strava_download_activity':
         return strava_download_activity(*nargs,**kwargs)
+    elif function == 'strava_send_song_activities':
+        return strava_send_song_activities(*nargs,**kwargs)
     elif function == 'strava_nop':
         return strava_nop()
     elif function == 'strava_op':
@@ -378,7 +381,7 @@ def spotify_task(*args,**kwargs):
 def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
     try:
         if act_stream_stored_act_id_lastfm_tracks == None or act_stream_stored_act_id_lastfm_tracks == (None,):
-            return False
+            return (None,)
         act_stream, stored_act_id, lastfm_tracks = act_stream_stored_act_id_lastfm_tracks
         stored_act = strava_get_activity_by_id(stored_act_id)
         
@@ -386,12 +389,12 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
             if not 'recenttracks' in lastfm_tracks:
                 logger.error("Bad response in activity {}".format(stored_act_id))
                 logger.error(lastfm_tracks)
-                return {}
+                return (None,)
             else:
                 songs = lastfm_tracks['recenttracks']['track'][::-1]
         else:
             logger.debug("No songs in activity {}".format(stored_act_id))    
-            return {}
+            return (stored_act_id,)
 
         act_avg_speed = stored_act.avg_speed
         act_avg_hr = stored_act.avg_hr
@@ -417,15 +420,16 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         idx = 0
         while idx < len(songs):
             song_api = songs[idx]
-            
+            if not 'date' in song_api: 
+                break
             start = int(song_api['date']['uts']) - act_start_timestamp
 
             # multiple similar scrobbles protection
-            while (idx+1) < len(songs) and ((song_api['url'] == songs[idx+1]['url']) or (int(song_api['date']['uts']) == int(songs[idx+1]['date']['uts']))): # if the next song is the same, do not create new song
+            while (idx+1) < len(songs) and ((song_api['url'] == songs[idx+1]['url']) or ('date' in songs[idx+1] and int(song_api['date']['uts']) == int(songs[idx+1]['date']['uts']))): # if the next song is the same, do not create new song
                 song_api = songs[idx+1]
                 idx+=1
                          
-            if (idx+1) < len(songs):
+            if (idx+1) < len(songs) and 'date' in songs[idx+1]:
                 end = int(songs[idx+1]['date']['uts']) - act_start_timestamp
                 if end > elapsed_time.seconds:
                     end = elapsed_time.seconds
@@ -553,11 +557,11 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
             effort_idx_in_act+=1
 
-        return True
+        return (stored_act.activity_id,)
     except Exception as e:
-        logger.error("Exception on parsing activity {}".format(act['id']))
+        logger.error("Exception on parsing activity {}".format(stored_act['id']))
         logger.error(e)
-        return False
+        return (stored_act.activity_id,)
 
 
 ########################## END Internal tasks ##########################
@@ -909,11 +913,12 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None,
             act_p = strava_parse_base_activity(act)
             download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
                                     spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete.athlete_id,False)),
-                                    activity_to_efforts.s()
+                                    activity_to_efforts.s(),
+                                    strava_task.s('strava_send_song_activities',())
                             )
             new_activities.append(download_chain)
 
-    strava_generate_nops(2+math.ceil(activity_count/200))
+    strava_generate_nops(4+math.ceil(activity_count/200))
 
     act_count = len(new_activities)
     if len(new_activities) == 0:
@@ -978,11 +983,12 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
             act_p = strava_parse_base_activity(act)
             download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
                                     lastfm_task.s('lastfm_download_activity_tracks',(token,)),
-                                    activity_to_efforts.s()
+                                    activity_to_efforts.s(),
+                                    strava_task.s('strava_send_song_activities',())
                             )
             new_activities.append(download_chain)
 
-    strava_generate_nops(2+math.ceil(activity_count/200))
+    strava_generate_nops(4+math.ceil(activity_count/200))
 
     act_count = len(new_activities)
     if len(new_activities) == 0:
@@ -1026,5 +1032,5 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
 @shared_task
 def refresh_all(force=False):
     for poweruser in PowerUser.objects.all():
-        if poweruser.athlete and poweruser.listener_spotify and not poweruser.listener:
-            sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code ,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,poweruser.athlete.strava_token,force=force)
+        if poweruser.athlete and (poweruser.listener_spotify or poweruser.listener):
+            sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,poweruser.athlete.strava_token,force=force)

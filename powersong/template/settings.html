@@ -20,8 +20,33 @@ function deleteAccount(){
 	<ul class="list-group">    
 		<li class="list-group-item">
 			<div class="container">
+				<div class="row"> 
+					<h3>Sync settings</h3>
+				</div>
+				<div class="row"> 
+					<h5>Sharing song info to Stava</h5>
+				</div>
+				<div class="row"> 
+					{% if strava_authorize_url %}
+					  <p><a class="btn" href="{{ strava_authorize_url }}" role="button"> <img src="/static/logo/connect_strava/btn_strava_connectwith_orange.png"></a></p>
+					{% else %}   
+					<form action="/settings/" method="post">
+					  {% csrf_token %}
+    				  {{ form }}
+    				   <input type="submit" value="Save" />
+    				</form>
+					{% endif %}   
+				</div>
+				<div class="row">   
+					<h5>Extra</h5>
+				</div>
+				<div class="row"> 
+					<p><a class="btn btn-info" href="javascript:void(0)" onclick="sync_force()" role="button">Force Sync</a></p>
+				</div>
 				<div class="row">
-              	
+              	<h3>Account settings</h3>
+              	</div>
+				<div class="row"> 
 				{% if lastfm_authorize_url %}
 				  <p><a class="btn btn-lastfm" href="{{ lastfm_authorize_url }}" role="button">Connect with <img class="logo_footer" src="/static/logo/lastfm_logo_white_text.png"></a></p>
 				{% else %}
@@ -33,10 +58,7 @@ function deleteAccount(){
 				  <p><a class="btn btn-spotify" href="{{ spotify_authorize_url }}" role="button">Connect with <img class="logo_footer_40" src="/static/logo/spotify/Spotify_Logo_RGB_White.png"></a></p>
 				{% else %}
 				  <p><a class="btn btn-spotify" href="/remove_spotify/" role="button">Disconnect <img class="logo_footer" src="/static/logo/spotify/Spotify_Logo_RGB_White.png"></a></p>
-				{% endif %}        
-				</div>
-				<div class="row">  
-					<p><a class="btn btn-info" href="javascript:void(0)" onclick="sync_force()" role="button">Force Sync</a></p>
+				{% endif %}     
 				</div>
 				<div class="row">
 					<p><a class="btn btn-danger" href="#" onclick="deleteAccount()" role="button">Delete account</a></p>

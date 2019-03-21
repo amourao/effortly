@@ -30,6 +30,9 @@ def strava_get_auth_url():
     client = stravalib.client.Client()
     return client.authorization_url(settings.STRAVA_CLIENT_ID, redirect_uri = settings.STRAVA_CALLBACK_URL,scope = 'view_private')
 
+def strava_get_auth_edit_url():
+    client = stravalib.client.Client()
+    return client.authorization_url(settings.STRAVA_CLIENT_ID, redirect_uri = settings.STRAVA_CALLBACK_EDIT_URL,scope = 'view_private,write')
 
 
 def strava_get_user_info_by_id(athlete_id):

@@ -12,7 +12,9 @@ import spotipy
 
 import requests
 
+from powersong.view_main import get_all_data, NonAuthenticatedException
 from powersong.view_home import index
+from powersong.view_settings import setting
 from powersong.models import get_poweruser
 from powersong.spotify_aux import spotify_refresh_token
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
@@ -32,6 +34,29 @@ def strava_oauth(request):
 
     request.session['strava_token'] = token
     return redirect(index)
+
+def strava_edit_oauth(request):
+    if not 'code' in request.GET:
+        return redirect(setting)
+
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination) 
+        
+    code = request.GET['code']
+
+    strava_client = stravalib.client.Client()
+    token = strava_client.exchange_code_for_token(client_id=settings.STRAVA_CLIENT_ID, client_secret=settings.STRAVA_CLIENT_SECRET, code=code)
+
+    request.session['strava_token'] = token
+    poweruser.athlete.strava_token = token
+    poweruser.athlete.strava_edit_token = token
+    poweruser.athlete.save()
+
+    return redirect(setting)
+
 
 def lastfm_oauth(request):
 

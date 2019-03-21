@@ -203,11 +203,11 @@ class Activity(models.Model):
         if self.effort_set.all():
             text = "Songs listened during activity:\n"
             for e in self.effort_set.all():
-                text += "{} - {}: {} {}\n".format(e.song.artist_name,e.song.title,e.avg_speed_pretty,e.avg_speed_pretty_units)
+                text += "{} {}: {} - {}\n".format(e.avg_speed_pretty,e.avg_speed_pretty_units,e.song.artist_name,e.song.title)
             text += "##########################\n"
             text += self.footer_message
         else:
-            text = "No songs found.\n - by https://effortly.run\n"
+            text = "No songs found.\n- by https://effortly.run\n"
         return text
 
 

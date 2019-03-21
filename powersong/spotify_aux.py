@@ -104,6 +104,10 @@ def spotify_get_user_info(code,token,refresh,athlete_id):
 def spotify_get_auth_url():
     return settings.SPOTIFY_BASE.format(settings.SPOTIPY_CLIENT_ID, settings.SPOTIFY_CALLBACK_URL)
 
+def spotify_get_auth_url_edit():
+    return settings.SPOTIFY_BASE_EDIT.format(settings.SPOTIPY_CLIENT_ID, settings.SPOTIFY_CALLBACK_URL)
+
+
 def spotify_to_lastfm(results,start,end):
     track_list = []
     last_timestamp = None

@@ -1,6 +1,7 @@
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, render
 from django.template import RequestContext
 from django.http import HttpResponse,HttpResponseForbidden
+from django.http import JsonResponse
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -10,9 +11,9 @@ from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info, la
 from powersong.strava_aux import strava_get_auth_url,strava_get_user_info_by_id, strava_get_sync_progress, resync_activity, resync_activity_spotify
 from powersong.spotify_aux import spotify_get_user_info
 from powersong.view_detail import get_scrobble_details
-from powersong.tasks import sync_efforts_lastfm, sync_efforts_spotify, strava_get_user_info
+from powersong.tasks import sync_efforts_lastfm, sync_efforts_spotify, strava_get_user_info, strava_send_song_activities
 
-from powersong.models import get_poweruser, PowerUser, Athlete
+from powersong.models import get_poweruser, PowerUser, Athlete, Activity
 
 import logging
 
@@ -282,6 +283,29 @@ def get_sync_progress(request):
     #logger.debug('########## get_sync_progress ##########')
     return gen_sync_response(request)      
     #return render_to_response('blank.html', {'message':response})
+
+
+
+def send_song_info_to_strava(request,activity_id):
+    if 'demo' in request.session:
+        return ""
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        logger.debug(e.message)
+        return (e.destination)
+    
+    act = Activity.objects.filter(activity_id=activity_id)
+    if not act:
+        return JsonResponse({})
+
+    act = act[0]
+    if act.athlete_id != poweruser.athlete_id:
+        return JsonResponse({})
+    
+    strava_send_song_activities((activity_id,))
+    
+    return JsonResponse({})
     
 
 def resync_last_fm(request,activity_id):

@@ -50,7 +50,7 @@ def activity(request,activity_id):
     if 'demo' in request.session:
         poweruser = PowerUser.objects.filter(athlete__athlete_id=9363354)[0]
         data['demo'] = True
-    elif activity.athlete.share_activity_link:
+    elif not 'strava_token' in request.session and activity.athlete.share_activity_link:
         poweruser = PowerUser.objects.filter(athlete__athlete_id=activity.athlete.athlete_id)[0]
         data['viewer'] = True
     else:

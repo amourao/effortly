@@ -192,10 +192,12 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 
 STRAVA_CALLBACK_URL = HOME_URL + '/strava_oauth_callback/'
+STRAVA_CALLBACK_EDIT_URL = HOME_URL + '/strava_oauth_callback_edit/'
 
 LASTFM_CALLBACK_URL = HOME_URL + '/lastfm_oauth_callback/'
 
 SPOTIFY_CALLBACK_URL = HOME_URL + '/spotify_oauth_callback/'
+
 
 LASTFM_BASE = 'https://www.last.fm/api/auth/?cb={}&api_key='.format(LASTFM_CALLBACK_URL)
 LASTFM_API_AUTHBASE = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&token={}&api_sig={}&format=json'
