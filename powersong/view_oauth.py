@@ -51,7 +51,7 @@ def strava_edit_oauth(request):
     token = strava_client.exchange_code_for_token(client_id=settings.STRAVA_CLIENT_ID, client_secret=settings.STRAVA_CLIENT_SECRET, code=code)
 
     request.session['strava_token'] = token
-    poweruser.athlete.strava_token = token
+    #poweruser.athlete.strava_token = token
     poweruser.athlete.strava_edit_token = token
     poweruser.athlete.save()
 

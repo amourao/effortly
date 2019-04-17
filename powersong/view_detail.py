@@ -56,6 +56,10 @@ def activity(request,activity_id):
     else:
         poweruser = get_poweruser(request.session['strava_token'])
 
+    if not poweruser:
+        return redirect("/")
+
+
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
     data['listenerspotify'] = poweruser.listener_spotify

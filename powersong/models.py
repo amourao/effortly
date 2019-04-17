@@ -413,6 +413,9 @@ class Effort(models.Model):
 def get_poweruser(strava_token):
     powerusers = PowerUser.objects.filter(athlete__strava_token=strava_token)
 
+    if not powerusers:
+        powerusers = PowerUser.objects.filter(athlete__strava_edit_token=strava_token)
+        
     if powerusers:
         return powerusers[0]
 

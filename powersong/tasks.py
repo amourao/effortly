@@ -85,14 +85,23 @@ def strava_send_song_activities(act_id_s):
     if not act.athlete.share_activity_songs:
         return (None,)
 
-    access_token = act.athlete.strava_token
+    if not act.athlete.strava_edit_token:
+        return (None,)
+
+    #act.athlete.strava_token = act.athlete.strava_edit_token
+    #act.athlete.save()
+    access_token = act.athlete.strava_edit_token
 
     client = stravalib.client.Client()
     client.access_token = access_token
     
+    
     activity = client.get_activity(act_id)
     description = activity.description
-    description = act.activity_share_message + '\n' + description
+    if description:
+        description = act.activity_share_message + '\n' + description
+    else:
+        description = act.activity_share_message
 
     client.update_activity(act_id, description=description.strip())
     return (None,)
@@ -1032,9 +1041,12 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
 @shared_task
 def refresh_all(force=False):
     for poweruser in PowerUser.objects.all():
-        if poweruser.athlete and (poweruser.listener_spotify or poweruser.listener):
-            if poweruser.listener:
-                sync_efforts_lastfm.delay(poweruser.listener.nickname,poweruser.listener.lastfm_token,force=force)
-            else:
-                sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,poweruser.athlete.strava_token,force=force)
-            
+        if poweruser.athlete and poweruser.athlete.strava_edit_token:
+            strava_token = poweruser.athlete.strava_edit_token
+        else:
+            strava_token = poweruser.athlete.strava_token
+        if poweruser.athlete and poweruser.listener:
+            sync_efforts_lastfm.delay(poweruser.listener.nickname,strava_token,force=force)
+        elif poweruser.athlete and poweruser.listener_spotify:
+            sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,strava_token,force=force)
+
