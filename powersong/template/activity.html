@@ -106,7 +106,11 @@
         <div class="container">
             <div class="row">
             	<div class="col-md-4">
-            		<p class="h4 mb-0">{{ activity.name}}</p>
+                <p class="h4 mb-0">
+                {% if logged_viewer %}
+                <span class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ activity_athlete.athlete_id }}"><img onerror="img_error(this);" src="{{ activity_athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture"></a> </span>
+                {% endif %}
+            		{{ activity.name}}</p>
             		<p><a class="h6 mylead-link" href="https://www.strava.com/activities/{{ activity.activity_id}}/" target="_blank">View on Strava</a><p>
             		<p class="h5">{{ activity.start_date_local }}</p>
                 {% get_symbols activity.workout_type activity.flagged activity.flagged_hr %}
@@ -166,27 +170,28 @@
             {% endif %}
             </div>
             <div class="col-2 text-right">
-                
-            <div class="dropdown">
-              <button class="btn btn-outline-info fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenu">
-                {% if listener %}
-                <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" target="_blank" class="dropdown-item" type="button">See on last.fm</a>                
-                <button onclick="sendGet('/resync_last_fm/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync last.fm</button>
-                {% endif %}
-                {% if listenerspotify %}
-                <button onclick="sendGet('/resync_spotify/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync Spotify</button>
-                {% endif %} 
-                {% if athlete.share_activity_link  %}
-                <button onclick="sendGet('/send_song_info_to_strava/{{ activity.activity_id}}')" class="dropdown-item" type="button">Send song info to Strava</button>
-                {% endif %}             
-                <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
+              {% if logged_viewer == None %}
+              <div class="dropdown">
+                <button class="btn btn-outline-info fa fa-cog" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+                  {% if listener %}
+                  <a href="https://www.last.fm/user/{{ listener.nickname }}/library?from={{ activity.start_date_local|date:'Y-m-d' }}&rangetype=1day" target="_blank" class="dropdown-item" type="button">See on last.fm</a>                
+                  <button onclick="sendGet('/resync_last_fm/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync last.fm</button>
+                  {% endif %}
+                  {% if listenerspotify %}
+                  <button onclick="sendGet('/resync_spotify/{{ activity.activity_id}}')" class="dropdown-item" type="button">Resync Spotify</button>
+                  {% endif %} 
+                  {% if athlete.share_activity_link  %}
+                  <button onclick="sendGet('/send_song_info_to_strava/{{ activity.activity_id}}')" class="dropdown-item" type="button">Send song info to Strava</button>
+                  {% endif %}             
+                  <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged',!{{ activity.flagged|lower  }})" class="dropdown-item" type="button">{% if activity.flagged %}Unflag{% else %}Flag{% endif %} activity</button>
 
-                <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="dropdown-item" type="button">{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR</button>
+                  <button onclick="sendPost({{ activity.activity_id }},'flag_activity','flagged_hr',!{{ activity.flagged_hr|lower }})" class="dropdown-item" type="button">{% if activity.flagged_hr %}Unflag{% else %}Flag{% endif %} activity efforts HR</button>
 
+                </div>
               </div>
-            </div>
+              {% endif %}
             </div>
         </div>
         {% endif %}

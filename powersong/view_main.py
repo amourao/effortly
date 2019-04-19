@@ -40,6 +40,8 @@ def get_all_data(request):
         if not 'strava_token' in request.session:
             raise NonAuthenticatedException("No strava session found", redirect(strava_get_auth_url()))
         poweruser = get_poweruser(request.session['strava_token'])
+        if poweruser:
+            puid = poweruser.id
 
     if 'puid' in request.GET and poweruser and (poweruser.athlete.athlete_id == "9363354" or 'superuser' in request.session) and not 'demo' in request.session:
         request.session.flush()
@@ -65,6 +67,7 @@ def get_all_data(request):
         poweruser.athlete = athlete_model
         poweruser.save()
         puid = poweruser.id
+    logger.debug(poweruser, puid)
     logger.debug(poweruser.listener_spotify)
     if poweruser.listener_spotify:
         request.session['spotify_code'] = poweruser.listener_spotify.spotify_code
@@ -84,7 +87,8 @@ def get_all_data(request):
     puid = poweruser.id
     powerusers = PowerUser.objects.filter(id=puid)
     poweruser = powerusers[0]
-
+    logger.debug(poweruser, puid)
+    
     request.session['strava_token'] = poweruser.athlete.strava_token
     request.session['athlete_id'] = poweruser.athlete.athlete_id
 
