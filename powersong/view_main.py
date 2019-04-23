@@ -50,7 +50,7 @@ def get_all_data(request):
         powerusers = PowerUser.objects.filter(id=puid)
         poweruser = powerusers[0]
     logger.debug(poweruser)
-    if poweruser == None:
+    if not poweruser:
         # exchange lastfm_key per token on first run
         # if invalid, go back to home for reauthorization
         # check if stored lastfm session is valid
@@ -63,11 +63,15 @@ def get_all_data(request):
         if athlete_model == None:
             athlete_model = strava_get_user_info(request.session['strava_token'])
         
-        poweruser = PowerUser()
-        poweruser.athlete = athlete_model
-        poweruser.save()
+        powerusers = PowerUser.objects.filter(athlete=athlete_model)
+        if not powerusers:
+            poweruser = PowerUser()
+            poweruser.athlete = athlete_model
+            poweruser.save()
+        else:
+            poweruser = powerusers[0]
         puid = poweruser.id
-    logger.debug(poweruser, puid)
+    logger.debug([poweruser, puid])
     logger.debug(poweruser.listener_spotify)
     if poweruser.listener_spotify:
         request.session['spotify_code'] = poweruser.listener_spotify.spotify_code
@@ -87,7 +91,7 @@ def get_all_data(request):
     puid = poweruser.id
     powerusers = PowerUser.objects.filter(id=puid)
     poweruser = powerusers[0]
-    logger.debug(poweruser, puid)
+    logger.debug([poweruser, puid])
     
     request.session['strava_token'] = poweruser.athlete.strava_token
     request.session['athlete_id'] = poweruser.athlete.athlete_id

@@ -47,7 +47,7 @@ def activity(request,activity_id):
     if not ('strava_token' in request.session or 'demo' in request.session or activity.athlete.share_activity_link):
         return redirect("/")
 
-    if 'demo' in request.session:
+    if 'demo' in request.session and activity.athlete.athlete_id == 9363354:
         activity_poweruser = PowerUser.objects.filter(athlete__athlete_id=9363354)[0]
         poweruser = activity_poweruser
         data['demo'] = True
@@ -56,9 +56,10 @@ def activity(request,activity_id):
             activity_poweruser = PowerUser.objects.filter(athlete__athlete_id=activity.athlete.athlete_id)[0]
             poweruser = get_poweruser(request.session['strava_token'])
             if not poweruser:
+                data['viewer'] = True
                 poweruser = activity_poweruser
-            if poweruser != activity_poweruser:
-                data['logged_viewer'] = True
+            elif poweruser != activity_poweruser:
+                data['logged_viewer'] = True                
         else:
             data['viewer'] = True
             activity_poweruser = PowerUser.objects.filter(athlete__athlete_id=activity.athlete.athlete_id)[0]
@@ -76,7 +77,7 @@ def activity(request,activity_id):
     if activity.athlete_id != activity_poweruser.athlete.id:
         return render_to_response('access_denied.html', data)
 
-    if poweruser.listener_spotify:
+    if not 'logged_viewer' in data and not 'viewer' in data and not 'demo' in data and poweruser.listener_spotify:
         data['spotify_token'] = poweruser.listener_spotify.spotify_token
 
     qs = Effort.objects.filter(flagged=False,activity__activity_id = activity_id).values('id','song','song__original_song','song__original_song__spotify_id','song__original_song__title','song__original_song__artist_name','song__original_song__url','song__original_song__image_url','song__original_song__artist__id','song__original_song__artist__image_url','diff_last_hr','diff_avg_hr','diff_last_speed','diff_avg_speed','avg_speed','start_distance','distance','duration','avg_hr','start_time','song__original_song__artist__id','diff_avg_speed','diff_last_speed','diff_avg_speed_s','diff_last_speed_s','data','hr','time','flagged','flagged_hr','activity__flagged','activity__flagged_hr').order_by('start_time')
