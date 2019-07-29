@@ -20,6 +20,6 @@ sys.path.append('/home/amourao/powersong')
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "powersong.settings")
+os.environ["DJANGO_SETTINGS_MODULE"] = "powersong.settings"
 
 application = get_wsgi_application()

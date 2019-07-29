@@ -66,8 +66,8 @@ class Athlete(models.Model):
 
     strava_token = models.CharField(max_length=100)
     strava_edit_token = models.CharField(max_length=100,blank=True,null=True)
-    share_activity_songs = models.BooleanField(default=False)
-    share_activity_link = models.BooleanField(default=False)
+    share_activity_songs = models.BooleanField(default=True)
+    share_activity_link = models.BooleanField(default=True)
 
 class ListenerSpotify(models.Model):
     nickname = models.CharField(max_length=30,unique=True)
