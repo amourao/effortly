@@ -7,7 +7,7 @@ from powersong.view_tops import top, top_song_artist, top_activities, top_global
 from powersong.view_detail import activity, song, artist, artists, songs
 from powersong.view_main import about, get_sync_progress, sync, sync_spotify, resync_last_fm, resync_spotify, detailed, global_top, send_song_info_to_strava
 from powersong.view_settings import setting, flag_activity, flag_artist, flag_song, flag_effort, remove_spotify, remove_lastfm, delete_account
-
+from powersong.view_webhooks import strava_webhooks_callback
 from django.conf import settings
 from django.conf.urls import include
 
@@ -49,6 +49,7 @@ urlpatterns = [
     url(r'^resync_spotify/(?P<activity_id>.*)/', resync_spotify),
     url(r'^send_song_info_to_strava/(?P<activity_id>.*)/', send_song_info_to_strava),
 
+    url(r'^strava_webhooks/', strava_webhooks_callback),
 
     url(r'^strava_oauth_callback/', strava_oauth),
     url(r'^strava_oauth_refresh/', spotify_refresh_token_endpoint),
