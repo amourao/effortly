@@ -44,7 +44,7 @@ def activity(request,activity_id):
     if not activities:
         return render_to_response('access_denied.html', data)
     activity = activities[0]
-    if not ('strava_token' in request.session or 'demo' in request.session or activity.athlete.share_activity_link):
+    if not ('athlete_id' in request.session or 'demo' in request.session or activity.athlete.share_activity_link):
         return redirect("/")
 
     if 'demo' in request.session and activity.athlete.athlete_id == 9363354:
@@ -52,9 +52,9 @@ def activity(request,activity_id):
         poweruser = activity_poweruser
         data['demo'] = True
     elif activity.athlete.share_activity_link:
-        if 'strava_token' in request.session:
+        if 'athlete_id' in request.session:
             activity_poweruser = PowerUser.objects.filter(athlete__athlete_id=activity.athlete.athlete_id)[0]
-            poweruser = get_poweruser(request.session['strava_token'])
+            poweruser = get_poweruser(request.session['athlete_id'])
             if not poweruser:
                 data['viewer'] = True
                 poweruser = activity_poweruser
@@ -117,14 +117,14 @@ def song(request,song_id):
 
     data = {}
 
-    if not 'strava_token' in request.session and not 'demo' in request.session:
+    if not 'athlete_id' in request.session and not 'demo' in request.session:
         return redirect("/")
     
     if 'demo' in request.session:
         poweruser = PowerUser.objects.filter(athlete__athlete_id=9363354)[0]
         data['demo'] = True
     else:
-        poweruser = get_poweruser(request.session['strava_token'])
+        poweruser = get_poweruser(request.session['athlete_id'])
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
@@ -220,14 +220,14 @@ def song(request,song_id):
 def artist(request,artist_id):
     data = {}
 
-    if not 'strava_token' in request.session and not 'demo' in request.session:
+    if not 'athlete_id' in request.session and not 'demo' in request.session:
         return redirect("/")
     
     if 'demo' in request.session:
         poweruser = PowerUser.objects.filter(athlete__athlete_id=9363354)[0]
         data['demo'] = True
     else:
-        poweruser = get_poweruser(request.session['strava_token'])
+        poweruser = get_poweruser(request.session['athlete_id'])
 
 
 
@@ -323,7 +323,7 @@ def artists(request):
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
-    poweruser = get_poweruser(request.session['strava_token'])
+    poweruser = get_poweruser(request.session['athlete_id'])
 
     n = 5
     if 'n' in request.GET:
@@ -381,7 +381,7 @@ def songs(request):
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
-    poweruser = get_poweruser(request.session['strava_token'])
+    poweruser = get_poweruser(request.session['athlete_id'])
 
     n = 5
     if 'n' in request.GET:

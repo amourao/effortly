@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from django.contrib import admin
 
-from powersong.view_oauth import strava_oauth,strava_edit_oauth, lastfm_oauth, spotify_oauth, spotify_refresh_token_endpoint
+from powersong.view_oauth import strava_oauth, lastfm_oauth, spotify_oauth, spotify_refresh_token_endpoint
 from powersong.view_home import index, home, logout, demo
 from powersong.view_tops import top, top_song_artist, top_activities, top_global_song_artist
 from powersong.view_detail import activity, song, artist, artists, songs
@@ -51,7 +51,6 @@ urlpatterns = [
 
 
     url(r'^strava_oauth_callback/', strava_oauth),
-    url(r'^strava_oauth_callback_edit/', strava_edit_oauth),
     url(r'^strava_oauth_refresh/', spotify_refresh_token_endpoint),
 
     url(r'^lastfm_oauth_callback/', lastfm_oauth),

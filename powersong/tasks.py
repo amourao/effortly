@@ -15,6 +15,7 @@ import base64
 from django.conf import settings
 import requests
 
+
 from powersong.models import *
 from powersong.spotify_aux import spotify_get_recent_tracks, spotify_refresh_token, spotify_get_recent_tracks_before
 from urllib.error import HTTPError
@@ -25,6 +26,31 @@ import logging, time
 
 
 logger = logging.getLogger(__name__)
+
+def strava_refresh_oauth(athlete_id):
+    athletes = Athlete.objects.filter(athlete_id=athlete_id)
+
+    if not athletes:
+        return None
+
+    athlete = athletes[0]
+
+    refresh_token = athlete.strava_refresh_token
+    
+    strava_client = stravalib.client.Client()
+
+    refresh_response = strava_client.refresh_access_token(client_id=settings.STRAVA_CLIENT_ID, client_secret=settings.STRAVA_CLIENT_SECRET, refresh_token=refresh_token)
+    access_token = refresh_response['access_token']
+    refresh_token = refresh_response['refresh_token']
+    expires_at = refresh_response['expires_at']
+
+    athlete.strava_token = access_token
+    athlete.strava_refresh_token = refresh_token
+    athlete.strava_token_expires_at = expires_at
+    athlete.save()
+
+    return athlete
+
 
 def unpack_chain(nodes):                                 
     while nodes.children:
@@ -60,9 +86,9 @@ def strava_nop():
     return None
 
 def strava_op(access_token):
-    client = stravalib.client.Client()
-    client.access_token = access_token
-    athlete_api = client.get_athlete()
+    #client = stravalib.client.Client()
+    #client.access_token = access_token
+    #athlete_api = client.get_athlete()
     return None
 
 def strava_generate_nops(count):
@@ -85,15 +111,13 @@ def strava_send_song_activities(act_id_s):
     if not act.athlete.share_activity_songs:
         return (None,)
 
-    if not act.athlete.strava_edit_token:
-        return (None,)
-
-    #act.athlete.strava_token = act.athlete.strava_edit_token
     #act.athlete.save()
-    access_token = act.athlete.strava_edit_token
+    ath = strava_get_user_info(id=act.athlete.athlete_id)
 
     client = stravalib.client.Client()
-    client.access_token = access_token
+    client.access_token = ath.strava_token
+    client.refresh_token = ath.strava_refresh_token
+    client.token_expires_at = ath.strava_token_expires_at
     
     
     activity = client.get_activity(act_id)
@@ -107,9 +131,17 @@ def strava_send_song_activities(act_id_s):
     return (None,)
 
 
-def strava_download_activity(access_token,act):
+def strava_download_activity(act):
+
+    ath = strava_get_user_info(id=act['athlete_id'])
+
+    if ath == None:
+        return (None,)
+
     client = stravalib.client.Client()
-    client.access_token = access_token
+    client.access_token = ath.strava_token
+    client.refresh_token = ath.strava_refresh_token
+    client.token_expires_at = ath.strava_token_expires_at 
     
     stored_act = create_activity_from_dict(act)
 
@@ -167,7 +199,7 @@ def strava_task(*args,**kwargs):
 
 ########################## Last.fm API tasks ##########################
 
-def lastfm_download_activity_tracks(act_stream_stored_act,username):
+def lastfm_download_activity_tracks(act_stream_stored_act):
     if act_stream_stored_act == None or act_stream_stored_act == (None,):
         return None
     
@@ -175,12 +207,15 @@ def lastfm_download_activity_tracks(act_stream_stored_act,username):
 
     stored_act = strava_get_activity_by_id(stored_act_id)
 
+    athelte = strava_get_user_info(id=stored_act.athlete.athlete_id)
+
+    poweruser = Athlete.objects.filter(id=stored_act.athlete.id)[0].poweruser_set.all()[0]
 
     start = strava_get_start_timestamp(stored_act.start_date-timedelta(seconds=600))
     end = strava_get_start_timestamp(stored_act.start_date+timedelta(seconds=int(stored_act.elapsed_time)))
 
     method = 'user.getrecenttracks'
-    url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,username,start,end)
+    url = settings.LASTFM_API_RECENT.format(method,settings.LASTFM_API_KEY,poweruser.listener.nickname,start,end)
     response = requests.get(url).json()
 
     #with open('data_in_{}.json'.format(stored_act_id), 'w') as outfile:
@@ -336,18 +371,22 @@ def spotify_get_spotify_ids(code,token,reftoken,song_id):
     except:
         return
 
-def spotify_download_activity_tracks(act_stream_stored_act,code,token,reftoken,athlete_id,force):
+def spotify_download_activity_tracks(act_stream_stored_act,force):
     if act_stream_stored_act == None or act_stream_stored_act == (None,):
         return None
 
     (act_stream,stored_act_id) = act_stream_stored_act
+    stored_act = strava_get_activity_by_id(stored_act_id)
+
+    athelte = strava_get_user_info(id=stored_act.athlete.athlete_id)
+    athlete_id = athelte.athlete_id
 
     poweruser = Athlete.objects.filter(athlete_id=athlete_id)[0].poweruser_set.all()[0]
     code = poweruser.listener_spotify.spotify_code
     token = poweruser.listener_spotify.spotify_token
     reftoken = poweruser.listener_spotify.spotify_refresh_token
 
-    stored_act = strava_get_activity_by_id(stored_act_id)
+    
 
     start = strava_get_start_timestamp(stored_act.start_date-timedelta(seconds=600))
     end = strava_get_start_timestamp(stored_act.start_date+timedelta(seconds=int(stored_act.elapsed_time)))
@@ -794,34 +833,18 @@ def get_diff_set(stream, start, end, key, ignore_moving = False):
     return np.array(data,np.float16),np.array(time,np.uint16)
 
 
-def strava_get_user_info(access_token):
-    athletes = Athlete.objects.filter(strava_token=access_token)
+def strava_get_user_info(id):
+    athletes = Athlete.objects.filter(athlete_id=id)
     #logger.debug("Getting athlete with token {}".format(access_token))
 
     if athletes:
         athlete = athletes[0]
+
+        if athlete.strava_token_expires_at and time.time() > float(athlete.strava_token_expires_at):
+            athlete = strava_refresh_oauth(athlete.athlete_id)
         #logger.debug("Athlete {} found with current token".format(athlete.athlete_id))
         return athlete
-
-    client = stravalib.client.Client()
-    client.access_token = access_token
-    athlete_api = client.get_athlete()
-    
-    athletes = Athlete.objects.filter(athlete_id=athlete_api.id)
-    if athletes:
-        #logger.debug("Athlete {} found with invalid token. Updating token.".format(athlete.athlete_id))
-        athlete = athletes[0]
-        athlete.strava_token = access_token
-        athlete.save()
-        return athlete
-
-    #logger.debug("Athlete {} not in database, creating new.".format(athlete_api.id))
-    athlete = create_athlete_from_dict(athlete_api)
-    athlete.strava_token = access_token
-    
-    athlete.save()
-
-    return athlete
+    return None
 
 def strava_parse_base_activity(act):
     actFinal = {}
@@ -895,10 +918,18 @@ def strava_parse_base_activity(act):
 ########################## END Aux code ##########################
 
 @shared_task
-def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None,force=False):
+def sync_efforts_spotify(athlete_id,limit=None,after=None,force=False):
 
-    athlete = strava_get_user_info(access_token)
-    
+    athlete = strava_get_user_info(id=athlete_id)
+
+    client = stravalib.client.Client()
+    client.access_token = athlete.strava_token
+    client.refresh_token = athlete.strava_refresh_token
+    client.token_expires_at = athlete.strava_token_expires_at
+
+    if not athlete.strava_token_expires_at:
+        return "00000000-0000-0000-0000-000000000000", 0
+
     last_sync_date =  athlete.last_sync_date
 
     athlete.last_celery_task_count = -1
@@ -906,9 +937,6 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None,
 
     if not force and not after:
         after = last_sync_date
-
-    client = stravalib.client.Client()
-    client.access_token = access_token
 
     athlete_api = client.get_athlete()
     stats = athlete_api.stats
@@ -920,8 +948,8 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None,
         activity_count += 1
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
-                                    spotify_task.s('spotify_download_activity_tracks',(code,token,reftoken,athlete.athlete_id,False)),
+            download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                                    spotify_task.s('spotify_download_activity_tracks',(False,)),
                                     activity_to_efforts.s(),
                                     strava_task.s('strava_send_song_activities',())
                             )
@@ -943,7 +971,7 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None,
                 break
         job_result_id = job_result.id 
         
-    athlete = strava_get_user_info(access_token)
+    athlete = strava_get_user_info(id=athlete_id)
     athlete.activity_count = stats.all_ride_totals.count
     athlete.runs_count = stats.all_run_totals.count
     athlete.rides_count = stats.all_ride_totals.count
@@ -967,8 +995,16 @@ def sync_efforts_spotify(code,token,reftoken,access_token,limit=None,after=None,
 
 
 @shared_task
-def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
-    athlete = strava_get_user_info(access_token)
+def sync_efforts_lastfm(athlete_id,limit=None,after=None,force=False):
+    athlete = strava_get_user_info(id=athlete_id)
+
+    client = stravalib.client.Client()
+    client.access_token = athlete.strava_token
+    client.refresh_token = athlete.strava_refresh_token
+    client.token_expires_at = athlete.strava_token_expires_at
+
+    if not athlete.strava_token_expires_at:
+        return "00000000-0000-0000-0000-000000000000", 0
     
     last_sync_date =  athlete.last_sync_date
     athlete.last_celery_task_count = -1
@@ -976,9 +1012,6 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
 
     if not force and not after:
         after = last_sync_date
-
-    client = stravalib.client.Client()
-    client.access_token = access_token
 
     athlete_api = client.get_athlete()
     stats = athlete_api.stats
@@ -990,8 +1023,8 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
         activity_count += 1
         if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
             act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_task.si('strava_download_activity',(access_token,act_p)),
-                                    lastfm_task.s('lastfm_download_activity_tracks',(token,)),
+            download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                                    lastfm_task.s('lastfm_download_activity_tracks',()),
                                     activity_to_efforts.s(),
                                     strava_task.s('strava_send_song_activities',())
                             )
@@ -1013,7 +1046,7 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
                 break
         job_result_id = job_result.id 
         
-    athlete = strava_get_user_info(access_token)
+    athlete = strava_get_user_info(id=athlete_id)
     athlete.activity_count = stats.all_ride_totals.count
     athlete.runs_count = stats.all_run_totals.count
     athlete.rides_count = stats.all_ride_totals.count
@@ -1041,12 +1074,8 @@ def sync_efforts_lastfm(token,access_token,limit=None,after=None,force=False):
 @shared_task
 def refresh_all(force=False):
     for poweruser in PowerUser.objects.all():
-        if poweruser.athlete and poweruser.athlete.strava_edit_token:
-            strava_token = poweruser.athlete.strava_edit_token
-        else:
-            strava_token = poweruser.athlete.strava_token
         if poweruser.athlete and poweruser.listener:
-            sync_efforts_lastfm.delay(poweruser.listener.nickname,strava_token,force=force)
+            sync_efforts_lastfm.delay(poweruser.athlete.athlete_id,force=force)
         elif poweruser.athlete and poweruser.listener_spotify:
-            sync_efforts_spotify.delay(poweruser.listener_spotify.spotify_code,poweruser.listener_spotify.spotify_token,poweruser.listener_spotify.spotify_refresh_token,strava_token,force=force)
+            sync_efforts_spotify.delay(poweruser.athlete.athlete_id,force=force)
 

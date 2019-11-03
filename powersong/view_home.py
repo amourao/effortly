@@ -14,6 +14,9 @@ from powersong.view_main import get_all_data, NonAuthenticatedException
 
 from powersong.models import get_poweruser, PowerUser
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def demo(request):
     request.session.flush()
@@ -24,18 +27,16 @@ def demo(request):
 def index(request):
     
     result = {}
-
     if 'demo' in request.session or 'demo' in request.GET:
         return demo(request)
     
-    if not 'strava_token' in request.session:
+    if not 'athlete_id' in request.session:
         result['strava_authorize_url'] = strava_get_auth_url()
         return render_to_response('home.html', result)
-    elif get_poweruser(request.session['strava_token']) != None:
+    elif get_poweruser(request.session['athlete_id']) != None:
         return main_index(request)
 
-
-    if not "strava_token" in request.session:
+    if not "athlete_id" in request.session:
         return render_to_response('home.html', result)
     else:
         return main_index(request)

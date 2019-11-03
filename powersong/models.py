@@ -65,7 +65,8 @@ class Athlete(models.Model):
     last_celery_task_count = models.IntegerField(blank=True,null=True)
 
     strava_token = models.CharField(max_length=100)
-    strava_edit_token = models.CharField(max_length=100,blank=True,null=True)
+    strava_refresh_token = models.CharField(max_length=100,blank=True,null=True)
+    strava_token_expires_at = models.CharField(max_length=100,blank=True,null=True)
     share_activity_songs = models.BooleanField(default=True)
     share_activity_link = models.BooleanField(default=True)
 
@@ -410,12 +411,8 @@ class Effort(models.Model):
     def start_time_pretty(self):
         return secondsToMinutesSecs(self.start_time)
 
-def get_poweruser(strava_token):
-    powerusers = PowerUser.objects.filter(athlete__strava_token=strava_token)
-
-    if not powerusers:
-        powerusers = PowerUser.objects.filter(athlete__strava_edit_token=strava_token)
-        
+def get_poweruser(athlete_id):
+    powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id)
     if powerusers:
         return powerusers[0]
 

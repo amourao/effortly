@@ -110,7 +110,7 @@ def top_activities(request):
     if activity_type == 0 and dispfield in speed:
         dispfield += "_s"
 
-    poweruser = get_poweruser(request.session['strava_token'])
+    poweruser = get_poweruser(request.session['athlete_id'])
 
     qs = Activity.objects
 
@@ -496,7 +496,7 @@ def top_song_artist(request):
     diff_filter_min = 0.5
     diff_filter_max = 1.5
 
-    poweruser = get_poweruser(request.session['strava_token'])
+    poweruser = get_poweruser(request.session['athlete_id'])
 
     qs = Effort.objects
 
@@ -706,7 +706,7 @@ def top(request):
     diff_filter_min = 0.5
     diff_filter_max = 1.5
 
-    poweruser = get_poweruser(request.session['strava_token'])
+    poweruser = get_poweruser(request.session['athlete_id'])
 
     
     qs = Effort.objects
@@ -807,10 +807,10 @@ def top(request):
 def latest(request):
     data = {}
 
-    if not 'strava_token' in request.session:
+    if not 'athlete_id' in request.session:
         return redirect("/")
     
-    poweruser = get_poweruser(request.session['strava_token'])
+    poweruser = get_poweruser(request.session['athlete_id'])
 
     data['athlete'] = poweruser.athlete
     data['listener'] = poweruser.listener
