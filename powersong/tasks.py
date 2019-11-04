@@ -868,7 +868,7 @@ def strava_parse_base_activity(act):
     actFinal['end_latlng'] = act.end_latlng
     
     actFinal['flagged'] = act.flagged
-    actFinal['gear'] = act.gear
+    #actFinal['gear'] = act.gear
     actFinal['gear_id'] = act.gear_id
     
     actFinal['has_heartrate'] = act.has_heartrate
@@ -891,7 +891,7 @@ def strava_parse_base_activity(act):
     
     actFinal['name'] = act.name
     actFinal['photo_count'] = act.photo_count
-    actFinal['segment_efforts'] = act.segment_efforts
+    #actFinal['segment_efforts'] = act.segment_efforts
     actFinal['start_date'] = act.start_date
     actFinal['start_date_local'] = act.start_date_local
     

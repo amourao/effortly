@@ -14,11 +14,12 @@ import requests
 
 from django.http import JsonResponse, HttpResponse
 
+
 from powersong.view_main import get_all_data, NonAuthenticatedException
 from powersong.view_home import index
-from powersong.view_settings import setting
-from powersong.models import get_poweruser
+from powersong.models import get_poweruser, Activity
 from powersong.spotify_aux import spotify_refresh_token
+from powersong.strava_aux import sync_one_activity
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
 
 import logging
@@ -40,9 +41,18 @@ def strava_webhooks_callback(request):
             pass
         return HttpResponse("INVALID_REQUEST")    
     elif request.method == 'POST':
-        logger.debug(request.body)
-        #{"aspect_type":"create","event_time":1572815099,"object_id":2839186045,"object_type":"activity","owner_id":9363354,"subscription_id":145911,"updates":{}}'
-        #{"aspect_type":"delete","event_time":1572815180,"object_id":2839187638,"object_type":"activity","owner_id":9363354,"subscription_id":145911,"updates":{}}'
+        try:
+            data = json.loads(request.body)
+            if data["subscription_id"] != settings.STRAVA_SUBSCRIPTION_ID:
+                raise Exception("Invalid subscription_id")
+            if data["aspect_type"] == "create" and data["object_type"] == "activity":               
+                sync_one_activity(data["object_id"], data["owner_id"])
+            elif data["aspect_type"] == "delete" and data["object_type"] == "activity":
+                Activity.objects.filter(activity_id=data["object_id"],athlete__athlete_id=data["owner_id"]).delete()
+        except Exception as e:
+            logger.debug(e)
+            logger.debug("STRAVA WEBHOOK PARSE ERROR")
+            pass
         client = stravalib.client.Client()
         return HttpResponse("EVENT_RECEIVED")
 

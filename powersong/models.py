@@ -555,7 +555,7 @@ def create_activity_from_dict(activity_api,dry_run=False):
 
     if activities:
         return activities[0]
-
+    logger.debug(activity_api)
     activity = Activity()
     if activity_api['type'] == 'Ride':
         activity.act_type = 1

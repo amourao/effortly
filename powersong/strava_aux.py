@@ -3,7 +3,7 @@ import stravalib.client
 from django.conf import settings
 
 from datetime import datetime,timedelta
-from powersong.tasks import strava_get_user_info
+from powersong.tasks import strava_get_user_info, strava_parse_base_activity
 from powersong.tasks import strava_task,spotify_task,lastfm_task,activity_to_efforts,strava_generate_nops,count_finished
 
 import copy
@@ -54,6 +54,57 @@ def strava_get_sync_progress(task_id,total_count):
     except:
         return 'FAILED', 0, 0
 
+
+def sync_one_activity(activity_id,athlete_id):
+    powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id) 
+    if powerusers:
+        poweruser = powerusers[0]
+        if poweruser.listener:
+            return sync_one_activity_lastfm(activity_id, athlete_id)
+        elif poweruser.listener_spotify:
+            return sync_one_activity_spotify(activity_id, athlete_id)
+
+def sync_one_activity_lastfm(activity_id,athlete_id):
+    athlete = strava_get_user_info(id=athlete_id)
+
+    client = stravalib.client.Client()
+    client.access_token = athlete.strava_token
+    client.refresh_token = athlete.strava_refresh_token
+    client.token_expires_at = athlete.strava_token_expires_at
+
+    if not athlete.strava_token_expires_at:
+        return "00000000-0000-0000-0000-000000000000", 0
+
+    act_p = strava_parse_base_activity(client.get_activity(activity_id))
+    download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                            lastfm_task.s('lastfm_download_activity_tracks',()),
+                            activity_to_efforts.s(),
+                            strava_task.s('strava_send_song_activities',())
+                    )
+    job_result = download_chain.apply_async(countdown=5*60)
+    
+    return job_result.id, 1
+
+def sync_one_activity_spotify(activity_id,athlete_id):
+    athlete = strava_get_user_info(id=athlete_id)
+
+    client = stravalib.client.Client()
+    client.access_token = athlete.strava_token
+    client.refresh_token = athlete.strava_refresh_token
+    client.token_expires_at = athlete.strava_token_expires_at
+
+    if not athlete.strava_token_expires_at:
+        return "00000000-0000-0000-0000-000000000000", 0
+
+    act_p = strava_parse_base_activity(client.get_activity(activity_id))
+    download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                            spotify_task.s('spotify_download_activity_tracks',(True,)),
+                            activity_to_efforts.s(),
+                            strava_task.s('strava_send_song_activities',())
+                    )
+    job_result = download_chain.apply_async(countdown=5*60)
+
+    return job_result.id, 1
 
 
 
