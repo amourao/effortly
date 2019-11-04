@@ -29,7 +29,7 @@ cache = {}
 
 def strava_get_auth_url():
     client = stravalib.client.Client()
-    return client.authorization_url(settings.STRAVA_CLIENT_ID, redirect_uri = settings.STRAVA_CALLBACK_URL,scope = ['activity:read_all','profile:read_all','activity:write'])
+    return client.authorization_url(client_id=settings.STRAVA_CLIENT_ID, redirect_uri=settings.STRAVA_CALLBACK_URL, scope = ["read", "read_all", "profile:read_all", "activity:read", "activity:read_all", "activity:write"], approval_prompt='auto')
 
 def strava_get_user_info_by_id(athlete_id):
     athletes = Athlete.objects.filter(athlete_id=athlete_id)
