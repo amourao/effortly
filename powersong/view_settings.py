@@ -35,9 +35,6 @@ def setting(request):
         f = SettingForm(request.POST, instance=athlete)
         f.save()
     
-    if poweruser.athlete and not poweruser.athlete.strava_edit_token:
-        result['strava_authorize_url'] = strava_get_auth_url()
-
     if not poweruser.listener:
         result['lastfm_authorize_url'] = lastfm_get_auth_url()
 

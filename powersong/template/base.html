@@ -134,13 +134,6 @@
           {% if listenerspotify %}
             <li class="nav-item"> <a class="btn-margin-left" href="{{ listenerspotify.url }}"><img onerror="img_error(this);" src="{{ listenerspotify.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="spotify profile picture"></a> </li>
           {% endif %}
-          {% if demo == None %}
-          {% if listener or listenerspotify %}
-            <li class="nav-item dropleft ml-2 my-auto">
-              <a class="btn btn-outline-danger" href="javascript:void(0)" onclick="sync()" role="button">Sync</a>
-            </li>
-          {% endif %}
-          {% endif %}
           {% if not demo and not listener and not listenerspotify %}
             <li class="nav-item dropleft ml-2 my-auto"> <a role="button margin-left" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a> </li>
           {% endif %}
