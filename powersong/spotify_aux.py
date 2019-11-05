@@ -121,7 +121,7 @@ def spotify_to_lastfm(results,start,end):
         res['artist']['name'] = track['track']['artists'][0]['name']
         res['artist']['spotify_id'] = track['track']['artists'][0]['id']
         res['artist']['url'] = track['track']['artists'][0]['external_urls']['spotify']
-        res['artist']['image'][0]['extralarge'] = track['track']['artists'][0]['images'][0]['url']
+        #res['artist']['image'][0]['extralarge'] = track['track']['artists'][0]['images'][0]['url']
 
         current_timestamp = parse(track['played_at']).timestamp()
         duration = (track['track']['duration_ms']/1000)

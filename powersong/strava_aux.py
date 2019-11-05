@@ -55,16 +55,16 @@ def strava_get_sync_progress(task_id,total_count):
         return 'FAILED', 0, 0
 
 
-def sync_one_activity(activity_id,athlete_id):
+def sync_one_activity(activity_id,athlete_id,delay=5*60):
     powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id) 
     if powerusers:
         poweruser = powerusers[0]
-        if poweruser.listener:
-            return sync_one_activity_lastfm(activity_id, athlete_id)
-        elif poweruser.listener_spotify:
-            return sync_one_activity_spotify(activity_id, athlete_id)
+        if poweruser.listener_spotify:
+            return sync_one_activity_spotify(activity_id, athlete_id, delay)
+        elif poweruser.listener:
+            return sync_one_activity_lastfm(activity_id, athlete_id, delay)
 
-def sync_one_activity_lastfm(activity_id,athlete_id):
+def sync_one_activity_lastfm(activity_id,athlete_id,delay=0):
     athlete = strava_get_user_info(id=athlete_id)
 
     client = stravalib.client.Client()
@@ -81,11 +81,11 @@ def sync_one_activity_lastfm(activity_id,athlete_id):
                             activity_to_efforts.s(),
                             strava_task.s('strava_send_song_activities',())
                     )
-    job_result = download_chain.apply_async(countdown=5*60)
+    job_result = download_chain.apply_async(countdown=delay)
     
     return job_result.id, 1
 
-def sync_one_activity_spotify(activity_id,athlete_id):
+def sync_one_activity_spotify(activity_id,athlete_id,delay=0):
     athlete = strava_get_user_info(id=athlete_id)
 
     client = stravalib.client.Client()
@@ -102,7 +102,7 @@ def sync_one_activity_spotify(activity_id,athlete_id):
                             activity_to_efforts.s(),
                             strava_task.s('strava_send_song_activities',())
                     )
-    job_result = download_chain.apply_async(countdown=5*60)
+    job_result = download_chain.apply_async(countdown=delay)
 
     return job_result.id, 1
 
