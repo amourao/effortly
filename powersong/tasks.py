@@ -235,7 +235,8 @@ def lastfm_download_track_info(artist_name,track_name):
     if 'lfm' in response:
         response = response['lfm']
     track_json = response['track']
-
+    logger.debug(url)
+    logger.debug(response)
     track = lastfm_get_track(artist_name,track_name)
 
     if track == None:

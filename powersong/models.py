@@ -8,6 +8,8 @@ from picklefield.fields import PickledObjectField
 import numpy as np
 import logging
 
+import requests
+
 speed    = ['activity__avg_speed','activity__max_speed','avg_speed','diff_avg_speed','diff_last_speed','avg_avg_speed','avg_diff_avg_speed','avg_diff_last_speed']
 speed_s1 = ['activity__avg_speed','activity__max_speed','avg_speed','avg_avg_speed']
 speed_s  = ['activity__avg_speed_s','activity__max_speed_s','avg_speed_s','diff_avg_speed_s','diff_last_speed_s','avg_avg_speed_s','avg_diff_avg_speed_s','avg_diff_last_speed_s']
@@ -250,8 +252,9 @@ class Artist(models.Model):
     plays_count = models.IntegerField(blank=True,null=True)
 
     last_sync_date = models.DateTimeField(blank=True,null=True)
-
+    spotify_id = models.CharField(max_length=22,blank=True,null=True)
     tags = models.ManyToManyField(Tags)
+    
 
 class Song(models.Model):
     title = models.CharField(max_length=100)
@@ -487,15 +490,33 @@ def create_listener_from_dict(listener_api,key):
 
     return listener
 
+def clear_dead_images():
+    for track in Song.objects.all():
+        if track.image_url:
+            r = requests.head(track.image_url)
+            if r.status_code == 404:
+                track.image_url = None
+                track.save()
+    for track in Artist.objects.all():
+        if track.image_url:
+            r = requests.head(track.image_url)
+            if r.status_code == 404:
+                track.image_url = None
+                track.save()
+
+
 def lastfm_get_largest_image(image_list):
     order = ['extralarge','large','medium','small','','mega']
     if not "#text" in image_list[-1] or not image_list[-1]["#text"].strip() != "":
         return None
     for size in order:
         for image in image_list[::-1]:
+            if image["#text"].endswith('2a96cbd8b46e442fc41c2b86b821562f.png'):
+                return None
             if image["size"] == size and image["#text"].strip() != "":
                 return image["#text"]
     return image_list[-1]["#text"]
+
 
 def create_song_from_dict(song_api):
 
@@ -532,13 +553,23 @@ def create_song_from_dict(song_api):
 
     if artists:
         artist = artists[0]
+        if ('spotify_id' in song_api['artist'] and song_api['artist']['spotify_id'].strip() != ""):
+            artist.spotify_id = song_api['artist']['spotify_id']
+            artist.save()
+        if not artist.image_url and len(song_api['artist']['image']) > 0:
+            artist.image_url = lastfm_get_largest_image(song_api['artist']['image'])
+            artist.save()
     else:
         artist = Artist()
         artist.name = song_api['artist']['name']
         if ('mbid' in song_api['artist'] and song_api['artist']['mbid'].strip() != ""):
             artist.mb_id = song_api['artist']['mbid']
-        if song.image_url != None:
-            artist.image_url = song.image_url
+        if ('spotify_id' in song_api['artist'] and song_api['artist']['spotify_id'].strip() != ""):
+            artist.spotify_id = song_api['artist']['spotify_id']
+        
+        if len(song_api['artist']['image']) > 0:
+            artist.image_url = lastfm_get_largest_image(song_api['artist']['image'])
+        
         artist.save()
 
     song.artist = artist

@@ -209,16 +209,22 @@ LASTFM_API_ARTIST_MB = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&
 
 SPOTIFY_BASE = 'https://accounts.spotify.com/en/authorize?client_id={}&redirect_uri={}&response_type=code&scope=user-read-recently-played,streaming,user-read-birthdate,user-read-email,user-read-private'
 
+from celery.schedules import crontab
+
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
-CELERY_IMPORTS = ['powersong.tasks']
-#CELERY_BEAT_SCHEDULE = {
-#    'refresh-spotify-every-hour': {
-#       'task': 'powersong.tasks.refresh_all',
-#       'schedule': 60*60.0
+CELERY_IMPORTS = ['powersong.tasks', 'powersong.lastfm_aux']
+CELERY_BEAT_SCHEDULE = {
+#    'lastfm_sync_artists': {
+#       'task': 'powersong.lastfm_aux.lastfm_sync_artists',
+#       'schedule': crontab(minute=59, hour=00, day_of_week='mon')
+#    },
+#    'lastfm_sync_tracks': {
+#       'task': 'powersong.lastfm_aux.lastfm_sync_tracks',
+#       'schedule': crontab(minute=59, hour=00, day_of_week='thu')
 #    }
-#}
+}

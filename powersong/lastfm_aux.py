@@ -25,7 +25,7 @@ def lastfm_get_session_id(token):
     url = settings.LASTFM_API_AUTHBASE.format(method,settings.LASTFM_API_KEY,token,api_sig)
     response = requests.get(url).json()
     if not 'session' in response:
-        return None,None
+        return None, None
     return (response['session']['name'], response['session']['key'])
 
 def lastfm_get_user_info(username,key,poweruser_id):
