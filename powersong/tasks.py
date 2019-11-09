@@ -15,6 +15,7 @@ import base64
 from django.conf import settings
 import requests
 
+import spotipy
 
 from powersong.models import *
 from powersong.spotify_aux import spotify_get_recent_tracks, spotify_refresh_token, spotify_get_recent_tracks_before
@@ -349,13 +350,12 @@ def lastfm_task(*args,**kwargs):
 
 def spotify_get_spotify_ids(code,token,reftoken,song_id):
     try:
-        song = Song.objects.filter(id=song_id)[0]
-        song = song.original_song
+        song = Song.objects.filter(original_song_id=song_id)[0]
 
         athlete_id = 1
 
         sp = spotipy.Spotify(auth=token)
-        query = "{} {}".format(song.title,song.artist_name)
+        query = "track:\"{}\" artist:\"{}\"".format(song.title,song.artist_name)
         #out_file = "{}-{}.json".format(song.title.replace(' ','_'),song.artist_name.replace(' ','_'))
         
         try:
@@ -369,8 +369,71 @@ def spotify_get_spotify_ids(code,token,reftoken,song_id):
             song.spotify_id = results['tracks']['items'][0]['id']
             song.duration = results['tracks']['items'][0]['duration_ms']
             song.save()
+
+        artist = song.artist
+        if not artist.spotify_id:
+            artist.spotify_id = results['artists'][0]['id']
+            artist.save()
     except:
         return
+
+def spotify_update_track(song_id):
+    song = Song.objects.filter(original_song_id=song_id)[0]
+    track_id = song.spotify_id
+
+    poweruser = PowerUser.objects.all()[0]
+    athlete_id = poweruser.athlete_id
+
+    code = poweruser.listener_spotify.spotify_code
+    token = poweruser.listener_spotify.spotify_token
+    reftoken = poweruser.listener_spotify.spotify_refresh_token
+
+    sp = spotipy.Spotify(auth=token)
+    #out_file = "{}-{}.json".format(song.title.replace(' ','_'),song.artist_name.replace(' ','_'))
+    
+    try:
+        results = sp.track(track_id)
+    except:
+        token = spotify_refresh_token(code, token, reftoken, athlete_id)
+        sp = spotipy.Spotify(auth=token)
+        results = sp.track(track_id)
+
+    if not song.image_url and results['album']['images']:
+        song.image_url = results['album']['images'][0]['url']
+
+    if song.duration == 0:
+        song.duration = results['duration_ms']
+
+    artist = song.artist
+    if not artist.spotify_id:
+        artist.spotify_id = results['artists'][0]['id']
+        artist.save()
+    song.save()
+
+def spotify_update_artist(artist_id):
+    artist = Artist.objects.filter(id=artist_id)[0]
+    artist_spotify_id = artist.spotify_id
+
+    poweruser = PowerUser.objects.all()[0]
+    athlete_id = poweruser.athlete_id
+
+    code = poweruser.listener_spotify.spotify_code
+    token = poweruser.listener_spotify.spotify_token
+    reftoken = poweruser.listener_spotify.spotify_refresh_token
+
+    sp = spotipy.Spotify(auth=token)
+    
+    try:
+        results = sp.artist(artist_spotify_id)
+    except:
+        token = spotify_refresh_token(code, token, reftoken, athlete_id)
+        sp = spotipy.Spotify(auth=token)
+        results = sp.artist(artist_spotify_id)
+
+    if not artist.image_url and results['images']:
+        artist.image_url = results['images'][0]['url']
+
+    artist.save()
 
 def spotify_download_activity_tracks(act_stream_stored_act,force):
     if act_stream_stored_act == None or act_stream_stored_act == (None,):
@@ -419,6 +482,10 @@ def spotify_task(*args,**kwargs):
         return spotify_download_activity_tracks(*nargs,**kwargs)
     elif function == 'spotify_get_spotify_ids':
         return spotify_get_spotify_ids(*nargs,**kwargs)
+    elif function == 'spotify_update_track':
+        return spotify_update_track(*nargs,**kwargs)
+    elif function == 'spotify_update_artist':
+        return spotify_update_artist(*nargs,**kwargs)
     return None
 
 

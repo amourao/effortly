@@ -292,8 +292,6 @@ def resync_last_fm(request,activity_id):
         logger.debug(e.message)
         return (e.destination)
 
-    poweruser = get_poweruser(request.session['athlete_id'])
-
     resync_activity(activity_id,request.session['athlete_id'])
     
     #return render_to_response('blank.html', {'message':response})

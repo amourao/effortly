@@ -116,11 +116,10 @@ def resync_activity(activity_id,athlete_id):
     client.refresh_token = ath.strava_refresh_token
     client.token_expires_at = ath.strava_token_expires_at
 
-    if not athlete.strava_token_expires_at:
+    if not ath.strava_token_expires_at:
         return "00000000-0000-0000-0000-000000000000", 0
     
     activity = strava_get_activity_by_id(activity_id)
-
     if athlete_id != activity.athlete.athlete_id:
         return None, None
 
@@ -145,7 +144,7 @@ def resync_activity_spotify(activity_id,athlete_id):
     client.refresh_token = ath.strava_refresh_token
     client.token_expires_at = ath.strava_token_expires_at
 
-    if not athlete.strava_token_expires_at:
+    if not ath.strava_token_expires_at:
         return "00000000-0000-0000-0000-000000000000", 0
 
     activity = strava_get_activity_by_id(activity_id)

@@ -2,21 +2,18 @@ from django.conf import settings
 
 import copy, time
 import json
-import spotipy
 
 import requests
 
 from dateutil.parser import parse
 
 from powersong.models import *
-from powersong.tasks import *
 
 from celery import chain, group
 from celery.result import AsyncResult,GroupResult
 from celery import current_app
 
 import os.path
-
 
 import spotipy
 
@@ -182,7 +179,43 @@ def spotify_get_recent_tracks(token,athlete_id,start,end):
     return final_res
 
 
+def spotify_sync_tracks():
+    from powersong.tasks import spotify_task
+    songs = Song.objects.all()
+    songs_to_sync = []
+    for song in songs:
+        if song.spotify_id:
+            songs_to_sync.append(spotify_task.s('spotify_update_track',(song.id,)))
+    if len(songs_to_sync) > 1:
+        promise = group(*songs_to_sync)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = songs_to_sync[0]
+        job_result = promise.delay()
+    
+    return job_result.id, len(songs_to_sync)
+
+def spotify_sync_artists():
+    from powersong.tasks import spotify_task
+    artists = Artist.objects.all()
+    artists_to_sync = []
+    for artist in artists:
+        if artist.spotify_id and not artist.image_url:
+            artists_to_sync.append(spotify_task.s('spotify_update_artist',(artist.id,)))
+    if len(artists_to_sync) > 1:
+        promise = group(*artists_to_sync)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = artists_to_sync[0]
+        job_result = promise.delay()
+    
+    return job_result.id, len(artists_to_sync)
+
+
 def spotify_sync_ids():
+    from powersong.tasks import spotify_task
     songs = Song.objects.all()
 
     poweruser = PowerUser.objects.all()[0]
@@ -194,8 +227,8 @@ def spotify_sync_ids():
 
     songs_to_sync = []
     for song in songs:
-        #if song.last_sync_date == None or song.last_sync_date == "":
-        songs_to_sync.append(spotify_task.s('spotify_get_spotify_ids',(code,token,reftoken,song.id)))
+        if not song.spotify_id:
+            songs_to_sync.append(spotify_task.s('spotify_get_spotify_ids',(code,token,reftoken,song.id)))
 
     if len(songs_to_sync) > 1:
         promise = group(*songs_to_sync)
