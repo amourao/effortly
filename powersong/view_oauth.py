@@ -16,7 +16,7 @@ from powersong.view_main import get_all_data, NonAuthenticatedException
 from powersong.view_home import index
 from powersong.view_settings import setting
 from powersong.models import *
-from powersong.spotify_aux import spotify_refresh_token
+from powersong.spotify_aux import spotify_refresh_token, spotify_get_user_info
 from powersong.lastfm_aux import lastfm_get_session_id, lastfm_get_user_info
 
 import logging
@@ -60,19 +60,27 @@ def lastfm_oauth(request):
     if not 'token' in request.GET:
         return redirect(index)
 
+    if not 'athlete_id' in request.session:
+        return redirect(index)
+
     token = request.GET['token']
 
     request.session['lastfm_token'] = token
 
     username, key = lastfm_get_session_id(token)
 
-    request.session['lastfm_key'] = key
-    request.session['lastfm_username'] = username
+    lastfm_get_user_info(username,key,request.session['athlete_id'])
+
+
 
     return redirect(index)
 
-def spotify_oauth(request):  
+def spotify_oauth(request): 
+
     if not 'code' in request.GET:
+        return redirect(index)
+
+    if not 'athlete_id' in request.session:
         return redirect(index)
 
     code = request.GET['code']
@@ -80,9 +88,8 @@ def spotify_oauth(request):
     r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'authorization_code', 'code': code, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
     out = r.json()
 
-    request.session['spotify_code'] = code
-    request.session['spotify_token'] = out['access_token']
-    request.session['spotify_refresh_token'] = out['refresh_token']
+    
+    spotify_get_user_info(request.GET['code'], out['access_token'],out['refresh_token'], request.session['athlete_id'])
 
     return redirect(index)
 

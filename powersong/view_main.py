@@ -51,9 +51,7 @@ def get_all_data(request):
         poweruser = powerusers[0]
     #logger.debug(poweruser)
     if not poweruser:
-
         athlete_model = strava_get_user_info_by_id(request.session['athlete_id'])
-        
         powerusers = PowerUser.objects.filter(athlete=athlete_model)
         if not powerusers:
             poweruser = PowerUser()

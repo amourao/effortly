@@ -72,18 +72,23 @@ def spotify_get_user_info(code,token,refresh,athlete_id):
     r = requests.get("https://api.spotify.com/v1/me", headers={'Authorization': 'Bearer  ' + token})
         
     out = r.json()
-    
-    listener = ListenerSpotify()
 
-    listener.nickname = out['id']
-    listener.real_name = out['display_name']
-
-    if 'images' in out and out['images'] and 'url' in out['images'][0]:
-        listener.profile_image_url = out['images'][0]['url']
+    listeners = ListenerSpotify.objects.filter(nickname=out['id'])
     
-    if 'external_urls' in out and out['external_urls'] and 'spotify' in out['external_urls']:
-        listener.url = out['external_urls']['spotify']
-    listener.product = out['product']
+    if listeners:
+        listener = listeners[0]
+    else:
+        listener = ListenerSpotify()
+
+        listener.nickname = out['id']
+        listener.real_name = out['display_name']
+
+        if 'images' in out and out['images'] and 'url' in out['images'][0]:
+            listener.profile_image_url = out['images'][0]['url']
+        
+        if 'external_urls' in out and out['external_urls'] and 'spotify' in out['external_urls']:
+            listener.url = out['external_urls']['spotify']
+        listener.product = out['product']
 
     listener.spotify_code = code
     listener.spotify_token = token
@@ -91,7 +96,7 @@ def spotify_get_user_info(code,token,refresh,athlete_id):
 
     listener.save()
 
-    athletes = PowerUser.objects.filter(athlete_id=athlete_id)
+    athletes = PowerUser.objects.filter(athlete__athlete_id=athlete_id)
     if athletes:
          athlete = athletes[0]
          athlete.listener_spotify = listener

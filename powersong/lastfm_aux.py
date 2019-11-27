@@ -28,7 +28,7 @@ def lastfm_get_session_id(token):
         return None, None
     return (response['session']['name'], response['session']['key'])
 
-def lastfm_get_user_info(username,key,poweruser_id):
+def lastfm_get_user_info(username,key,athlete_id):
 
     listeners = Listener.objects.filter(nickname=username)
     #logger.debug("Getting listener with username {}".format(username))
@@ -53,7 +53,7 @@ def lastfm_get_user_info(username,key,poweruser_id):
         listener = create_listener_from_dict(response,key)
         listener.save()
 
-    powerusers = PowerUser.objects.filter(athlete_id=poweruser_id)
+    powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id)
     if powerusers:
         poweruser = powerusers[0]
         poweruser.listener = listener
