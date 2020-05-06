@@ -216,7 +216,7 @@ def sync_spotify(request,poweruser):
     sync_id, count = get_sync_id(request, poweruser)
 
     if (sync_id == None and count != -1) or (sync_id == "00000000-0000-0000-0000-000000000000") or 'force' in request.GET:
-        if 'athlete_id' in request.session and poweruser.listenerspotify:
+        if 'athlete_id' in request.session and poweruser.listener_spotify:
             request.session['sync_id'] = None
             request.session['sync_todo_total'] = -1
             athlete = poweruser.athlete

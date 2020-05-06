@@ -123,7 +123,24 @@ def strava_send_song_activities(act_id_s):
     
     activity = client.get_activity(act_id)
     description = activity.description
+
+
     if description:
+        start = description.find("Songs listened during activity:")
+        end = description.rfind("https://effortly.run/activity/" + str(act_id))
+        if start != -1 and end != -1:
+            end += len("https://effortly.run/activity/" + str(act_id))
+            description = description[:start] + description[end:]
+        start = description.find("Songs listened during activity:")
+        end = description.rfind("https://effortly.run")
+        if start != -1 and end != -1:
+            end += len("https://effortly.run/")
+            description = description[:start] + description[end:]
+        start = description.find("No songs found")
+        end = description.rfind("https://effortly.run")
+        if start != -1 and end != -1:
+            end += len("https://effortly.run/")
+            description = description[:start] + description[end:]
         description = act.activity_share_message + '\n' + description
     else:
         description = act.activity_share_message
@@ -524,6 +541,8 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         stored_act.total_descent = -total_descent
 
         stored_act.save()
+
+        stored_act.effort_set.all().delete()
 
         act_start_timestamp = strava_get_start_timestamp(start_time)
 
