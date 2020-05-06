@@ -39,6 +39,27 @@ def secondsToMinutesSecs(s):
         return None
     return decMinutesToMinutesSecs(s/60.0)
 
+def secondsToHoursMinutesSecs(s):
+    if s == None:
+        return None
+    return decMinutesToHoursMinutesSecs(s/60.0)
+
+def decMinutesToHoursMinutesSecs(mpkm):
+    if mpkm == None:
+        return None
+    if mpkm == 0:
+        return "0:00:00"
+    elif mpkm > 0:
+        hpkm = int(mpkm/60)
+        mpkm = mpkm-hpkm*60
+        return "{}:{:02.0f}:{:02.0f}".format(int(hpkm),int(mpkm), int((mpkm-(int(mpkm)))*60)%60)   
+    else:
+        mpkm = -mpkm
+        hpkm = int(mpkm/60)
+        mpkm = mpkm-hpkm*60
+        return "-{}:{:02.0f}:{:02.0f}".format(int(hpkm),int(mpkm), int((mpkm-(int(mpkm)))*60)%60)
+
+
 def decMinutesToMinutesSecs(mpkm):
     if mpkm == None:
         return None

@@ -41,6 +41,12 @@ class Athlete(models.Model):
         (1, 'Cycling'),
         (2, 'Other'),
     )
+    SHARE_SONG_TIME = (
+        (0, 'Simple'),
+        (1, 'Time'),
+        (2, 'Distance'),
+        (3, 'Time + Distance'),
+    )
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     athlete_id = models.CharField(max_length=12,unique=True)
@@ -70,6 +76,7 @@ class Athlete(models.Model):
     strava_refresh_token = models.CharField(max_length=100,blank=True,null=True)
     strava_token_expires_at = models.CharField(max_length=100,blank=True,null=True)
     share_activity_songs = models.BooleanField(default=True)
+    share_activity_songs_mode = models.PositiveSmallIntegerField(default=0,choices=SHARE_SONG_TIME)
     share_activity_link = models.BooleanField(default=True)
 
 class ListenerSpotify(models.Model):
@@ -206,7 +213,14 @@ class Activity(models.Model):
         if self.effort_set.all():
             text = "Songs listened during activity:\n"
             for e in self.effort_set.all():
-                text += "{} {}: {} - {}\n".format(e.avg_speed_pretty,e.avg_speed_pretty_units,e.song.artist_name,e.song.title)
+                if self.athlete.share_activity_songs_mode == 0:
+                    text += "{} {}: {} - {}\n".format(e.avg_speed_pretty,e.avg_speed_pretty_units,e.song.artist_name,e.song.title)
+                elif self.athlete.share_activity_songs_mode == 1:
+                    text += "{} {} {}: {} - {}\n".format(e.start_time_pretty_hours,e.avg_speed_pretty,e.avg_speed_pretty_units,e.song.artist_name,e.song.title)
+                elif self.athlete.share_activity_songs_mode == 2:
+                    text += "{} {} {}: {} - {}\n".format(e.start_distance_pretty,e.avg_speed_pretty,e.avg_speed_pretty_units,e.song.artist_name,e.song.title)
+                elif self.athlete.share_activity_songs_mode == 3:
+                    text += "{} {} {} {}: {} - {}\n".format(e.start_time_pretty_hours,e.start_distance_pretty,e.avg_speed_pretty,e.avg_speed_pretty_units,e.song.artist_name,e.song.title)
             text += "##########################\n"
             text += self.footer_message
         else:
@@ -407,12 +421,24 @@ class Effort(models.Model):
             return metersToMiles(self.distance)
 
     @property
+    def start_distance_pretty(self):
+        if (self.activity.athlete.measurement_preference == 0):
+            return metersToKm(self.start_distance) + " " + self.distance_big_pretty_units
+        else:
+            return metersToMiles(self.start_distance) + " " + self.distance_big_pretty_units
+
+    @property
     def duration_pretty(self):
         return secondsToMinutesSecs(self.duration)
 
     @property
     def start_time_pretty(self):
         return secondsToMinutesSecs(self.start_time)
+
+    @property
+    def start_time_pretty_hours(self):
+        return secondsToHoursMinutesSecs(self.start_time)
+
 
 def get_poweruser(athlete_id):
     powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id)
