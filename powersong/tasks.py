@@ -459,8 +459,10 @@ def spotify_update_artist(artist_id):
         results = sp.artist(artist_spotify_id)
 
     image_url = None
-    if results['album']['images']:
-        image_url = results['album']['images'][0]['url']
+    if results['images']:
+        image_url = results['images'][0]['url']
+
+    logger.error(image_url)
 
     if image_url != None:
         artist.image_url = image_url

@@ -206,7 +206,7 @@ def spotify_sync_artists():
     artists = Artist.objects.all()
     artists_to_sync = []
     for artist in artists:
-        if artist.spotify_id and not artist.image_url:
+        if artist.spotify_id:
             artists_to_sync.append(spotify_task.s('spotify_update_artist',(artist.id,)))
     if len(artists_to_sync) > 1:
         promise = group(*artists_to_sync)
