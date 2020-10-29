@@ -12,8 +12,8 @@ import site
 import sys
 
 
-site.addsitedir('/home/amourao/anaconda3/envs/powersong/')
-site.addsitedir('/home/amourao/anaconda3/envs/powersong/lib/python3.6/site-packages/')
+site.addsitedir('/home/amourao/veffortly/')
+site.addsitedir('/home/amourao/veffortly/lib/python3.8/site-packages/')
 
 sys.path.append('/home/amourao/powersong')
 
