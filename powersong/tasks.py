@@ -267,15 +267,15 @@ def lastfm_download_track_info(artist_name,track_name):
 
     if image_url != None:
         r = requests.get(image_url)
-        if r.status_code != 404:
+        if r.status_code == 200:
             track.image_url = image_url
         else:
             r = requests.get(track.image_url)
-            if track.image_url == None or r.status_code == 404:
+            if track.image_url == None or r.status_code != 200:
                 track.image_url = ''
     elif track.image_url:
         r = requests.get(track.image_url)
-        if track.image_url == None or r.status_code == 404:
+        if track.image_url == None or r.status_code != 200:
             track.image_url = ''
     else:
         track.image_url = ''
@@ -314,15 +314,15 @@ def lastfm_download_artist_info(artist_name,mb_id=None):
     
     if image_url != None:
         r = requests.get(image_url)
-        if r.status_code != 404:
+        if r.status_code == 200:
             artist.image_url = image_url
         else:
             r = requests.get(artist.image_url)
-            if artist.image_url == None or r.status_code == 404:
+            if artist.image_url == None or r.status_code != 200:
                 artist.image_url = ''
     elif artist.image_url:
         r = requests.get(artist.image_url)
-        if r.status_code == 404:
+        if r.status_code != 200:
             artist.image_url = ''
     else:
         artist.image_url = ''
@@ -415,8 +415,18 @@ def spotify_update_track(song_id):
         sp = spotipy.Spotify(auth=token)
         results = sp.track(track_id)
 
-    if not song.image_url and results['album']['images']:
-        song.image_url = results['album']['images'][0]['url']
+    image_url = None
+    if results['album']['images']:
+        image_url = results['album']['images'][0]['url']
+
+    if image_url != None:
+        song.image_url = image_url
+    elif song.image_url:
+        r = requests.get(song.image_url)
+        if song.image_url == None or r.status_code != 200:
+            song.image_url = ''
+    else:
+        song.image_url = ''
 
     if song.duration == 0:
         song.duration = results['duration_ms']
@@ -425,6 +435,7 @@ def spotify_update_track(song_id):
     if not artist.spotify_id:
         artist.spotify_id = results['artists'][0]['id']
         artist.save()
+
     song.save()
 
 def spotify_update_artist(artist_id):
@@ -447,8 +458,18 @@ def spotify_update_artist(artist_id):
         sp = spotipy.Spotify(auth=token)
         results = sp.artist(artist_spotify_id)
 
-    if not artist.image_url and results['images']:
-        artist.image_url = results['images'][0]['url']
+    image_url = None
+    if results['album']['images']:
+        image_url = results['album']['images'][0]['url']
+
+    if image_url != None:
+        artist.image_url = image_url
+    elif artist.image_url:
+        r = requests.get(artist.image_url)
+        if artist.image_url == None or r.status_code != 200:
+            artist.image_url = ''
+    else:
+        artist.image_url = ''
 
     artist.save()
 
