@@ -15,7 +15,7 @@ from django.db.models import Value, Avg, Sum, Max, Count, F, Case, When, Integer
 
 import logging
 
-from powersong.utils import remove_flagged, filter_user
+from powersong.utils import remove_flagged, filter_user, get_user_activity_type
 
 logger = logging.getLogger(__name__)
 
@@ -161,15 +161,7 @@ def song(request, song_id):
     if poweruser.listener_spotify:
         data['spotify_token'] = poweruser.listener_spotify.spotify_token
 
-    activity_type = None
-    if 'activity_type' in request.GET:
-        activity_type = int(request.GET['activity_type'])
-    if activity_type == None:
-        if not 'activity_type' in request.session:
-            activity_type = poweruser.athlete.athlete_type
-        else:
-            activity_type = request.session['activity_type']
-
+    activity_type = get_user_activity_type(request)
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
@@ -270,15 +262,7 @@ def artist(request, artist_id):
 
     data['artist'] = artists[0]
 
-    activity_type = None
-    if 'activity_type' in request.GET:
-        activity_type = int(request.GET['activity_type'])
-    if activity_type == None:
-        if not 'activity_type' in request.session:
-            activity_type = poweruser.athlete.athlete_type
-        else:
-            activity_type = request.session['activity_type']
-
+    activity_type = get_user_activity_type(request)
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
@@ -357,16 +341,7 @@ def artist(request, artist_id):
 def artists(request):
     data = {}
 
-    activity_type = None
-    if 'activity_type' in request.GET:
-        activity_type = int(request.GET['activity_type'])
-    if activity_type == None:
-        if not 'activity_type' in request.session:
-            athlete = strava_get_user_info_by_id(request.session['athlete_id'])
-            activity_type = athlete.athlete_type
-        else:
-            activity_type = request.session['activity_type']
-
+    activity_type = get_user_activity_type(request)
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
@@ -415,18 +390,9 @@ def artists(request):
 def songs(request):
     data = {}
 
-    activity_type = None
-    if 'activity_type' in request.GET:
-        activity_type = int(request.GET['activity_type'])
-    if activity_type == None:
-        if not 'activity_type' in request.session:
-            athlete = strava_get_user_info_by_id(request.session['athlete_id'])
-            activity_type = athlete.athlete_type
-        else:
-            activity_type = request.session['activity_type']
-
-    data['activity_type'] = activity_type
+    activity_type = get_user_activity_type(request)
     request.session['activity_type'] = activity_type
+    data['activity_type'] = activity_type
 
     poweruser = get_poweruser(request.session['athlete_id'])
 
