@@ -288,7 +288,21 @@ class Song(models.Model):
     spotify_id = models.CharField(max_length=22,blank=True,null=True)
     tags = models.ManyToManyField(Tags)
 
+    danceability = models.FloatField(default=-1)
+    energy = models.FloatField(default=-1)
+    key = models.SmallIntegerField(default=-1)
+    loudness = models.FloatField(default=-1)
+    mode = models.SmallIntegerField(default=-1)
+    speechiness = models.FloatField(default=-1)
+    acousticness = models.FloatField(default=-1)
+    instrumentalness = models.FloatField(default=-1)
+    liveness = models.FloatField(default=-1)
+    valence = models.FloatField(default=-1)
+    bpm = models.FloatField(default=-1)
+    time_signature = models.SmallIntegerField(default=-1)
+
     original_song = models.ForeignKey("self",blank=True,null=True)
+
     @property
     def duration_pretty(self):
         return secondsToMinutesSecs(self.duration/1000.0)
