@@ -22,6 +22,8 @@ from datetime import datetime, timedelta
 
 from django.forms.models import model_to_dict
 
+from powersong.utils import generate_header
+
 logger = logging.getLogger(__name__)
 
 
@@ -161,7 +163,7 @@ def top_activities(request):
         data['top'].append((q,qa))
     
     if header:
-        data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
+        data['header'] = generate_header(data, n, page, total_length)
 
     return render_to_response('top_table_detail_activity.html', data)
 
@@ -348,7 +350,7 @@ def top_global_song_artist(request):
     qs = qs[(n*page):(n*(page+1))]
 
     if header:
-        data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
+        data['header'] = generate_header(data, n, page, total_length)
 
     render = 'html'
     if 'render' in request.GET:
@@ -559,7 +561,7 @@ def top_song_artist(request):
     qs = qs[(n*page):(n*(page+1))]
 
     if header:
-        data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
+        data['header'] = generate_header(data, n, page, total_length)
 
     render = 'html'
     if 'render' in request.GET:
@@ -760,7 +762,7 @@ def top(request):
     qs = qs[(n*page):(n*(page+1))]
 
     if header:
-        data['header'] = "Page {} of {} - Total results: {}".format(page+1,math.ceil(total_length/n),total_length)
+        data['header'] = generate_header(data, n, page, total_length)
 
     render = 'html'
     if 'render' in request.GET:
@@ -801,8 +803,6 @@ def top(request):
         return JsonResponse(data)
     else:
         return render_to_response('top_table_effort.html', data)
-
-
 
 def latest(request):
     data = {}
