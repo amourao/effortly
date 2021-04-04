@@ -207,7 +207,7 @@ LASTFM_API_ARTIST = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&art
 LASTFM_API_TRACK = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&artist={}&track={}&format=json'
 LASTFM_API_ARTIST_MB = 'https://ws.audioscrobbler.com/2.0/?method={}&api_key={}&mbid={}&format=json'
 
-SPOTIFY_BASE = 'https://accounts.spotify.com/en/authorize?client_id={}&redirect_uri={}&response_type=code&scope=user-read-recently-played,streaming,user-read-birthdate,user-read-email,user-read-private'
+SPOTIFY_BASE = 'https://accounts.spotify.com/en/authorize?client_id={}&redirect_uri={}&response_type=code&scope=user-read-recently-played,streaming,user-read-birthdate,user-read-email,user-read-private,playlist-modify-private'
 
 from celery.schedules import crontab
 

@@ -10,6 +10,7 @@ from powersong.view_settings import setting, flag_activity, flag_artist, flag_so
 from powersong.view_webhooks import strava_webhooks_callback
 from django.conf import settings
 from django.conf.urls import include
+import urls_playlists
 
 urlpatterns = [
 	url(r'^$', index, name='index'),
@@ -62,6 +63,8 @@ urlpatterns = [
     url(r'^delete_account/', delete_account), 
     
     url(r'^admin/', admin.site.urls),
+
+    url(r'^playlists/', include(urls_playlists)),
 
     url(r'^async_include/', include('async_include.urls', namespace="async_include")),
 ]
