@@ -3,8 +3,8 @@ from powersong.models import *
 from powersong.strava_aux import strava_get_user_info_by_id
 
 
-def generate_header(data, n, page, total_length):
-    if page > 0:
+def generate_header(n, page, total_length):
+    if total_length > 0:
         page += 1
     return "Page {} of {} - Total results: {}".format(page, math.ceil(total_length / n), total_length)
 

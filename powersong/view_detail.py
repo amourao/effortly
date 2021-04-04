@@ -165,10 +165,9 @@ def song(request, song_id):
     data['activity_type'] = activity_type
     request.session['activity_type'] = activity_type
 
+    qs = Effort.objects
     if data['activity_type'] != -1:
-        qs = Effort.objects.filter(act_type=data['activity_type'])
-    else:
-        qs = Effort.objects
+        qs = qs.filter(act_type=data['activity_type'])
 
     qs = qs.filter(
         (Q(song__original_song__id=song_id) & Q(activity__athlete__athlete_id=request.session['athlete_id']))).values(

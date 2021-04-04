@@ -146,7 +146,7 @@ def top_activities(request):
         data['top'].append((q, qa))
 
     if header:
-        data['header'] = generate_header(data, n, page, total_length)
+        data['header'] = generate_header(n, page, total_length)
 
     return render_to_response('top_table_detail_activity.html', data)
 
@@ -414,7 +414,7 @@ def top_global_song_artist(request):
     qs = qs[(n * page):(n * (page + 1))]
 
     if header:
-        data['header'] = generate_header(data, n, page, total_length)
+        data['header'] = generate_header(n, page, total_length)
 
     render = 'html'
     if 'render' in request.GET:
@@ -679,7 +679,7 @@ def top_song_artist(request):
     qs = qs[(n * page):(n * (page + 1))]
 
     if header:
-        data['header'] = generate_header(data, n, page, total_length)
+        data['header'] = generate_header(n, page, total_length)
 
     render = 'html'
     if 'render' in request.GET:
@@ -969,7 +969,7 @@ def top(request):
     qs = qs[(n * page):(n * (page + 1))]
 
     if header:
-        data['header'] = generate_header(data, n, page, total_length)
+        data['header'] = generate_header(n, page, total_length)
 
     render = 'html'
     if 'render' in request.GET:
