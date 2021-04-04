@@ -1,0 +1,28 @@
+version: "3.9"
+   
+services:
+
+  redis:
+    image: redis
+    hostname: redis
+    ports:
+    - "6379:6379"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/
+      - CELERY_RESULT_BACKEND=redis://redis:6379/
+      - DEBUG=True
+      - STATIC_ROOT=/code/powersong/static/
+      - HOME_URL=http://localhost:8000
+    depends_on:
+      - redis
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+  

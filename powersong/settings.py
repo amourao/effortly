@@ -64,7 +64,7 @@ ROOT_URLCONF = 'powersong.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/home/amourao/powersong/powersong/template'],
+        'DIRS': ['/home/amourao/powersong/powersong/template','./powersong/template'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
