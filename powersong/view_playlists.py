@@ -23,7 +23,7 @@ def create_activity_playlist(request,activity_id):
 
     try:
         activity = Activity.objects.get(activity_id=activity_id)
-        tracks = [i["song__original_song__spotify_id"] for i in Effort.objects.filter(activity = activity).values('song__original_song__spotify_id').order_by('start_time')]
+        tracks = [i["song__original_song__spotify_id"] for i in Effort.objects.filter(activity = activity).values('song__original_song__spotify_id').order_by('start_time') if i["song__original_song__spotify_id"]]
         playlist_url = spotify_create_playlist("Activity {}".format(activity_id),"effortly:strava:activity:{}".format(activity_id),tracks)
     except Exception as e:
         playlist_url = ""
