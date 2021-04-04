@@ -514,8 +514,6 @@ def spotify_download_activity_tracks(act_stream_stored_act, force):
 
 def spotify_multi_track_get_stats(song_ids):
     track_ids = ["spotify:track:{}".format(spotify_id) for spotify_id in song_ids]
-    songs = Song.objects.filter(original_song_id__in=song_ids)
-
 
     poweruser = PowerUser.objects.all()[0]
     athlete_id = poweruser.athlete_id
@@ -529,7 +527,22 @@ def spotify_multi_track_get_stats(song_ids):
         token = spotify_refresh_token(poweruser.listener_spotify.spotify_code, poweruser.listener_spotify.spotify_token, poweruser.listener_spotify.spotify_refresh_token, athlete_id)
         sp = spotipy.Spotify(auth=token)
         results = sp.audio_features(track_ids)
-    # https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-several-audio-features
+
+    for song in results:
+        track = Song.objects.get(original_song_id__spotify_id=song["id"])
+        track.danceability = song["danceability"]
+        track.energy = song["energy"]
+        track.key = song["key"]
+        track.loudness = song["loudness"]
+        track.mode = song["mode"]
+        track.speechiness = song["speechiness"]
+        track.acousticness = song["acousticness"]
+        track.instrumentalness = song["instrumentalness"]
+        track.liveness = song["liveness"]
+        track.valence = song["valence"]
+        track.bpm = song["tempo"]
+        track.time_signature = song["time_signature"]
+        track.save()
 
 
 @shared_task

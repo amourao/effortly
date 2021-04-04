@@ -246,6 +246,35 @@ def spotify_sync_ids():
     return job_result.id, len(songs_to_sync)
 
 
+def spotify_get_track_features():
+    from powersong.tasks import spotify_task
+    songs = Song.objects.exclude(spotify_id=None)
+
+    songs_to_sync = []
+    track_ids = []
+    for song in songs:
+        track_ids.append(song.spotify_id)
+        if len(track_ids) == 50:
+            songs_to_sync.append(spotify_task.s('spotify_multi_track_get_stats', (track_ids,)))
+            track_ids = []
+            break
+
+    if track_ids:
+        songs_to_sync.append(spotify_task.s('spotify_multi_track_get_stats', (track_ids,)))
+
+    if len(songs_to_sync) > 1:
+        promise = group(*songs_to_sync)
+        job_result = promise.delay()
+        job_result.save()
+    else:
+        promise = songs_to_sync[0]
+        job_result = promise.delay()
+
+    return job_result.id, len(songs_to_sync)
+
+
+
+
 def spotify_refresh_token(code,token,reftoken,athlete_id):
     logger.debug("Refreshing spotify token")
     r = requests.post("https://accounts.spotify.com/api/token", data={'grant_type': 'refresh_token', 'refresh_token': reftoken, 'redirect_uri': settings.SPOTIFY_CALLBACK_URL, 'client_id':settings.SPOTIPY_CLIENT_ID, 'client_secret':settings.SPOTIPY_CLIENT_SECRET})
