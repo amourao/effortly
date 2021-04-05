@@ -542,6 +542,7 @@ def spotify_multi_track_get_stats(song_ids):
         track.valence = song["valence"]
         track.bpm = song["tempo"]
         track.time_signature = song["time_signature"]
+        track.duration = song["duration_ms"]
         track.save()
 
 

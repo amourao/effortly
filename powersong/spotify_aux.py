@@ -253,10 +253,11 @@ def spotify_get_track_features():
     songs_to_sync = []
     track_ids = []
     for song in songs:
-        track_ids.append(song.spotify_id)
-        if len(track_ids) == 50:
-            songs_to_sync.append(spotify_task.s('spotify_multi_track_get_stats', (track_ids,)))
-            track_ids = []
+        if song.bpm == -1:
+            track_ids.append(song.spotify_id)
+            if len(track_ids) == 50:
+                songs_to_sync.append(spotify_task.s('spotify_multi_track_get_stats', (track_ids,)))
+                track_ids = []
 
     if track_ids:
         songs_to_sync.append(spotify_task.s('spotify_multi_track_get_stats', (track_ids,)))
