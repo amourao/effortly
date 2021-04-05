@@ -529,7 +529,7 @@ def spotify_multi_track_get_stats(song_ids):
         results = sp.audio_features(track_ids)
 
     for song in results:
-        if "id" in song and song["id"]:
+        if song:
             for track in Song.objects.filter(spotify_id=song["id"]):
                 track.danceability = song["danceability"]
                 track.energy = song["energy"]
