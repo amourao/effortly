@@ -268,25 +268,6 @@ def lastfm_download_track_info(artist_name, track_name):
     if track == None:
         track = Song()
 
-    image_url = None
-    if 'album' in track_json and 'image' in track_json['album']:
-        image_url = lastfm_get_largest_image(track_json['album']['image'])
-
-    if image_url != None:
-        r = requests.get(image_url)
-        if r.status_code == 200:
-            track.image_url = image_url
-        else:
-            r = requests.get(track.image_url)
-            if track.image_url == None or r.status_code != 200:
-                track.image_url = ''
-    elif track.image_url:
-        r = requests.get(track.image_url)
-        if track.image_url == None or r.status_code != 200:
-            track.image_url = ''
-    else:
-        track.image_url = ''
-
     if 'mbid' in track_json and track_json['mbid'].strip() != "":
         track.mbid = track_json['mbid']
 
@@ -316,23 +297,6 @@ def lastfm_download_artist_info(artist_name, mb_id=None):
 
     if artist == None:
         artist = Artist()
-
-    image_url = lastfm_get_largest_image(artist_json['image'])
-
-    if image_url != None:
-        r = requests.get(image_url)
-        if r.status_code == 200:
-            artist.image_url = image_url
-        else:
-            r = requests.get(artist.image_url)
-            if artist.image_url == None or r.status_code != 200:
-                artist.image_url = ''
-    elif artist.image_url:
-        r = requests.get(artist.image_url)
-        if r.status_code != 200:
-            artist.image_url = ''
-    else:
-        artist.image_url = ''
 
     if 'mbid' in artist_json and artist_json['mbid'].strip() != "":
         artist.mbid = artist_json['mbid']
