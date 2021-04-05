@@ -529,27 +529,21 @@ def spotify_multi_track_get_stats(song_ids):
         results = sp.audio_features(track_ids)
 
     for song in results:
-        try:
-            track = Song.objects.filter(original_song_id__spotify_id=song["id"])[0]
-        except:
-            try:
-                track = Song.objects.filter(spotify_id=song["id"])[0]
-            except:
-                continue
-        track.danceability = song["danceability"]
-        track.energy = song["energy"]
-        track.key = song["key"]
-        track.loudness = song["loudness"]
-        track.mode = song["mode"]
-        track.speechiness = song["speechiness"]
-        track.acousticness = song["acousticness"]
-        track.instrumentalness = song["instrumentalness"]
-        track.liveness = song["liveness"]
-        track.valence = song["valence"]
-        track.bpm = song["tempo"]
-        track.time_signature = song["time_signature"]
-        track.duration = song["duration_ms"]
-        track.save()
+        for track in Song.objects.filter(spotify_id=song["id"]):
+            track.danceability = song["danceability"]
+            track.energy = song["energy"]
+            track.key = song["key"]
+            track.loudness = song["loudness"]
+            track.mode = song["mode"]
+            track.speechiness = song["speechiness"]
+            track.acousticness = song["acousticness"]
+            track.instrumentalness = song["instrumentalness"]
+            track.liveness = song["liveness"]
+            track.valence = song["valence"]
+            track.bpm = song["tempo"]
+            track.time_signature = song["time_signature"]
+            track.duration = song["duration_ms"]
+            track.save()
 
 
 @shared_task
