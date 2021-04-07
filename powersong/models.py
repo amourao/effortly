@@ -307,6 +307,13 @@ class Song(models.Model):
     def duration_pretty(self):
         return secondsToMinutesSecs(self.duration/1000.0)
 
+class AthleteSongCadence(models.Model):
+    poweruser = models.ForeignKey(PowerUser, null=True, on_delete=models.SET_NULL)
+    song = models.ForeignKey(Song, null=True, on_delete=models.SET_NULL)
+    cadence = models.FloatField()
+    listen_count = models.IntegerField()
+    act_type = models.PositiveSmallIntegerField()
+
 class FlaggedArtist(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     poweruser = models.ForeignKey(PowerUser, on_delete=models.CASCADE)

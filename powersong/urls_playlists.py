@@ -6,7 +6,7 @@ from django.conf import settings
 from django.conf.urls import include
 
 urlpatterns = [
-    url(r'^create_activity_playlist/(?P<activity_id>.*)/', create_activity_playlist),
+    url(r'^get/(?P<playlist_code>.*)/', get_playlist),
 ]
 
 if settings.DEBUG:
