@@ -537,7 +537,7 @@ def top_song_artist(request):
             qs = qs.filter(activity__workout_type=workout_type)
 
     if 'hr' in field:
-        qs = qs.filter(activity__flagged_hrs=False, flagged_hr=False).exclude(avg_hr__isnull=True)
+        qs = qs.filter(activity__flagged_hr=False, flagged_hr=False).exclude(avg_hr__isnull=True)
         if 'diff_last' in field:
             qs = qs.exclude(diff_last_hr__isnull=True)
         if 'diff_avg' in field:
