@@ -32,7 +32,8 @@ def get_best_curve_fit(qs):
 
             if np.max(time) > max_time:
                 max_time = np.max(time)
-
+    if max_time == -1:
+        return np.array([]), np.array([])
     xdata = np.array([range(max_time)], dtype=np.uint16)
     ydata_count = np.zeros(shape=(max_time), dtype=np.uint16)
     ydata = np.zeros(shape=(max_time), dtype=np.float16)
