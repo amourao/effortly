@@ -36,6 +36,10 @@ imperial_legends = {'speed': 'mi/h','speed_s': '/mi','distanceSmall': 'ft','dist
 logger = logging.getLogger(__name__)
 
 class Athlete(models.Model):
+
+    def __str__(self):
+        return '{}:{} - {} {}'.format(self.id, self.athlete_id, self.first_name, self.last_name)
+
     ATHELETE_TYPE = (
         (0, 'Running'),
         (1, 'Cycling'),
@@ -80,6 +84,10 @@ class Athlete(models.Model):
     share_activity_link = models.BooleanField(default=True)
 
 class ListenerSpotify(models.Model):
+
+    def __str__(self):
+        return '{} - {}, {}'.format(self.id, self.nickname, self.real_name)
+
     nickname = models.CharField(max_length=30,unique=True)
     real_name = models.CharField(max_length=30)
     profile_image_url = models.URLField(null=True)
@@ -94,6 +102,10 @@ class ActivitiesToIgnore(models.Model):
     activity_id = models.CharField(max_length=16,unique=True)
 
 class Activity(models.Model):
+
+    def __str__(self):
+        return '{}:{} - {}, {}'.format(self.id, self.activity_id, self.name, self.athlete.id)
+
     athlete = models.ForeignKey(Athlete, on_delete=models.CASCADE)
 
     activity_id = models.CharField(max_length=16,unique=True)
@@ -229,6 +241,10 @@ class Activity(models.Model):
 
 
 class Listener(models.Model):
+
+    def __str__(self):
+        return '{} - {}, {}'.format(self.id, self.nickname, self.real_name)
+
     nickname = models.CharField(max_length=30,unique=True)
     real_name = models.CharField(max_length=30,null=True)
     profile_image_url = models.URLField(null=True)
@@ -243,11 +259,19 @@ class Listener(models.Model):
     lastfm_token = models.CharField(max_length=100)
 
 class PowerUser(models.Model):
+
+    def __str__(self):
+        return '{} - {}, {},'.format(self.id, self.athlete, self.listener, self.listener_spotify)
+
     athlete = models.ForeignKey(Athlete)
     listener = models.ForeignKey(Listener, models.SET_NULL, blank=True, null=True)
     listener_spotify = models.ForeignKey(ListenerSpotify, models.SET_NULL, blank=True, null=True)
 
 class Tags(models.Model):
+
+    def __str__(self):
+        return '{} - {}, {}'.format(self.name, self.reach, self.taggings_count)
+
     name = models.CharField(max_length=100,unique=True)
     url = models.URLField()
 
@@ -257,6 +281,10 @@ class Tags(models.Model):
     last_sync_date = models.DateTimeField()
 
 class Artist(models.Model):
+
+    def __str__(self):
+        return '{}: {}'.format(self.id, self.name)
+
     name = models.CharField(max_length=100)
     image_url = models.URLField(blank=True,null=True)
     url = models.URLField(blank=True,null=True)
@@ -271,6 +299,10 @@ class Artist(models.Model):
     
 
 class Song(models.Model):
+
+    def __str__(self):
+        return '{}: {} - {}'.format(self.id, self.title, self.artist.name)
+
     title = models.CharField(max_length=100)
     artist_name = models.CharField(max_length=100)
     album_name = models.CharField(max_length=100,blank=True,null=True)
@@ -308,21 +340,40 @@ class Song(models.Model):
         return secondsToMinutesSecs(self.duration/1000.0)
 
 class AthleteSongCadence(models.Model):
+
+    def __str__(self):
+        return '{}: {} - {}'.format(self.id, self.poweruser.athlete, self.song)
+
     poweruser = models.ForeignKey(PowerUser, null=True, on_delete=models.SET_NULL)
     song = models.ForeignKey(Song, null=True, on_delete=models.SET_NULL)
     cadence = models.FloatField()
     listen_count = models.IntegerField()
     act_type = models.PositiveSmallIntegerField()
 
+
 class FlaggedArtist(models.Model):
+
+    def __str__(self):
+        return '{}: {}'.format(self.poweruser, self.artist)
+
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     poweruser = models.ForeignKey(PowerUser, on_delete=models.CASCADE)
 
+
 class FlaggedSong(models.Model):
+
+    def __str__(self):
+        return '{}: {}'.format(self.poweruser, self.song)
+
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     poweruser = models.ForeignKey(PowerUser, on_delete=models.CASCADE)
 
+
 class Effort(models.Model):
+
+    def __str__(self):
+        return '{}: {}'.format(self.song, self.activity)
+
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
 
