@@ -40,12 +40,12 @@ def spotify_find_playlist(name,description,token):
     return playlist_id
 
 
-def spotify_create_playlist(name,description,tracks):
-    listener_spotify = ListenerSpotify.objects.get(id=settings.SPOTIFY_EFFORTLY_LISTENER_ID)
+def spotify_create_playlist(name, description, tracks):
+    #listener_spotify = ListenerSpotify.objects.get(id=settings.SPOTIFY_EFFORTLY_LISTENER_ID)
     token = spotify_get_effortly_user_token()
     playlist_id = spotify_find_playlist(name,description,token)
     if tracks:        
         data = {"uris": ["spotify:track:{}".format(t) for t in tracks]}
         r_add = requests.post("https://api.spotify.com/v1/playlists/{}/tracks".format(playlist_id), headers={'Authorization': 'Bearer  ' + token}, json=data)
-    return playlist_id
+    return playlist_id, name, description
 

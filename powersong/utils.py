@@ -13,7 +13,7 @@ def filter_user(qs, request):
     return qs.filter(activity__athlete__athlete_id=request.session['athlete_id'])
 
 
-def remove_flagged(qs, poweruser):
+def remove_flagged(qs, poweruser=None):
     if poweruser:
         flaggedsong_ids = [a[0] for a in FlaggedSong.objects.filter(poweruser=poweruser).values_list('song_id')]
         flaggedartist_ids = [a[0] for a in FlaggedArtist.objects.filter(poweruser=poweruser).values_list('artist_id')]
