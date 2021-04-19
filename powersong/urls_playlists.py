@@ -6,6 +6,7 @@ from django.conf import settings
 from django.conf.urls import include
 
 urlpatterns = [
+    url(r'^$', get_playlists),
     url(r'^get/(?P<playlist_code>.*)/', get_playlist),
 ]
 
