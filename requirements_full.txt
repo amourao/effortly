@@ -6,7 +6,7 @@ celery==4.3.0
 certifi==2020.6.20
 chardet==3.0.4
 DateTime==4.2
-Django==1.11.29
+Django==2.2.24
 django-async-include==0.5.1
 django-celery==3.2.2
 django-celery-results==1.0.1
