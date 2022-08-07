@@ -89,6 +89,13 @@ def get_all_data(request):
     request.session['activity_type'] = activity_type
     result['activity_type'] = activity_type
 
+    result['activity_type_name'] = "Unknown"
+    if activity_type == 0:
+        result['activity_type_name'] = "Running"
+    elif activity_type == 1:
+        result['activity_type_name'] = "Cycling"
+
+
     return poweruser, result
 
 

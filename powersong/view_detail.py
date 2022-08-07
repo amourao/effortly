@@ -354,7 +354,7 @@ def artists(request):
     if data['activity_type'] != -1:
         qs = qs.filter(act_type=data['activity_type'])
 
-    qs = remove_flagged(poweruser, qs)
+    qs = remove_flagged(qs, poweruser)
 
     qs = filter_user(qs, request)
 
@@ -403,7 +403,7 @@ def songs(request):
     if data['activity_type'] != -1:
         qs = qs.filter(act_type=data['activity_type'])
 
-    qs = remove_flagged(poweruser, qs)
+    qs = remove_flagged(qs, poweruser)
     qs = filter_user(qs, request)
 
     qs = qs.values('song__original_song', 'song__original_song__title', 'song__original_song__artist_name',

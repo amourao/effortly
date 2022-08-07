@@ -22,7 +22,8 @@ from datetime import datetime, timedelta
 
 from django.forms.models import model_to_dict
 
-from powersong.utils import generate_header, remove_flagged, get_user_activity_type, get_workout_type, get_unit_type
+from powersong.utils import generate_header, remove_flagged, get_user_activity_type, get_workout_type, get_unit_type, \
+    remove_impossible
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +151,7 @@ def top_activities(request):
 
     return render_to_response('top_table_detail_activity.html', data)
 
+
 def top_global_song_artist(request):
     data = {}
 
@@ -223,18 +225,6 @@ def top_global_song_artist(request):
 
     # if latest:
     #    return JsonResponse(serializers.serialize("json", results),safe=False)
-    max_speed_filter = 27  # bike max speed in meters per second
-    if activity_type == 0:
-        max_speed_filter = 8  # bike max speed in meters per second
-
-    min_speed_filter = 2
-
-    time_filter = 60
-
-    distance_filter = 100
-
-    diff_filter_min = 0.5
-    diff_filter_max = 1.5
 
     qs = Effort.objects
 
@@ -286,19 +276,20 @@ def top_global_song_artist(request):
     if descending == -1:
         order_by_key = '-sort_value'
 
+    qs = remove_flagged(qs, None)
+    qs = remove_impossible(qs, activity_type)
+
     if g_type == 'count':
         if u_type == 'song':
             if field == 'count_users':
-                qs = qs.filter(activity__flagged=False, flagged=False, distance__gt=distance_filter,
-                               duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                               avg_speed__lt=max_speed_filter).values('song__original_song',
-                                                                      'song__original_song__spotify_id',
-                                                                      'song__original_song__title',
-                                                                      'song__original_song__artist_name',
-                                                                      'song__original_song__url',
-                                                                      'song__original_song__image_url',
-                                                                      'song__original_song__artist__id',
-                                                                      'song__original_song__artist__image_url').annotate(
+                qs = qs.values('song__original_song',
+                               'song__original_song__spotify_id',
+                               'song__original_song__title',
+                               'song__original_song__artist_name',
+                               'song__original_song__url',
+                               'song__original_song__image_url',
+                               'song__original_song__artist__id',
+                               'song__original_song__artist__image_url').annotate(
                     sort_value=Count(agg_type, distinct=distinct)).filter(sort_value__gt=(min_count - 1)).annotate(
                     diff_last_hr=Avg('diff_last_hr'), diff_avg_hr=Avg('diff_avg_hr'), avg_hr=Avg('avg_hr'),
                     avg_speed=Avg('avg_speed'), start_distance=Avg('start_distance'), distance=Avg('distance'),
@@ -307,16 +298,14 @@ def top_global_song_artist(request):
                     diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,
                                                                                                 'song__original_song__title')
             else:
-                qs = qs.filter(activity__flagged=False, flagged=False, distance__gt=distance_filter,
-                               duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                               avg_speed__lt=max_speed_filter).values('song__original_song',
-                                                                      'song__original_song__spotify_id',
-                                                                      'song__original_song__title',
-                                                                      'song__original_song__artist_name',
-                                                                      'song__original_song__url',
-                                                                      'song__original_song__image_url',
-                                                                      'song__original_song__artist__id',
-                                                                      'song__original_song__artist__image_url').annotate(
+                qs = qs.values('song__original_song',
+                               'song__original_song__spotify_id',
+                               'song__original_song__title',
+                               'song__original_song__artist_name',
+                               'song__original_song__url',
+                               'song__original_song__image_url',
+                               'song__original_song__artist__id',
+                               'song__original_song__artist__image_url').annotate(
                     t_count=Count(agg_type)).filter(t_count__gt=(min_count - 1)).annotate(
                     sort_value=Count(agg_type, distinct=distinct), diff_last_hr=Avg('diff_last_hr'),
                     diff_avg_hr=Avg('diff_avg_hr'), avg_hr=Avg('avg_hr'), avg_speed=Avg('avg_speed'),
@@ -327,9 +316,7 @@ def top_global_song_artist(request):
                                                                                                 'song__original_song__title')
         elif u_type == 'artist':
             if field == 'count_users':
-                qs = qs.filter(activity__flagged=False, flagged=False, distance__gt=distance_filter,
-                               duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                               avg_speed__lt=max_speed_filter).values('song__original_song__artist_name',
+                qs = qs.values('song__original_song__artist_name',
                                                                       'song__original_song__artist__id',
                                                                       'song__original_song__artist__image_url').annotate(
                     sort_value=Count(agg_type, distinct=distinct)).filter(sort_value__gt=(min_count - 1)).annotate(
@@ -340,11 +327,9 @@ def top_global_song_artist(request):
                     diff_avg_speed_s=Avg('diff_avg_speed_s')).exclude(sort_value=None).order_by(order_by_key,
                                                                                                 'song__original_song__artist_name')
             else:
-                qs = qs.filter(activity__flagged=False, flagged=False, distance__gt=distance_filter,
-                               duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                               avg_speed__lt=max_speed_filter).values('song__original_song__artist_name',
-                                                                      'song__original_song__artist__id',
-                                                                      'song__original_song__artist__image_url').annotate(
+                qs = qs.values('song__original_song__artist_name',
+                               'song__original_song__artist__id',
+                               'song__original_song__artist__image_url').annotate(
                     t_count=Count(agg_type)).filter(t_count__gt=(min_count - 1)).annotate(
                     sort_value=Count(agg_type, distinct=distinct), diff_last_hr=Avg('diff_last_hr'),
                     diff_avg_hr=Avg('diff_avg_hr'), avg_hr=Avg('avg_hr'), avg_speed=Avg('avg_speed'),
@@ -355,16 +340,14 @@ def top_global_song_artist(request):
                                                                                                 'song__original_song__artist_name')
     elif g_type == 'avg':
         if u_type == 'song':
-            qs = qs.filter(activity__flagged=False, flagged=False, distance__gt=distance_filter,
-                           duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                           avg_speed__lt=max_speed_filter).values('song__original_song',
-                                                                  'song__original_song__spotify_id',
-                                                                  'song__original_song__title',
-                                                                  'song__original_song__artist_name',
-                                                                  'song__original_song__url',
-                                                                  'song__original_song__image_url',
-                                                                  'song__original_song__artist__id',
-                                                                  'song__original_song__artist__image_url').annotate(
+            qs = qs.values('song__original_song',
+                           'song__original_song__spotify_id',
+                           'song__original_song__title',
+                           'song__original_song__artist_name',
+                           'song__original_song__url',
+                           'song__original_song__image_url',
+                           'song__original_song__artist__id',
+                           'song__original_song__artist__image_url').annotate(
                 t_count=Count(agg_type)).filter(t_count__gt=(min_count - 1)).annotate(sort_value=Avg(field),
                                                                                       diff_last_hr=Avg('diff_last_hr'),
                                                                                       diff_avg_hr=Avg('diff_avg_hr'),
@@ -385,9 +368,7 @@ def top_global_song_artist(request):
                                                                                           'diff_avg_speed_s')).exclude(
                 sort_value=None).order_by(order_by_key, 'song__original_song__title')
         elif u_type == 'artist':
-            qs = qs.filter(activity__flagged=False, flagged=False, distance__gt=distance_filter,
-                           duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                           avg_speed__lt=max_speed_filter).values('song__original_song__artist_name',
+            qs = qs.values('song__original_song__artist_name',
                                                                   'song__original_song__artist__id',
                                                                   'song__original_song__artist__image_url').annotate(
                 t_count=Count(agg_type)).filter(t_count__gt=(min_count - 1)).annotate(sort_value=Avg(field),
@@ -556,13 +537,13 @@ def top_song_artist(request):
             qs = qs.filter(activity__workout_type=workout_type)
 
     if 'hr' in field:
-        qs = qs.filter(activity__flagged_hrs=False, flagged_hr=False).exclude(avg_hr__isnull=True)
+        qs = qs.filter(activity__flagged_hr=False, flagged_hr=False).exclude(avg_hr__isnull=True)
         if 'diff_last' in field:
             qs = qs.exclude(diff_last_hr__isnull=True)
         if 'diff_avg' in field:
             qs = qs.exclude(diff_avg_hr__isnull=True)
 
-    qs = remove_flagged(poweruser, qs)
+    qs = remove_flagged(qs, poweruser)
 
     if 'days' in request.GET:
         try:
@@ -580,11 +561,11 @@ def top_song_artist(request):
     elif u_type == 'artist':
         agg_type = 'song__original_song__artist_id'
 
+    qs = remove_impossible(qs, activity_type)
+
     if g_type == 'count':
         if u_type == 'song':
-            qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                           avg_speed__lt=max_speed_filter,
-                           activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
+            qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
                                                                                                'song__original_song__spotify_id',
                                                                                                'song__original_song__title',
                                                                                                'song__original_song__artist_name',
@@ -612,9 +593,7 @@ def top_song_artist(request):
                                                                                           'diff_avg_speed_s')).exclude(
                 sort_value=None).order_by('sort_value')[::descending]
         elif u_type == 'artist':
-            qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                           avg_speed__lt=max_speed_filter,
-                           activity__athlete__athlete_id=request.session['athlete_id']).values(
+            qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values(
                 'song__original_song__artist_name', 'song__original_song__artist__id',
                 'song__original_song__artist__image_url').annotate(t_count=Count(agg_type)).filter(
                 t_count__gt=(min_count - 1)).annotate(sort_value=Count(agg_type), diff_last_hr=Avg('diff_last_hr'),
@@ -629,9 +608,7 @@ def top_song_artist(request):
                 sort_value=None).order_by('sort_value')[::descending]
     elif g_type == 'avg':
         if u_type == 'song':
-            qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                           avg_speed__lt=max_speed_filter,
-                           activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
+            qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
                                                                                                'song__original_song__spotify_id',
                                                                                                'song__original_song__title',
                                                                                                'song__original_song__artist_name',
@@ -659,9 +636,7 @@ def top_song_artist(request):
                                                                                           'diff_avg_speed_s')).exclude(
                 sort_value=None).order_by('sort_value')[::descending]
         elif u_type == 'artist':
-            qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                           avg_speed__lt=max_speed_filter,
-                           activity__athlete__athlete_id=request.session['athlete_id']).values(
+            qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values(
                 'song__original_song__artist_name', 'song__original_song__artist__id',
                 'song__original_song__artist__image_url').annotate(t_count=Count(agg_type)).filter(
                 t_count__gt=(min_count - 1)).annotate(sort_value=Avg(field), diff_last_hr=Avg('diff_last_hr'),
@@ -790,18 +765,6 @@ def top(request):
 
     # if latest:
     #    return JsonResponse(serializers.serialize("json", results),safe=False)
-    max_speed_filter = 27  # bike max speed in meters per second
-    if activity_type == 0:
-        max_speed_filter = 8  # bike max speed in meters per second
-
-    min_speed_filter = 2
-
-    time_filter = 60
-
-    distance_filter = 100
-
-    diff_filter_min = 0.5
-    diff_filter_max = 1.5
 
     poweruser = get_poweruser(request.session['athlete_id'])
 
@@ -827,7 +790,7 @@ def top(request):
         if 'diff_avg' in field:
             qs = qs.exclude(diff_avg_hr__isnull=True)
 
-    qs = remove_flagged(poweruser, qs)
+
     if 'days' in request.GET:
         try:
             days = int(request.GET['days'])
@@ -838,10 +801,12 @@ def top(request):
         except:
             pass
 
+
+    qs = remove_impossible(qs, activity_type)
+    qs = remove_flagged(qs, poweruser)
+
     if g_type == 'top':
-        qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                       avg_speed__lt=max_speed_filter,
-                       activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
+        qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
                                                                                            'song__original_song__spotify_id',
                                                                                            'song__original_song__title',
                                                                                            'song__original_song__artist_name',
@@ -863,9 +828,7 @@ def top(request):
                                                                                            'diff_avg_speed_s').annotate(
             sort_value=Avg(field)).exclude(sort_value__isnull=True).order_by(field)[::descending]
     elif g_type == 'count':
-        qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                       avg_speed__lt=max_speed_filter,
-                       activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
+        qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
                                                                                            'song__original_song__spotify_id',
                                                                                            'song__original_song__title',
                                                                                            'song__original_song__artist_name',
@@ -897,9 +860,7 @@ def top(request):
                                                                                                    'diff_avg_speed_s')).exclude(
             sort_value=None).order_by('sort_value')[::descending]
     elif g_type == 'avg':
-        qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                       avg_speed__lt=max_speed_filter,
-                       activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
+        qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
                                                                                            'song__original_song__spotify_id',
                                                                                            'song__original_song__title',
                                                                                            'song__original_song__artist_name',
@@ -931,9 +892,7 @@ def top(request):
                                                                                                    'diff_avg_speed_s')).exclude(
             sort_value=None).order_by('sort_value')[::descending]
     elif g_type == 'sum':
-        qs = qs.filter(distance__gt=distance_filter, duration__gt=time_filter, avg_speed__gt=min_speed_filter,
-                       avg_speed__lt=max_speed_filter,
-                       activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
+        qs = qs.filter(activity__athlete__athlete_id=request.session['athlete_id']).values('song__original_song',
                                                                                            'song__original_song__spotify_id',
                                                                                            'song__original_song__title',
                                                                                            'song__original_song__artist_name',

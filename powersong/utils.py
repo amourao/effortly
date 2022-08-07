@@ -13,14 +13,13 @@ def filter_user(qs, request):
     return qs.filter(activity__athlete__athlete_id=request.session['athlete_id'])
 
 
-def remove_flagged(poweruser, qs):
-    flaggedsong_ids = [a[0] for a in FlaggedSong.objects.filter(poweruser=poweruser).values_list('song_id')]
-    flaggedartist_ids = [a[0] for a in FlaggedArtist.objects.filter(poweruser=poweruser).values_list('artist_id')]
-    qs = qs.exclude(song__original_song__in=flaggedsong_ids)
-    qs = qs.exclude(song__original_song__artist__in=flaggedartist_ids)
-    qs = qs.exclude(flagged=True)
-    qs = qs.exclude(activity__flagged=True)
-    return qs
+def remove_flagged(qs, poweruser=None):
+    if poweruser:
+        flaggedsong_ids = [a[0] for a in FlaggedSong.objects.filter(poweruser=poweruser).values_list('song_id')]
+        flaggedartist_ids = [a[0] for a in FlaggedArtist.objects.filter(poweruser=poweruser).values_list('artist_id')]
+        qs = qs.exclude(song__original_song__in=flaggedsong_ids).exclude(
+            song__original_song__artist__in=flaggedartist_ids)
+    return qs.exclude(flagged=True).exclude(activity__flagged=True)
 
 
 def get_unit_type(activity_type, dispfield, field):
@@ -52,3 +51,18 @@ def get_user_activity_type(request):
         else:
             activity_type = request.session['activity_type']
     return activity_type
+
+
+def remove_impossible(qs, activity_type):
+    max_speed_filter = 27  # bike max speed in meters per second
+    if activity_type == 0:
+        max_speed_filter = 8  # bike max speed in meters per second
+
+    min_speed_filter = 2
+
+    time_filter = 60
+
+    distance_filter = 100
+
+    return qs.filter(distance__gt=distance_filter).filter(duration__gt=time_filter).filter(
+        avg_speed__gt=min_speed_filter).filter(avg_speed__lt=max_speed_filter)
