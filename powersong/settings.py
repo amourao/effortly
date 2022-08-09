@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'django_celery_results',
     'debug_toolbar',
     'async_include',
     # 'silk',

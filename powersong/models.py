@@ -258,6 +258,7 @@ class Listener(models.Model):
 
     lastfm_token = models.CharField(max_length=100)
 
+
 class PowerUser(models.Model):
 
     def __str__(self):
@@ -266,6 +267,8 @@ class PowerUser(models.Model):
     athlete = models.ForeignKey(Athlete)
     listener = models.ForeignKey(Listener, models.SET_NULL, blank=True, null=True)
     listener_spotify = models.ForeignKey(ListenerSpotify, models.SET_NULL, blank=True, null=True)
+    join_date = models.DateTimeField(auto_now=True, null=True)
+
 
 class Tags(models.Model):
 
