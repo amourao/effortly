@@ -36,8 +36,9 @@ def strava_webhooks_callback(request):
             response = client.handle_subscription_callback(raw, verify_token=settings.STRAVA_VERIFY_TOKEN)
             logger.debug("STRAVA WEBHOOK ACCEPT OK")
             return HttpResponse(json.dumps({'hub.challenge': raw['hub.challenge']}))
-        except:
-            logger.debug("STRAVA WEBHOOK ACCEPT ERROR")
+        except Exception as e:
+            logger.error("STRAVA WEBHOOK ACCEPT ERROR")
+            logger.error(str(e))
             pass
         return HttpResponse("INVALID_REQUEST")    
     elif request.method == 'POST':

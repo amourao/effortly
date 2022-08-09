@@ -177,7 +177,7 @@ def strava_download_activity(act):
                        'grade_smooth', 'moving']
 
         # actStream = client.get_activity_streams(act['id'],types=['time','latlng','distance','altitude','velocity_smooth','heartrate','watts','moving','grade_smooth'])
-        act_stream_api = client.get_activity_streams(act['id'], types=stream_keys)
+        act_stream_api = client.get_activity_streams(act['id'], types=stream_keys, resolution="high")
         act_stream = {}
         for k in stream_keys:
             if k in act_stream_api:
@@ -1072,15 +1072,18 @@ def sync_efforts_spotify(athlete_id, limit=None, after=None, force=False):
     new_activities = []
     activity_count = 0
     for act in all_activities:
-        activity_count += 1
-        if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
-            act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_task.si('strava_download_activity', (act_p,)),
-                                   spotify_task.s('spotify_download_activity_tracks', (False,)),
-                                   activity_to_efforts.s(),
-                                   strava_task.s('strava_send_song_activities', ())
-                                   )
-            new_activities.append(download_chain)
+        try:
+            activity_count += 1
+            if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
+                act_p = strava_parse_base_activity(act)
+                download_chain = chain(strava_task.si('strava_download_activity', (act_p,)),
+                                       spotify_task.s('spotify_download_activity_tracks', (False,)),
+                                       activity_to_efforts.s(),
+                                       strava_task.s('strava_send_song_activities', ())
+                                       )
+                new_activities.append(download_chain)
+        except Exception as e:
+            logger.error("Error parsing activity")        
 
     strava_generate_nops(4 + math.ceil(activity_count / 200))
 
@@ -1146,15 +1149,18 @@ def sync_efforts_lastfm(athlete_id, limit=None, after=None, force=False):
     new_activities = []
     activity_count = 0
     for act in all_activities:
-        activity_count += 1
-        if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
-            act_p = strava_parse_base_activity(act)
-            download_chain = chain(strava_task.si('strava_download_activity', (act_p,)),
-                                   lastfm_task.s('lastfm_download_activity_tracks', ()),
-                                   activity_to_efforts.s(),
-                                   strava_task.s('strava_send_song_activities', ())
-                                   )
-            new_activities.append(download_chain)
+        try:
+            activity_count += 1
+            if not strava_is_activity_to_ignore(act.id) and not strava_get_activity_by_id(act.id):
+                act_p = strava_parse_base_activity(act)
+                download_chain = chain(strava_task.si('strava_download_activity', (act_p,)),
+                                       lastfm_task.s('lastfm_download_activity_tracks', ()),
+                                       activity_to_efforts.s(),
+                                       strava_task.s('strava_send_song_activities', ())
+                                       )
+                new_activities.append(download_chain)
+        except Exception as e:
+            logger.error("Error parsing activity")
 
     strava_generate_nops(4 + math.ceil(activity_count / 200))
 
