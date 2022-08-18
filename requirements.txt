@@ -1,7 +1,7 @@
 celery==4.3.0
 Django==1.11.29
 django-async-include==0.5.1
-django-debug-toolbar==1.8
+django-debug-toolbar==1.11.1
 django-picklefield==1.0.0
 django-silk==1.0.0
 numpy==1.19.2
