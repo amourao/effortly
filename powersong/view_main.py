@@ -1,3 +1,6 @@
+import time
+from datetime import date, timedelta
+
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.http import HttpResponse,HttpResponseForbidden
@@ -13,7 +16,10 @@ from powersong.spotify_aux import spotify_get_user_info
 from powersong.view_detail import get_scrobble_details
 from powersong.tasks import sync_efforts_lastfm, sync_efforts_spotify, strava_get_user_info, strava_send_song_activities
 
-from powersong.models import get_poweruser, PowerUser, Athlete, Activity
+from powersong.models import get_poweruser, PowerUser, Athlete, Activity, Song, Artist, ListenerSpotify, Listener
+
+from celery import shared_task, chain, group
+
 
 import logging
 
@@ -295,12 +301,13 @@ def resync_last_fm(request,activity_id):
         poweruser, result = get_all_data(request)
     except NonAuthenticatedException as e:
         logger.debug(e.message)
-        return (e.destination)
+        return e.destination
 
     resync_activity(activity_id,request.session['athlete_id'])
     
     #return render_to_response('blank.html', {'message':response})
     return redirect("/activity/" + activity_id)
+
 
 def resync_spotify(request,activity_id):
     if 'demo' in request.session:
@@ -316,6 +323,7 @@ def resync_spotify(request,activity_id):
     #return render_to_response('blank.html', {'message':response})
     return redirect("/activity/" + activity_id)
 
+
 def about(request):
     try:
         poweruser, result = get_all_data(request)
@@ -324,3 +332,56 @@ def about(request):
         result['viewer'] = True
     result['title'] = 'About'
     return render_to_response('about.html', result)
+
+
+def stats(request):
+    try:
+        poweruser, result = get_all_data(request)
+    except NonAuthenticatedException as e:
+        result = {}
+        result['viewer'] = True
+        raise NonAuthenticatedException("No strava session found", redirect(strava_get_auth_url()))
+    if not(poweruser and (poweruser.athlete.athlete_id == "9363354" or 'superuser' in request.session) and not 'demo' in request.session):
+        raise NonAuthenticatedException("User is not admin", redirect(strava_get_auth_url()))
+    result['title'] = 'Stats'
+
+    today = date.today()
+    seven_day_before = today - timedelta(days=7)
+    thirty_day_before = today - timedelta(days=30)
+
+    stats = {}
+
+    stats['activities'] = {}
+    stats['activities']['total'] = len(Activity.objects.all())
+    stats['activities']['total_30'] = len(Activity.objects.filter(start_date__gt=thirty_day_before))
+    stats['activities']['total_7'] = len(Activity.objects.filter(start_date__gt=seven_day_before))
+
+    stats['activities_with_songs'] = {}
+    stats['activities_with_songs']['total'] = len(Activity.objects.filter(effort__isnull=False).distinct())
+    stats['activities_with_songs']['total_30'] = len(Activity.objects.filter(effort__isnull=False, start_date__gt=thirty_day_before).distinct())
+    stats['activities_with_songs']['total_7'] = len(Activity.objects.filter(effort__isnull=False, start_date__gt=seven_day_before).distinct())
+
+    stats['users'] = {}
+    stats['users']['total'] = len(PowerUser.objects.all())
+    stats['users']['total_30'] = len(PowerUser.objects.filter(join_date__gt=thirty_day_before))
+    stats['users']['total_7'] = len(PowerUser.objects.filter(join_date__gt=seven_day_before))
+
+    stats['users_strava'] = {}
+    stats['users_strava']['total'] = len(Athlete.objects.all())
+
+    stats['users_spotify'] = {}
+    stats['users_spotify']['total'] = len(ListenerSpotify.objects.all())
+
+    stats['users_lastfm'] = {}
+    stats['users_lastfm']['total'] = len(Listener.objects.all())
+
+    stats['songs'] = {}
+    stats['songs']['total'] = len(Song.objects.all())
+
+    stats['artists'] = {}
+    stats['artists']['total'] = len(Artist.objects.all())
+
+    result['stats'] = stats
+
+    return render_to_response('stats.html', result)
+
