@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, redirect
 from django.template import RequestContext
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -38,7 +38,7 @@ def activity(request, activity_id):
     data = {}
     activities = Activity.objects.filter(activity_id=activity_id)
     if not activities:
-        return render_to_response('access_denied.html', data)
+        return render(request, 'access_denied.html', data)
     activity = activities[0]
     if not ('athlete_id' in request.session or 'demo' in request.session or activity.athlete.share_activity_link):
         return redirect("/")
@@ -70,7 +70,7 @@ def activity(request, activity_id):
     athlete_id = activity.athlete_id
 
     if activity.athlete_id != activity_poweruser.athlete.id:
-        return render_to_response('access_denied.html', data)
+        return render(request, 'access_denied.html', data)
 
     if not 'logged_viewer' in data and not 'viewer' in data and not 'demo' in data and poweruser.listener_spotify:
         data['spotify_token'] = poweruser.listener_spotify.spotify_token
@@ -103,9 +103,9 @@ def activity(request, activity_id):
     data['activity_type'] = activity.act_type
     data['activity'] = activity
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     units = None
     if 'units' in request.GET:
@@ -125,11 +125,11 @@ def activity(request, activity_id):
             q['sort_value'] = q['avg_speed']
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
         data['title'] = data['activity'].name
-        return render_to_response('activity.html', data)
+        return render(request, 'activity.html', data)
 
 
 @ensure_csrf_cookie
@@ -151,7 +151,7 @@ def song(request, song_id):
 
     songs = Song.objects.filter(id=song_id)
     if not songs:
-        return render_to_response('access_denied.html', data)
+        return render(request, 'access_denied.html', data)
 
     data['song'] = songs[0]
     if data['song'].original_song:
@@ -189,9 +189,9 @@ def song(request, song_id):
 
     data['flagged'] = bool(FlaggedSong.objects.filter(song=data['song'], poweruser=poweruser))
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     units = None
     if 'units' in request.GET:
@@ -231,11 +231,11 @@ def song(request, song_id):
             q['sort_value'] = q['avg_speed']
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
         data['title'] = data['song'].title + ' - ' + data['song'].artist_name
-        return render_to_response('song.html', data)
+        return render(request, 'song.html', data)
 
 
 @ensure_csrf_cookie
@@ -257,7 +257,7 @@ def artist(request, artist_id):
 
     artists = Artist.objects.filter(id=artist_id)
     if not artists:
-        return render_to_response('access_denied.html', data)
+        return render(request, 'access_denied.html', data)
 
     data['artist'] = artists[0]
 
@@ -278,9 +278,9 @@ def artist(request, artist_id):
 
     data['flagged'] = bool(FlaggedArtist.objects.filter(artist=data['artist'], poweruser=poweruser))
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     units = None
     if 'units' in request.GET:
@@ -330,11 +330,11 @@ def artist(request, artist_id):
     for q in qs:
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
         data['title'] = data['artist'].name
-        return render_to_response('artist.html', data)
+        return render(request, 'artist.html', data)
 
 
 def artists(request):
@@ -363,9 +363,9 @@ def artists(request):
                    'activity__flagged', 'activity__flagged_hr').annotate(
         sort_value=Count('song__original_song__artist')).order_by('sort_value')[::-1][:n]
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     units = None
     if 'units' in request.GET:
@@ -380,10 +380,10 @@ def artists(request):
     for q in qs:
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
-        return render_to_response('top_table_artist.html', data)
+        return render(request, 'top_table_artist.html', data)
 
 
 def songs(request):
@@ -412,9 +412,9 @@ def songs(request):
                    'activity__flagged_hr').annotate(sort_value=Count('song__original_song')).order_by('sort_value')[
          ::-1][:n]
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     units = None
     if 'units' in request.GET:
@@ -429,7 +429,7 @@ def songs(request):
     for q in qs:
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
-        return render_to_response('top_table_song.html', data)
+        return render(request, 'top_table_song.html', data)

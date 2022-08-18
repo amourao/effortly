@@ -4,9 +4,7 @@ from hashlib import md5
 from powersong.models import *
 from powersong.tasks import lastfm_task
 
-from celery import chain, group
-from celery.result import AsyncResult,GroupResult
-from celery import current_app
+from celery import group
 from celery import shared_task
 
 import requests

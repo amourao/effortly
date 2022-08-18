@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, redirect, render
+from django.shortcuts import redirect, render
 
 from powersong.utils import remove_flagged, remove_impossible
 from powersong.view_main import get_all_data, NonAuthenticatedException

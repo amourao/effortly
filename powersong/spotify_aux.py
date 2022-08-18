@@ -9,9 +9,7 @@ from dateutil.parser import parse
 
 from powersong.models import *
 
-from celery import chain, group
-from celery.result import AsyncResult,GroupResult
-from celery import current_app
+from celery import group
 
 import os.path
 

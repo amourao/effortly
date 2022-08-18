@@ -264,7 +264,7 @@ class PowerUser(models.Model):
     def __str__(self):
         return '{} - {}, {},'.format(self.id, self.athlete, self.listener, self.listener_spotify)
 
-    athlete = models.ForeignKey(Athlete)
+    athlete = models.ForeignKey(Athlete, models.SET_NULL, blank=True, null=True)
     listener = models.ForeignKey(Listener, models.SET_NULL, blank=True, null=True)
     listener_spotify = models.ForeignKey(ListenerSpotify, models.SET_NULL, blank=True, null=True)
     join_date = models.DateTimeField(auto_now=True, null=True)
@@ -336,7 +336,7 @@ class Song(models.Model):
     bpm = models.FloatField(blank=True,null=True)
     time_signature = models.SmallIntegerField(blank=True,null=True)
 
-    original_song = models.ForeignKey("self",blank=True,null=True)
+    original_song = models.ForeignKey("self", models.SET_NULL, blank=True, null=True)
 
     @property
     def duration_pretty(self):

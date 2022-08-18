@@ -227,3 +227,5 @@ CELERY_BEAT_SCHEDULE = {
 #       'schedule': crontab(minute=59, hour=00, day_of_week='thu')
 #    }
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

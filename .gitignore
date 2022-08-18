@@ -106,7 +106,7 @@ powersong/staticfiles/
 
 data/
 
-db.sqlite3*
+db.sqlite3
 
 celerybeat-schedule.bak
 celerybeat-schedule.dat

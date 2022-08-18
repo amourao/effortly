@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, redirect, render
+from django.shortcuts import render, redirect, render
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -133,7 +133,7 @@ def flag_activity(request,activity_id):
     activity = activity[0]
 
     if activity.athlete_id != poweruser.athlete.id:
-        return render_to_response('access_denied.html', {})
+        return render(request, 'access_denied.html', {})
 
 
     json_data = json.loads(request.body)
@@ -166,7 +166,7 @@ def flag_effort(request,effort_id):
     effort = effort[0]
 
     if effort.activity.athlete_id != poweruser.athlete.id:
-        return render_to_response('access_denied.html', {})
+        return render(request, 'access_denied.html', {})
 
 
     json_data = json.loads(request.body)

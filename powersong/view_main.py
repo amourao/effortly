@@ -1,7 +1,7 @@
 import time
 from datetime import date, timedelta
 
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.http import HttpResponse,HttpResponseForbidden
 from django.http import JsonResponse
@@ -120,7 +120,7 @@ def index(request):
     result['syncing'] = False
     result['count_s'],result['count_a'] = get_scrobble_details(athlete_model.athlete_id,result['activity_type'])
     result['title'] = 'Top'
-    return render_to_response('top.html', result)
+    return render(request, 'top.html', result)
 
 
 def detailed(request):
@@ -131,7 +131,7 @@ def detailed(request):
         logger.debug(e.message)
         return (e.destination)    
     result['title'] = 'Detailed View'
-    return render_to_response('detailed.html', result)
+    return render(request, 'detailed.html', result)
 
 def global_top(request):
 
@@ -142,7 +142,7 @@ def global_top(request):
         return (e.destination)    
     result['title'] = 'Global Top'
     result['countries'] = Athlete.objects.all().values_list('country',flat=True).distinct().order_by('country')
-    return render_to_response('global_top.html', result)
+    return render(request, 'global_top.html', result)
 
 def get_sync_id(request, poweruser):
     
@@ -268,7 +268,7 @@ def sync_lastfm(request,poweruser):
 def get_sync_progress(request):
     #logger.debug('########## get_sync_progress ##########')
     return gen_sync_response(request)      
-    #return render_to_response('blank.html', {'message':response})
+    #return render(request, 'blank.html', {'message':response})
 
 
 
@@ -305,7 +305,7 @@ def resync_last_fm(request,activity_id):
 
     resync_activity(activity_id,request.session['athlete_id'])
     
-    #return render_to_response('blank.html', {'message':response})
+    #return render(request, 'blank.html', {'message':response})
     return redirect("/activity/" + activity_id)
 
 
@@ -320,7 +320,7 @@ def resync_spotify(request,activity_id):
     
     resync_activity_spotify(activity_id,request.session['athlete_id'])
 
-    #return render_to_response('blank.html', {'message':response})
+    #return render(request, 'blank.html', {'message':response})
     return redirect("/activity/" + activity_id)
 
 
@@ -331,7 +331,7 @@ def about(request):
         result = {}
         result['viewer'] = True
     result['title'] = 'About'
-    return render_to_response('about.html', result)
+    return render(request, 'about.html', result)
 
 
 def stats(request):
@@ -383,5 +383,5 @@ def stats(request):
 
     result['stats'] = stats
 
-    return render_to_response('stats.html', result)
+    return render(request, 'stats.html', result)
 

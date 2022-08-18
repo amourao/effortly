@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response,redirect
+from django.shortcuts import render, redirect
 from django.template import RequestContext
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -32,17 +32,17 @@ def index(request):
     
     if not 'athlete_id' in request.session:
         result['strava_authorize_url'] = strava_get_auth_url()
-        return render_to_response('home.html', result)
+        return render(request, 'home.html', result)
     elif get_poweruser(request.session['athlete_id']) != None:
         return main_index(request)
 
     if not "athlete_id" in request.session:
-        return render_to_response('home.html', result)
+        return render(request, 'home.html', result)
     else:
         return main_index(request)
 
 def home(request):
-    return render_to_response('home.html', {'strava_authorize_url': "#", 'lastfm_authorize_url': "#", 'spotify_authorize_url': "#"})
+    return render(request, 'home.html', {'strava_authorize_url': "#", 'lastfm_authorize_url': "#", 'spotify_authorize_url': "#"})
 
 def logout(request):
     request.session.flush()

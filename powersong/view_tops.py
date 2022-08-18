@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.forms.models import model_to_dict
 
@@ -149,7 +149,7 @@ def top_activities(request):
     if header:
         data['header'] = generate_header(n, page, total_length)
 
-    return render_to_response('top_table_detail_activity.html', data)
+    return render(request,'top_table_detail_activity.html', data)
 
 
 def top_global_song_artist(request):
@@ -397,9 +397,9 @@ def top_global_song_artist(request):
     if header:
         data['header'] = generate_header(n, page, total_length)
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     data['activity_type'] = activity_type
     data['top'] = []
@@ -431,10 +431,10 @@ def top_global_song_artist(request):
             q["average"] = True
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
-        return render_to_response('top_table_effort.html', data)
+        return render(request,'top_table_effort.html', data)
 
 
 def top_song_artist(request):
@@ -656,9 +656,9 @@ def top_song_artist(request):
     if header:
         data['header'] = generate_header(n, page, total_length)
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     data['activity_type'] = activity_type
     data['top'] = []
@@ -690,10 +690,10 @@ def top_song_artist(request):
             q["average"] = True
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
-        return render_to_response('top_table_effort.html', data)
+        return render(request,'top_table_effort.html', data)
 
 
 def top(request):
@@ -930,9 +930,9 @@ def top(request):
     if header:
         data['header'] = generate_header(n, page, total_length)
 
-    render = 'html'
+    render_format = 'html'
     if 'render' in request.GET:
-        render = int(request.GET['render'])
+        render_format = int(request.GET['render'])
 
     data['activity_type'] = activity_type
     data['top'] = []
@@ -964,10 +964,10 @@ def top(request):
             q["average"] = True
         data['top'].append(effort_convert(q, units))
 
-    if render == 'json':
+    if render_format == 'json':
         return JsonResponse(data)
     else:
-        return render_to_response('top_table_effort.html', data)
+        return render(request,'top_table_effort.html', data)
 
 
 def latest(request):
@@ -995,4 +995,4 @@ def latest(request):
     data['top'] = Activity.objects.filter(athlete__athlete_id=request.session['athlete_id']).annotate(
         ecount=Count('effort')).order_by('-start_date_local')[:n]
 
-    return render_to_response('activities.html', data)
+    return render(request,'activities.html', data)
