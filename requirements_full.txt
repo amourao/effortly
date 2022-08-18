@@ -9,7 +9,7 @@ DateTime==4.2
 Django==1.11.29
 django-async-include==0.5.1
 django-celery==3.2.2
-django-celery-results==1.0.1
+django-celery-results==2.4.0
 django-debug-toolbar==1.8
 django-picklefield==1.0.0
 django-silk==1.0.0
