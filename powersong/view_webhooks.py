@@ -51,11 +51,10 @@ def strava_webhooks_callback(request):
             elif data["aspect_type"] == "delete" and data["object_type"] == "activity":
                 Activity.objects.filter(activity_id=data["object_id"], athlete__athlete_id=data["owner_id"]).delete()
             elif data["aspect_type"] == "update" and data["object_type"] == "activity":
-                print(data)
                 activity = Activity.objects.get(activity_id=data["object_id"], athlete__athlete_id=data["owner_id"])
-                for key, value in data["updates"].values():
+                for key, value in data["updates"].items():
                     if key == "title":
-                        activity.name = value;
+                        activity.name = value
                     elif key == 'type':
                         if value == 'Ride':
                             activity.act_type = 1
