@@ -108,7 +108,7 @@ def sync_one_activity_spotify(activity_id,athlete_id,delay=0):
 
 
 
-def resync_activity(activity_id,athlete_id):
+def resync_activity(activity_id, athlete_id, resend=False):
     ath = strava_get_user_info(id=athlete_id)
 
     client = stravalib.client.Client()
@@ -128,15 +128,22 @@ def resync_activity(activity_id,athlete_id):
     act_p = {}
     act_p['id'] = activity_id
     act_p['athlete_id'] = athlete_id
-    download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
-                            lastfm_task.s('lastfm_download_activity_tracks',()),
-                            activity_to_efforts.s()
-                    )
+    if resend:
+        download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                                lastfm_task.s('lastfm_download_activity_tracks',()),
+                                activity_to_efforts.s(),
+                                strava_task.s('strava_send_song_activities', ())
+        )
+    else:
+        download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                                lastfm_task.s('lastfm_download_activity_tracks',()),
+                                activity_to_efforts.s()
+                        )
     job_result = download_chain.delay()
     
     return job_result.id, 1
 
-def resync_activity_spotify(activity_id,athlete_id):
+def resync_activity_spotify(activity_id, athlete_id, resend=False):
     ath = strava_get_user_info(id=athlete_id)
 
     client = stravalib.client.Client()
@@ -157,10 +164,17 @@ def resync_activity_spotify(activity_id,athlete_id):
     act_p = {}
     act_p['id'] = activity_id
     act_p['athlete_id'] = athlete_id
-    download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
-                            spotify_task.s('spotify_download_activity_tracks',(True,)),
-                            activity_to_efforts.s()
-                    )
+    if resend:
+        download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                                spotify_task.s('spotify_download_activity_tracks',(True,)),
+                                activity_to_efforts.s(),
+                                strava_task.s('strava_send_song_activities', ())
+                        )
+    else:
+        download_chain = chain(strava_task.si('strava_download_activity',(act_p,)),
+                                spotify_task.s('spotify_download_activity_tracks',(True,)),
+                                activity_to_efforts.s()
+                        )
     job_result = download_chain.delay()
 
     return job_result.id, 1

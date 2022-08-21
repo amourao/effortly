@@ -25,6 +25,8 @@ from urllib.parse import quote_plus
 
 import logging, time
 
+from powersong.strava_aux import resync_activity
+
 logger = logging.getLogger(__name__)
 
 
@@ -472,6 +474,9 @@ def spotify_download_activity_tracks(act_stream_stored_act, force):
     except:
         token = spotify_refresh_token(code, token, reftoken, athlete_id)
         spotify_tracks = spotify_get_recent_tracks_before(token, athlete_id, start, end, force)
+
+    if not spotify_tracks['recenttracks']['track']:
+        resync_activity(stored_act_id, athlete_id, True)
 
     return act_stream, stored_act_id, spotify_tracks
 
