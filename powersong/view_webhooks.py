@@ -49,7 +49,18 @@ def strava_webhooks_callback(request):
             if data["aspect_type"] == "create" and data["object_type"] == "activity":               
                 sync_one_activity(data["object_id"], data["owner_id"])
             elif data["aspect_type"] == "delete" and data["object_type"] == "activity":
-                Activity.objects.filter(activity_id=data["object_id"],athlete__athlete_id=data["owner_id"]).delete()
+                Activity.objects.filter(activity_id=data["object_id"], athlete__athlete_id=data["owner_id"]).delete()
+            elif data["aspect_type"] == "update" and data["object_type"] == "activity":
+                activity = Activity.objects.get(activity_id=data["object_id"], athlete__athlete_id=data["owner_id"])
+                for key, value in data["updates"].values():
+                    if key == "title":
+                        activity.name = value;
+                    elif key == 'type':
+                        if value == 'Ride':
+                            activity.act_type = 1
+                        elif value == 'Run':
+                            activity.act_type = 0
+                activity.save()
         except Exception as e:
             logger.debug(e)
             logger.debug("STRAVA WEBHOOK PARSE ERROR")
