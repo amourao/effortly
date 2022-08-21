@@ -51,6 +51,7 @@ def strava_webhooks_callback(request):
             elif data["aspect_type"] == "delete" and data["object_type"] == "activity":
                 Activity.objects.filter(activity_id=data["object_id"], athlete__athlete_id=data["owner_id"]).delete()
             elif data["aspect_type"] == "update" and data["object_type"] == "activity":
+                print(data)
                 activity = Activity.objects.get(activity_id=data["object_id"], athlete__athlete_id=data["owner_id"])
                 for key, value in data["updates"].values():
                     if key == "title":
@@ -72,7 +73,7 @@ def strava_webhooks_callback(request):
 def strava_webhook_create_sub():
     client = stravalib.client.Client()
     callback_url = settings.HOME_URL + '/strava_webhooks/'
-    client.create_subscription(settings.STRAVA_CLIENT_ID, settings.STRAVA_CLIENT_SECRET, callback_url, object_type='activity', aspect_type='create', verify_token=settings.STRAVA_VERIFY_TOKEN)
+    client.create_subscription(settings.STRAVA_CLIENT_ID, settings.STRAVA_CLIENT_SECRET, callback_url, verify_token=settings.STRAVA_VERIFY_TOKEN)
 
 def strava_webhook_list_sub():
     client = stravalib.client.Client()
