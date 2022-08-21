@@ -25,8 +25,6 @@ from urllib.parse import quote_plus
 
 import logging, time
 
-from powersong.strava_aux import resync_activity
-
 logger = logging.getLogger(__name__)
 
 
@@ -742,6 +740,41 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         logger.error(e)
         return (stored_act.activity_id,)
 
+
+def resync_activity(activity_id, athlete_id, resend=False):
+    ath = strava_get_user_info(id=athlete_id)
+
+    client = stravalib.client.Client()
+    client.access_token = ath.strava_token
+    client.refresh_token = ath.strava_refresh_token
+    client.token_expires_at = ath.strava_token_expires_at
+
+    if not ath.strava_token_expires_at:
+        return "00000000-0000-0000-0000-000000000000", 0
+
+    activity = strava_get_activity_by_id(activity_id)
+    if athlete_id != activity.athlete.athlete_id:
+        return None, None
+
+    efforts_to_delete = Effort.objects.filter(activity__activity_id=activity_id)
+    efforts_to_delete.delete()
+    act_p = {}
+    act_p['id'] = activity_id
+    act_p['athlete_id'] = athlete_id
+    if resend:
+        download_chain = chain(strava_task.si('strava_download_activity', (act_p,)),
+                               lastfm_task.s('lastfm_download_activity_tracks', ()),
+                               activity_to_efforts.s(),
+                               strava_task.s('strava_send_song_activities', ())
+                               )
+    else:
+        download_chain = chain(strava_task.si('strava_download_activity', (act_p,)),
+                               lastfm_task.s('lastfm_download_activity_tracks', ()),
+                               activity_to_efforts.s()
+                               )
+    job_result = download_chain.delay()
+
+    return job_result.id, 1
 
 ########################## END Internal tasks ##########################
 
