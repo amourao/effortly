@@ -1,4 +1,5 @@
-from powersong.models import metric_legends, imperial_legends
+metric_legends = {'speed': 'km/h', 'speed_s': '/km', 'speed_smaller': '/100m', 'distanceSmall': 'm', 'distanceBig': 'km', 'temperature': 'ºC'}
+imperial_legends = {'speed': 'mi/h', 'speed_s': '/mi', 'speed_smaller': '/100yd', 'distanceSmall': 'ft', 'distanceBig': 'mi', 'temperature': 'ºF'}
 
 
 def metersPerSecondToKmH(mps):

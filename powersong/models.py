@@ -36,8 +36,6 @@ watts = ['avg_watts', 'diff_avg_watts', 'diff_last_watts', 'activity__avg_watts'
 
 common = {'timeBig': '', 'timeSmall': 'sec', 'heartrate': 'bpm', 'cadence': 'spm', 'watts': 'W', 'count': 'count',
           'count_users': 'listener(s)'}
-metric_legends = {'speed': 'km/h', 'speed_s': '/km', 'speed_smaller': '/100m', 'distanceSmall': 'm', 'distanceBig': 'km', 'temperature': 'ºC'}
-imperial_legends = {'speed': 'mi/h', 'speed_s': '/mi', 'speed_smaller': '/100yd', 'distanceSmall': 'ft', 'distanceBig': 'mi', 'temperature': 'ºF'}
 
 logger = logging.getLogger(__name__)
 
