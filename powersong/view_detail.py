@@ -117,7 +117,7 @@ def activity(request, activity_id):
 
     data['top'] = []
     for q in qs:
-        if (activity.act_type == 0):
+        if (activity.act_type == 0 or activity.act_type == 2):
             q['sort_key'] = 'avg_speed_s'
             q['sort_value'] = q['avg_speed']
         else:

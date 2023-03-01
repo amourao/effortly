@@ -60,6 +60,8 @@ def strava_webhooks_callback(request):
                             activity.act_type = 1
                         elif value == 'Run':
                             activity.act_type = 0
+                        elif value == 'Swim':
+                            activity.act_type = 2
                 activity.save()
         except Exception as e:
             logger.debug(e)
