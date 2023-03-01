@@ -3,6 +3,8 @@ import stravalib.client
 from django.conf import settings
 
 from datetime import datetime,timedelta
+
+from powersong.sink_or_swim import sink_or_swim
 from powersong.tasks import strava_get_user_info, strava_parse_base_activity
 from powersong.tasks import strava_task,spotify_task,lastfm_task,activity_to_efforts,strava_generate_nops,count_finished
 
@@ -59,6 +61,8 @@ def sync_one_activity(activity_id,athlete_id,delay=5*60):
     powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id) 
     if powerusers:
         poweruser = powerusers[0]
+        if athlete_id == "9363354":
+            sink_or_swim.submit(activity_id, athlete_id)
         if poweruser.listener_spotify:
             return sync_one_activity_spotify(activity_id, athlete_id, delay)
         elif poweruser.listener:
