@@ -355,19 +355,28 @@ def stats(request):
     stats['activities']['total'] = len(Activity.objects.all())
     stats['activities']['total_30'] = len(Activity.objects.filter(start_date__gt=thirty_day_before))
     stats['activities']['total_7'] = len(Activity.objects.filter(start_date__gt=seven_day_before))
+    stats['activities']['total_1'] = len(Activity.objects.filter(start_date__gt=today))
+
 
     stats['activities_with_songs'] = {}
     stats['activities_with_songs']['total'] = len(Activity.objects.filter(effort__isnull=False).distinct())
     stats['activities_with_songs']['total_30'] = len(Activity.objects.filter(effort__isnull=False, start_date__gt=thirty_day_before).distinct())
     stats['activities_with_songs']['total_7'] = len(Activity.objects.filter(effort__isnull=False, start_date__gt=seven_day_before).distinct())
+    stats['activities_with_songs']['total_1'] = len(Activity.objects.filter(effort__isnull=False, start_date__gt=today).distinct())
+
 
     stats['users'] = {}
     stats['users']['total'] = len(PowerUser.objects.all())
     stats['users']['total_30'] = len(PowerUser.objects.filter(join_date__gt=thirty_day_before))
     stats['users']['total_7'] = len(PowerUser.objects.filter(join_date__gt=seven_day_before))
+    stats['users']['total_1'] = len(PowerUser.objects.filter(join_date__gt=today))
 
-    stats['users_strava'] = {}
-    stats['users_strava']['total'] = len(Athlete.objects.all())
+
+    stats['users_active'] = {}
+    stats['users_active']['total'] = len(Activity.objects.all().values("athlete").distinct())
+    stats['users_active']['total_30'] = len(Activity.objects.filter(start_date__gt=thirty_day_before).values("athlete").distinct())
+    stats['users_active']['total_7'] = len(Activity.objects.filter(start_date__gt=seven_day_before).values("athlete").distinct())
+    stats['users_active']['total_1'] = len(Activity.objects.filter(start_date__gt=today).values("athlete").distinct())
 
     stats['users_spotify'] = {}
     stats['users_spotify']['total'] = len(ListenerSpotify.objects.all())
@@ -380,6 +389,10 @@ def stats(request):
 
     stats['artists'] = {}
     stats['artists']['total'] = len(Artist.objects.all())
+
+    stats['user_list'] = []
+    for user in PowerUser.objects.all():
+        stats['user_list'].append((f"/?puid={user.id}", user))
 
     result['stats'] = stats
 
