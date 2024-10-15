@@ -100,6 +100,8 @@ def get_all_data(request):
         result['activity_type_name'] = "Running"
     elif activity_type == 1:
         result['activity_type_name'] = "Cycling"
+    elif activity_type == 2:
+        result['activity_type_name'] = "Swimming"
 
 
     return poweruser, result

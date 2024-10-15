@@ -59,10 +59,15 @@ def remove_impossible(qs, activity_type):
         max_speed_filter = 8  # bike max speed in meters per second
 
     min_speed_filter = 2
-
-    time_filter = 60
-
     distance_filter = 100
 
+    if activity_type == 2:
+        max_speed_filter = 2
+        min_speed_filter = 0
+        distance_filter = 10
+   
+    time_filter = 60
+
+   
     return qs.filter(distance__gt=distance_filter).filter(duration__gt=time_filter).filter(
         avg_speed__gt=min_speed_filter).filter(avg_speed__lt=max_speed_filter)

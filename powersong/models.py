@@ -48,7 +48,8 @@ class Athlete(models.Model):
     ATHELETE_TYPE = (
         (0, 'Running'),
         (1, 'Cycling'),
-        (2, 'Other'),
+        (2, 'Swimming'),
+        (3, 'Other'),
     )
     SHARE_SONG_TIME = (
         (0, 'Simple'),
@@ -74,6 +75,7 @@ class Athlete(models.Model):
     activity_count = models.IntegerField()
     runs_count = models.IntegerField()
     rides_count = models.IntegerField()
+    swims_count = models.IntegerField()
     first_activity_date = models.DateTimeField(blank=True, null=True)
     last_activity_date = models.DateTimeField(blank=True, null=True)
     updated_strava_at = models.DateTimeField()
@@ -538,7 +540,8 @@ def create_athlete_from_dict(athlete_api):
     athlete.activity_count = stats.all_ride_totals.count
     athlete.runs_count = stats.all_run_totals.count
     athlete.rides_count = stats.all_ride_totals.count
-    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
+    athlete.swims_count = stats.all_swim_totals.count
+    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count + stats.all_swim_totals.count
     athlete.updated_strava_at = athlete_api.updated_at
 
     return athlete

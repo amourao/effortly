@@ -1220,7 +1220,8 @@ def sync_efforts_lastfm(athlete_id, limit=None, after=None, force=False):
     athlete.activity_count = stats.all_ride_totals.count
     athlete.runs_count = stats.all_run_totals.count
     athlete.rides_count = stats.all_ride_totals.count
-    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count
+    athlete.swims_count = stats.all_swim_totals.count
+    athlete.activity_count = stats.all_ride_totals.count + stats.all_run_totals.count + stats.all_swim_totals.count
     athlete.updated_strava_at = athlete_api.updated_at
     athlete.last_celery_task_id = str(job_result_id)
     athlete.last_celery_task_count = act_count

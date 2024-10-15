@@ -110,10 +110,11 @@
         <ul class="navbar-nav mr-auto">
           {% if viewer == None %}
           <li class="nav-item dropdown dropright">
-            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% if activity_type == 0 %}Running{% elif activity_type == 1 %}Cycling{% else %}All{% endif %}</a>
+            <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% if activity_type == 0 %}Running{% elif activity_type == 1 %}Cycling{% elif activity_type == 2 %}Swimming{% else %}All{% endif %}</a>
             <div class="dropdown-menu" aria-labelledby="dropdown01">
               <a class="dropdown-item" href="?activity_type=0">Running</a>
               <a class="dropdown-item" href="?activity_type=1">Cycling</a>
+              <a class="dropdown-item" href="?activity_type=2">Swimming</a>
               <a class="dropdown-item" href="?activity_type=-1">All</a>
             </div>
           </li>
@@ -127,7 +128,7 @@
         <ul class="navbar-nav ml-auto justify-content-end">
           <li class="nav-item" id="progress" style="display:flex"></li>
           <li class="nav-item" id="progress_spotify" style="display:flex"></li>
-          <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img onerror="img_error(this);" src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture" title="{{ athlete.runs_count }} runs and {{ athlete.rides_count }} rides"></a> </li>
+          <li class="nav-item"> <a class="btn-margin-left" href="https://www.strava.com/athletes/{{ athlete.athlete_id }}"><img onerror="img_error(this);" src="{{ athlete.profile_image_url }}" width="40" height="40" class="rounded-circle" alt="Strava profile picture" title="{{ athlete.runs_count }} runs, {{ athlete.rides_count }} rides and {{ athlete.swims_count }} swims"></a> </li>
           {% if listener %}
             <li class="nav-item"> <a class="btn-margin-left" href="http://www.last.fm/user/{{ listener.nickname }}"><img onerror="img_error(this);" src="{{ listener.profile_image_url }}" class="rounded-circle" width="40" height="40"  alt="last.fm profile picture" title="{{ listener.scrobble_count }} scrobbles"></a> </li>
           {% endif %}

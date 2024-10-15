@@ -13,14 +13,14 @@
         <p class="h2">Strava tells me your main activity type is {{ athlete.get_activity_type_display }}.</p>
         <p class="h2">You can change that on the top bar.</p>
         {% elif count_s%}
-        <p class="h2">Found <span class="text_color_lastfm">{{ count_s }} scrobbles</span> over <span class="text_color_strava">{{ count_a }} {% if activity_type == 0 %}runs{% elif activity_type == 1 %}rides{% elif activity_type == -1 %}activities{% endif %}.</span></p>
+        <p class="h2">Found <span class="text_color_lastfm">{{ count_s }} scrobbles</span> over <span class="text_color_strava">{{ count_a }} {% if activity_type == 0 %}runs{% elif activity_type == 1 %}rides{% elif activity_type == 2 %}swims{% elif activity_type == -1 %}activities{% endif %}.</span></p>
         <p class="h2">Are you ready to <span class="text_color_lastfm">rock?</span></p>
         <p class="h3">Scroll down to see your best efforts!</p>
         {% elif not demo and not listener and not listenerspotify %}
         <p class="h2">Associate your last.fm or Spotify account before you can sync activities.</p>
         <a role="button" class="btn btn-danger" href="/settings/">ASSOCIATE LAST.FM OR SPOTIFY</a>
         {% else %}
-        <p class="h2">Your activities will show up here automatically as you start to ride or run with music.</p>
+        <p class="h2">Your activities will show up here automatically as you start to ride, run or swim with music.</p>
         {% endif %}
       </div>
     </div>
@@ -33,7 +33,7 @@
     <div class="container-fluid gray-background margins-top-bottom"> 
       <div class="row mx-0">
         <div class="col-md-12 text-center">
-          <p class="h2">Let's start by checking the <span class="text_color_lastfm">artists and songs</span> you listen to while <span class="text_color_strava">{% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% else %}on activity{% endif %}</span></p>
+          <p class="h2">Let's start by checking the <span class="text_color_lastfm">artists and songs</span> you listen to while <span class="text_color_strava">{% if activity_type == 0 %}running{% elif activity_type == 1 %}cycling{% elif activity_type == 2 %}swimming{% else %}on activity{% endif %}</span></p>
           <p class="mylead">(click on the artist or song names to check the matching activities)</p>
       </div>
       </div>

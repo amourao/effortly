@@ -82,6 +82,11 @@ html {
     background-size: cover;
 }
 
+.background_image2 {
+  background:url('/static/swim.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
 
 .text_shadow {
   text-shadow: black 0.1em 0.1em 0.2em;
