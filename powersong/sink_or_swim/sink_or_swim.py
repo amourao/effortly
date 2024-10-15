@@ -12,7 +12,7 @@ def submit(activity_id, athlete_id):
     client.token_expires_at = athlete.strava_token_expires_at
     act = client.get_activity(activity_id)
     if act.type == 'Swim':
-        total_duration = float(act.elapsed_time.total_seconds())
+        total_duration = float(act.elapsed_time)
         start_date = act.start_date
         submit_internal(start_date, total_duration)
 

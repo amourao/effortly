@@ -1041,8 +1041,8 @@ def strava_parse_base_activity(act):
     actFinal['calories'] = act.calories
     actFinal['description'] = act.description
     actFinal['total_distance'] = float(act.distance)
-    actFinal['elapsed_time'] = float(act.elapsed_time.total_seconds())
-    actFinal['moving_time'] = float(act.moving_time.total_seconds())
+    actFinal['elapsed_time'] = float(act.elapsed_time)
+    actFinal['moving_time'] = float(act.moving_time)
     actFinal['elev_high'] = act.elev_high
     actFinal['elev_low'] = act.elev_low
     actFinal['embed_token'] = act.embed_token
