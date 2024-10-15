@@ -1085,12 +1085,12 @@ def strava_parse_base_activity(act):
     # actFinal['timezone'] = act.timezone
     actFinal['total_elevation_gain'] = float(act.total_elevation_gain)
     actFinal['trainer'] = act.trainer
-    actFinal['type'] = act.type
+    actFinal['type'] = str(act.type)
 
     actFinal['upload_id'] = act.upload_id
 
     actFinal['weighted_average_watts'] = act.weighted_average_watts
-    actFinal['workout_type'] = act.workout_type
+    actFinal['workout_type'] = str(act.workout_type)
 
     return actFinal
 
