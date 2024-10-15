@@ -61,8 +61,8 @@ def sync_one_activity(activity_id,athlete_id,delay=5*60):
     powerusers = PowerUser.objects.filter(athlete__athlete_id=athlete_id) 
     if powerusers:
         poweruser = powerusers[0]
-        if poweruser.athlete.athlete_id == "9363354":
-            sink_or_swim.submit(activity_id, athlete_id)
+        #if poweruser.athlete.athlete_id == "9363354":
+        #    sink_or_swim.submit(activity_id, athlete_id)
         if poweruser.listener_spotify:
             return sync_one_activity_spotify(activity_id, athlete_id, delay)
         elif poweruser.listener:

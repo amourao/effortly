@@ -132,21 +132,35 @@ def strava_send_song_activities(act_id_s):
 
     if description:
         start = description.find("Songs listened during activity:")
-        end = description.rfind("https://effortly.run/activity/" + str(act_id))
+        end = description.rfind("effortly(dot)run/activity/" + str(act_id))
         if start != -1 and end != -1:
-            end += len("https://effortly.run/activity/" + str(act_id))
+            end += len("effortly(dot)run/activity/" + str(act_id))
             description = description[:start] + description[end:]
-        start = description.find("Songs listened during activity:")
-        end = description.rfind("https://effortly.run")
-        if start != -1 and end != -1:
-            end += len("https://effortly.run/")
-            description = description[:start] + description[end:]
-        start = description.find("No songs found")
-        end = description.rfind("https://effortly.run")
-        if start != -1 and end != -1:
-            end += len("https://effortly.run/")
-            description = description[:start] + description[end:]
-        description = act.activity_share_message + '\n' + description
+        else:
+            start = description.find("Songs listened during activity:")
+            end = description.rfind("- by effortly(dot)run")
+            if start != -1 and end != -1:
+                end += len("- by effortly(dot)run")
+                description = description[:start] + description[end:]
+            else:
+                start = description.find("Songs listened during activity:")
+                end = description.rfind("- by")
+                if start != -1 and end != -1:
+                    end += len("- by")
+                    description = description[:start] + description[end:]
+                else:
+                    start = description.find("No songs found")
+                    end = description.rfind("- by effortly(dot)run")
+                    if start != -1 and end != -1:
+                        end += len("- by effortly(dot)run")
+                        description = description[:start] + description[end:]
+                    else:
+                        start = description.find("No songs found")
+                        end = description.rfind("- by")
+                        if start != -1 and end != -1:
+                            end += len("- by")
+                            description = description[:start] + description[end:]
+            description = act.activity_share_message + '\n' + description
     else:
         description = act.activity_share_message
 
