@@ -1046,7 +1046,7 @@ def strava_parse_base_activity(act):
     actFinal['elev_high'] = act.elev_high
     actFinal['elev_low'] = act.elev_low
     actFinal['embed_token'] = act.embed_token
-    actFinal['end_latlng'] = act.end_latlng
+    # actFinal['end_latlng'] = act.end_latlng
 
     actFinal['flagged'] = act.flagged
     # actFinal['gear'] = act.gear
@@ -1079,7 +1079,7 @@ def strava_parse_base_activity(act):
     actFinal['start_latitude'] = act.start_latitude
     actFinal['start_longitude'] = act.start_longitude
 
-    actFinal['start_latlng'] = act.start_latlng
+    # actFinal['start_latlng'] = act.start_latlng
 
     actFinal['suffer_score'] = act.suffer_score
     # actFinal['timezone'] = act.timezone
