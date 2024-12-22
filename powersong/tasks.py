@@ -600,7 +600,7 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
         effort_idx_in_act = 0
         idx = 0
-        start = start_time - timedelta(seconds=600)
+        start = 0
         while idx < len(songs):
             song_api = songs[idx]
             if not 'date' in song_api:
