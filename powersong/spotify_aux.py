@@ -125,6 +125,7 @@ def spotify_to_lastfm(results,start,end):
 
         current_timestamp = parse(track['played_at']).timestamp()
         duration = (track['track']['duration_ms']/1000)
+        res['duration'] = duration
         #res['date']['uts'] = str(current_timestamp).split('.')[0]
         res['album']['#text'] = track['track']['album']['name']
         if last_timestamp == None:

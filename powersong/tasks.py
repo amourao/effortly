@@ -249,7 +249,7 @@ def lastfm_download_activity_tracks(act_stream_stored_act):
     poweruser = Athlete.objects.filter(id=stored_act.athlete.id)[0].poweruser_set.all()[0]
 
     start = strava_get_start_timestamp(stored_act.start_date - timedelta(seconds=600))
-    end = strava_get_start_timestamp(stored_act.start_date + timedelta(seconds=int(stored_act.elapsed_time)))
+    end = strava_get_start_timestamp(stored_act.start_date + timedelta(seconds=int(stored_act.elapsed_time)+600))
 
     method = 'user.getrecenttracks'
     url = settings.LASTFM_API_RECENT.format(method, settings.LASTFM_API_KEY, poweruser.listener.nickname, start, end)
@@ -477,7 +477,7 @@ def spotify_download_activity_tracks(act_stream_stored_act, force):
     reftoken = poweruser.listener_spotify.spotify_refresh_token
 
     start = strava_get_start_timestamp(stored_act.start_date - timedelta(seconds=600))
-    end = strava_get_start_timestamp(stored_act.start_date + timedelta(seconds=int(stored_act.elapsed_time)))
+    end = strava_get_start_timestamp(stored_act.start_date + timedelta(seconds=int(stored_act.elapsed_time)+600))
 
     try:
         spotify_tracks = spotify_get_recent_tracks_before(token, athlete_id, start, end, force)
@@ -600,13 +600,16 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
         effort_idx_in_act = 0
         idx = 0
-        start = 0
+
+        duration = 300
+        if "duration" in song_api:
+            duration = int(song_api['duration'])
+        start = int(song_api['date']['uts']) - act_start_timestamp - duration
         while idx < len(songs):
             song_api = songs[idx]
             if not 'date' in song_api:
                 break
             end = int(song_api['date']['uts']) - act_start_timestamp
-
             if end > elapsed_time.seconds:
                 end = elapsed_time.seconds
 
