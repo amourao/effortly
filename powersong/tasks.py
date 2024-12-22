@@ -601,6 +601,7 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         effort_idx_in_act = 0
         idx = 0
 
+        song_api = songs[idx]
         duration = 300
         if "duration" in song_api:
             duration = int(song_api['duration'])
