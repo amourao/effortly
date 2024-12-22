@@ -246,8 +246,6 @@ def lastfm_download_activity_tracks(act_stream_stored_act):
 
     stored_act = strava_get_activity_by_id(stored_act_id)
 
-    athelte = strava_get_user_info(id=stored_act.athlete.athlete_id)
-
     poweruser = Athlete.objects.filter(id=stored_act.athlete.id)[0].poweruser_set.all()[0]
 
     start = strava_get_start_timestamp(stored_act.start_date - timedelta(seconds=600))
@@ -602,11 +600,15 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
         effort_idx_in_act = 0
         idx = 0
+        start = start_time - timedelta(seconds=600)
         while idx < len(songs):
             song_api = songs[idx]
             if not 'date' in song_api:
                 break
-            start = int(song_api['date']['uts']) - act_start_timestamp
+            end = int(song_api['date']['uts']) - act_start_timestamp
+
+            if end > elapsed_time.seconds:
+                end = elapsed_time.seconds
 
             # multiple similar scrobbles protection
             while (idx + 1) < len(songs) and ((song_api['url'] == songs[idx + 1]['url']) or (
@@ -615,12 +617,12 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                 song_api = songs[idx + 1]
                 idx += 1
 
-            if (idx + 1) < len(songs) and 'date' in songs[idx + 1]:
-                end = int(songs[idx + 1]['date']['uts']) - act_start_timestamp
-                if end > elapsed_time.seconds:
-                    end = elapsed_time.seconds
-            else:
-                end = elapsed_time.seconds
+            #if (idx + 1) < len(songs) and 'date' in songs[idx + 1]:
+            #    end = int(songs[idx + 1]['date']['uts']) - act_start_timestamp
+            #    if end > elapsed_time.seconds:
+            #        end = elapsed_time.seconds
+            #else:
+            #    end = elapsed_time.seconds
 
             idx += 1
 
@@ -747,6 +749,8 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
                 last_cadence = effort_avg_cadence
 
             effort_idx_in_act += 1
+
+            start = end
 
         return (stored_act.activity_id,)
     except Exception as e:

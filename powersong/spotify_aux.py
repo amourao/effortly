@@ -128,14 +128,14 @@ def spotify_to_lastfm(results,start,end):
         #res['date']['uts'] = str(current_timestamp).split('.')[0]
         res['album']['#text'] = track['track']['album']['name']
         if last_timestamp == None:
-            res['date']['uts'] = str(current_timestamp-duration).split('.')[0]
+            res['date']['uts'] = str(current_timestamp).split('.')[0]
         else:
         #  if (current_timestamp-last_timestamp)>duration*1.5:
         #    res['date']['uts'] = str(last_timestamp).split('.')[0]
         #    last_timestamp = current_timestamp
         #  else:
-           res['date']['uts'] = str(current_timestamp-duration).split('.')[0]
-           last_timestamp = current_timestamp-duration
+           res['date']['uts'] = str(current_timestamp).split('.')[0]
+           last_timestamp = current_timestamp
         ts = int(res['date']['uts'])
         #logger.debug(ts)
         #logger.debug(start)
