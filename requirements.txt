@@ -8,5 +8,5 @@ git+https://github.com/hozn/stravalib@v1.7#egg=stravalib
 DateTime==4.2
 pylast==5.1.0
 redis~=4.6.0
-spotipy=~2.25
+spotipy~=2.25
 whitenoise==6.2.0
