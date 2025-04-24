@@ -132,15 +132,15 @@ def strava_send_song_activities(act_id_s):
 
     if description:
         start = description.find("Songs listened during activity:")
-        end = description.rfind("effortly(dot)run/activity/" + str(act_id))
+        end = description.rfind("https://effortly.run/activity/" + str(act_id))
         if start != -1 and end != -1:
-            end += len("effortly(dot)run/activity/" + str(act_id))
+            end += len("https://effortly.run/activity/" + str(act_id))
             description = description[:start] + description[end:]
         else:
             start = description.find("Songs listened during activity:")
-            end = description.rfind("- by effortly(dot)run")
+            end = description.rfind("- by https://effortly.run")
             if start != -1 and end != -1:
-                end += len("- by effortly(dot)run")
+                end += len("- by https://effortly.run")
                 description = description[:start] + description[end:]
             else:
                 start = description.find("Songs listened during activity:")
@@ -150,9 +150,9 @@ def strava_send_song_activities(act_id_s):
                     description = description[:start] + description[end:]
                 else:
                     start = description.find("No songs found")
-                    end = description.rfind("- by effortly(dot)run")
+                    end = description.rfind("- by https://effortly.run")
                     if start != -1 and end != -1:
-                        end += len("- by effortly(dot)run")
+                        end += len("- by https://effortly.run")
                         description = description[:start] + description[end:]
                     else:
                         start = description.find("No songs found")

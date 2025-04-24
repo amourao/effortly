@@ -213,9 +213,9 @@ class Activity(models.Model):
     @property
     def footer_message(self):
         if self.athlete.share_activity_songs:
-            return "Find out more detailed information at effortly(dot)run/activity/{}\n".format(self.activity_id)
+            return "Find out more detailed information at https://effortly.run/activity/{}\n".format(self.activity_id)
         else:
-            return "- by effortly(dot)run\n"
+            return "- by https://effortly.run\n"
 
     @property
     def activity_share_message(self):
@@ -238,7 +238,7 @@ class Activity(models.Model):
             text += "##########################\n"
             text += self.footer_message
         else:
-            text = "No songs found.\n- by effortly(dot)run\n"
+            text = "No songs found.\n- by https://effortly.run\n"
         return text
 
 
