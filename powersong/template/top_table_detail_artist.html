@@ -16,7 +16,7 @@
                         </div>
                         <div class="text-right col-md-2">
                             <span class="h5">
-                            {% if effort.sort_value %} {{ effort.sort_value }} </span><span> {{ effort.sort_value_unit }} {% endif %}
+                            {% if effort.sort_value %} {{ effort.sort_value }} </span><span> {% if effort.sort_value_unit %} {{ effort.sort_value_unit }} {% endif %} {% endif %}
                             </span>
                             <span>efforts</span>
                         </div>

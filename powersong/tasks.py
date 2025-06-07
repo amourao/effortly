@@ -252,6 +252,11 @@ def lastfm_download_activity_tracks(act_stream_stored_act):
     end = strava_get_start_timestamp(stored_act.start_date + timedelta(seconds=int(stored_act.elapsed_time)+600))
 
     method = 'user.getrecenttracks'
+
+    if  poweruser.listener == None or not poweruser.listener.nickname:
+        logger.error("No Last.fm listener for activity {}".format(stored_act_id))
+        return (act_stream, stored_act_id, None)
+    
     url = settings.LASTFM_API_RECENT.format(method, settings.LASTFM_API_KEY, poweruser.listener.nickname, start, end)
     response = requests.get(url).json()
 
@@ -601,6 +606,10 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
         effort_idx_in_act = 0
         idx = 0
 
+        if not songs or len(songs) == 0:
+            logger.debug("No songs in activity {}".format(stored_act_id))
+            return (stored_act_id,)
+
         song_api = songs[idx]
         duration = 300
         if "duration" in song_api:
@@ -758,8 +767,8 @@ def activity_to_efforts(act_stream_stored_act_id_lastfm_tracks):
 
         return (stored_act.activity_id,)
     except Exception as e:
-        logger.error("Exception on parsing activity {}".format(stored_act['id']))
         logger.error(e)
+        logger.error("Exception on parsing activity {}".format(stored_act.activity_id))
         return (stored_act.activity_id,)
 
 

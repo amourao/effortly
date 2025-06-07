@@ -67,7 +67,7 @@
             </div>
             <div class="col-md-2 text-right">
               <span class="h5">
-              {% if tops.sort_value %} {{ tops.sort_value }} </span><span> {{ tops.sort_value_unit }} {% endif %}
+              {% if tops.sort_value %} {{ tops.sort_value }} </span>{% if tops.sort_value_unit %}<span> {{ tops.sort_value_unit }} {% endif %}{% endif %}
               </span>
             </div>
         </div>
